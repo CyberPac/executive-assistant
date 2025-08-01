@@ -1,0 +1,115 @@
+{
+  "name": "@cyberpac/executive-assistant",
+  "version": "2.0.0-alpha",
+  "description": "Personal Executive Assistant (PEA) - Multi-Agent AI System for Executive Assistance",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:executive-scenarios": "jest --testPathPattern=scenarios",
+    "test:performance": "jest --testPathPattern=performance",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "typecheck": "tsc --noEmit",
+    "setup-dev": "./scripts/setup-dev-environment.sh",
+    "benchmark": "node scripts/run-benchmarks.js",
+    "swarm:init": "npx claude-flow@alpha swarm init --topology hierarchical --agents 15",
+    "swarm:status": "npx claude-flow@alpha swarm status",
+    "agents:spawn": "npx claude-flow@alpha agent spawn --count 15",
+    "docker:build": "docker build -t cyberpac/executive-assistant .",
+    "docker:run": "docker run -p 3000:3000 cyberpac/executive-assistant"
+  },
+  "keywords": [
+    "ai",
+    "executive-assistant",
+    "multi-agent",
+    "claude-flow",
+    "leasa",
+    "byzantine-consensus",
+    "cultural-intelligence",
+    "crisis-management"
+  ],
+  "author": "CyberPac <info@cyberpac.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CyberPac/executive-assistant.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CyberPac/executive-assistant/issues"
+  },
+  "homepage": "https://github.com/CyberPac/executive-assistant#readme",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0",
+    "@types/node": "^20.0.0",
+    "claude-flow": "^2.0.0-alpha",
+    "redis": "^4.6.0",
+    "postgresql": "^12.0.0",
+    "express": "^4.18.0",
+    "socket.io": "^4.7.0",
+    "jsonwebtoken": "^9.0.0",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.3.0",
+    "winston": "^3.10.0",
+    "joi": "^17.9.0",
+    "axios": "^1.5.0",
+    "moment": "^2.29.0",
+    "lodash": "^4.17.21",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.0",
+    "@types/jest": "^29.5.0",
+    "@types/jsonwebtoken": "^9.0.0",
+    "@types/bcryptjs": "^2.4.0",
+    "@types/lodash": "^4.14.0",
+    "@types/uuid": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.45.0",
+    "jest": "^29.6.0",
+    "ts-jest": "^29.1.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.1.0",
+    "supertest": "^6.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "roots": ["<rootDir>/src", "<rootDir>/tests"],
+    "testMatch": ["**/__tests__/**/*.ts", "**/?(*.)+(spec|test).ts"],
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/**/*.d.ts",
+      "!src/tests/**/*"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html"]
+  },
+  "eslintConfig": {
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["@typescript-eslint"],
+    "extends": [
+      "eslint:recommended",
+      "@typescript-eslint/recommended"
+    ],
+    "env": {
+      "node": true,
+      "es6": true
+    },
+    "rules": {
+      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/explicit-function-return-type": "warn",
+      "no-console": "warn"
+    }
+  }
+}
