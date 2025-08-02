@@ -6,11 +6,12 @@
 import { EventEmitter } from 'events';
 import { nanoid } from 'nanoid';
 
-// Import Phase 2 agents
+// Import Phase 2 agents (15 total - LEASA Architecture Complete)
 import CulturalIntelligenceAgent from '../agents/cultural-intelligence/index.js';
 import TravelLogisticsAgent from '../agents/travel-logistics/index.js';
 import FinancialManagementAgent from '../agents/financial-management/index.js';
 import CrisisManagementAgent from '../agents/crisis-management/index.js';
+import IntelligenceCoordinationAgent from '../agents/intelligence-coordination/index.js';
 
 export interface ExecutiveProfile {
   id: string;
