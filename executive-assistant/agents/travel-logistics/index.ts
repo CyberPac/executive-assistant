@@ -162,8 +162,12 @@ export class TravelLogisticsAgent extends EventEmitter {
     this.requirementsDatabase = new Map();
     this.flightPreferences = new Map();
     this.trafficAPIKeys = {
-      googleMaps: process.env.GOOGLE_MAPS_API_KEY || 'demo-key',
-      waze: process.env.WAZE_API_KEY || 'demo-key'
+      googleMaps: process.env.GOOGLE_MAPS_API_KEY || (() => {
+        throw new Error('GOOGLE_MAPS_API_KEY environment variable is required for travel logistics functionality');
+      })(),
+      waze: process.env.WAZE_API_KEY || (() => {
+        throw new Error('WAZE_API_KEY environment variable is required for traffic monitoring');
+      })()
     };
     this.performanceMetrics = {
       responseTimes: [],

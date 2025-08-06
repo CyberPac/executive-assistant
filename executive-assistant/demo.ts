@@ -4,7 +4,7 @@
  * Demonstrates all Phase 2 capabilities and performance targets
  */
 
-import ExecutiveAssistantCoordinator from './src/index.js';
+import ExecutiveAssistantCoordinator from './src/index';
 
 async function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
