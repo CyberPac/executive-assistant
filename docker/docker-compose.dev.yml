@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  pea-dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    container_name: pea-dev-environment
+    ports:
+      - "3000:3000"
+      - "9229:9229"  # Debug port
+    volumes:
+      - ..:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DEBUG=pea:*
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    tty: true
+    networks:
+      - pea-dev
+
+  # SQLite for development (matching CI test environment)
+  pea-db:
+    image: alpine:latest
+    container_name: pea-dev-db
+    volumes:
+      - pea-data:/data
+    command: tail -f /dev/null
+    networks:
+      - pea-dev
+
+networks:
+  pea-dev:
+    driver: bridge
+
+volumes:
+  pea-data:
+    driver: local

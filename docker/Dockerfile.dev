@@ -1,0 +1,39 @@
+# Development Dockerfile matching GitHub Actions CI environment
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apk add --no-cache \
+    git \
+    bash \
+    curl \
+    python3 \
+    make \
+    g++ \
+    sqlite
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies (same as CI)
+RUN npm ci --only=development
+
+# Copy source code
+COPY . .
+
+# Set development environment
+ENV NODE_ENV=development
+ENV CI=false
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S pea -u 1001 -G nodejs
+USER pea
+
+# Expose development port
+EXPOSE 3000
+
+# Default command for development
+CMD ["npm", "run", "dev"]
