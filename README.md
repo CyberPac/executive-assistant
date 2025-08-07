@@ -2,7 +2,6 @@
 
 ## Phase 2: Intelligence Expansion (Months 7-12)
 **Status**: IN PROGRESS  
-**Investment**: $1.0M-1.3M  
 **Current Goals**:
 - 15-agent LEASA architecture
 - Cultural intelligence across 35+ countries
