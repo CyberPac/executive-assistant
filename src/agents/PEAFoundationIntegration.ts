@@ -14,7 +14,7 @@ import {
   TaskStatus,
   ExecutivePreferences,
   PEAAgentType
-} from '../types/pea-agent-types';
+} from '../../src/types/pea-agent-types';
 
 export interface PEAFoundationConfig {
   executiveId: string;
