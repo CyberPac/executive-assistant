@@ -146,7 +146,7 @@ export class PEAFoundationIntegration {
         `pea-foundation/failures/${this.systemId}`,
         JSON.stringify({
           systemId: this.systemId,
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
           timestamp: new Date().toISOString(),
           initializationTime: Date.now() - startTime
         }),
@@ -242,7 +242,6 @@ export class PEAFoundationIntegration {
       const systemStatus = await this.coordinationSystem.getSystemStatus();
       
       return {
-        systemId: this.systemId,
         initialized: true,
         ...systemStatus,
         capabilities: this.getAllCapabilities(),

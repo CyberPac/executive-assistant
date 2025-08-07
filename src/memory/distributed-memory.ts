@@ -224,6 +224,14 @@ export class DistributedMemorySystem {
   }
 
   /**
+   * Delete a specific entry by key
+   */
+  async deleteEntry(key: string, namespace?: string): Promise<boolean> {
+    const storageKey = this.getStorageKey(key, namespace);
+    return this.memory.delete(storageKey);
+  }
+
+  /**
    * Clean up expired entries
    */
   async cleanup(): Promise<number> {

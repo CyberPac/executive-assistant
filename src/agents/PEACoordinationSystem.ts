@@ -395,7 +395,7 @@ export class PEACoordinationSystem {
   // Phase 2 Agent Initializations
 
   private async initializeTravelLogistics(): Promise<void> {
-    const travelAgent = new TravelLogisticsAgent('travel-agent-' + Date.now(), this.mcpIntegration);
+    const travelAgent = new TravelLogisticsAgent(this.mcpIntegration);
     await travelAgent.initialize();
     this.agents.set(PEAAgentType.TRAVEL_LOGISTICS, travelAgent);
     await this.executiveOrchestrator.registerAgent(travelAgent);
@@ -403,7 +403,7 @@ export class PEACoordinationSystem {
   }
 
   private async initializeFinancialIntelligence(): Promise<void> {
-    const financialAgent = new FinancialIntelligenceAgent('financial-agent-' + Date.now(), this.mcpIntegration);
+    const financialAgent = new FinancialIntelligenceAgent(this.mcpIntegration);
     await financialAgent.initialize();
     this.agents.set(PEAAgentType.FINANCIAL_MANAGEMENT, financialAgent);
     await this.executiveOrchestrator.registerAgent(financialAgent);
@@ -411,7 +411,7 @@ export class PEACoordinationSystem {
   }
 
   private async initializeCrisisManagement(): Promise<void> {
-    const crisisAgent = new CrisisManagementAgent('crisis-agent-' + Date.now(), this.mcpIntegration);
+    const crisisAgent = new CrisisManagementAgent();
     await crisisAgent.initialize();
     this.agents.set(PEAAgentType.CRISIS_MANAGEMENT, crisisAgent);
     await this.executiveOrchestrator.registerAgent(crisisAgent);

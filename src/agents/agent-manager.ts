@@ -6,7 +6,7 @@ import { EventEmitter } from 'node:events';
 import { spawn, ChildProcess } from 'node:child_process';
 import type { ILogger } from '../core/logger';
 import type { IEventBus } from '../core/event-bus';
-import type {
+import {
   AgentId,
   AgentType,
   AgentStatus,
@@ -225,7 +225,7 @@ export class AgentManager extends EventEmitter {
     // Research agent template
     this.templates.set('researcher', {
       name: 'Research Agent',
-      type: 'researcher',
+      type: AgentType.RESEARCHER,
       capabilities: {
         codeGeneration: false,
         codeReview: false,
@@ -279,7 +279,7 @@ export class AgentManager extends EventEmitter {
     // Developer agent template
     this.templates.set('coder', {
       name: 'Developer Agent',
-      type: 'coder',
+      type: AgentType.CODER,
       capabilities: {
         codeGeneration: true,
         codeReview: true,
@@ -338,7 +338,7 @@ export class AgentManager extends EventEmitter {
     // Analyzer template
     this.templates.set('analyst', {
       name: 'Analyzer Agent',
-      type: 'analyst',
+      type: AgentType.ANALYST,
       capabilities: {
         codeGeneration: false,
         codeReview: true,
@@ -448,10 +448,10 @@ export class AgentManager extends EventEmitter {
     const swarmId = 'default'; // Could be parameterized
 
     const agent: AgentState = {
-      id: { id: agentId, swarmId, type: template.type, instance: 1 },
+      id: agentId,
       name: overrides.name || `${template.name}-${agentId.slice(-8)}`,
       type: template.type,
-      status: 'initializing',
+      status: AgentStatus.INITIALIZING,
       capabilities: { ...template.capabilities },
       metrics: this.createDefaultMetrics(),
       workload: 0,
@@ -524,13 +524,13 @@ export class AgentManager extends EventEmitter {
       throw new Error(`Agent ${agentId} not found`);
     }
 
-    if (agent.status !== 'initializing' && agent.status !== 'offline') {
+    if (agent.status !== AgentStatus.INITIALIZING && agent.status !== AgentStatus.TERMINATED) {
       throw new Error(`Agent ${agentId} cannot be started from status ${agent.status}`);
     }
 
     try {
-      agent.status = 'initializing';
-      this.updateAgentStatus(agentId, 'initializing');
+      agent.status = AgentStatus.INITIALIZING;
+      this.updateAgentStatus(agentId, AgentStatus.INITIALIZING);
 
       // Spawn agent process
       const process = await this.spawnAgentProcess(agent);
@@ -539,17 +539,17 @@ export class AgentManager extends EventEmitter {
       // Wait for agent to signal ready
       await this.waitForAgentReady(agentId, this.config.defaultTimeout);
 
-      agent.status = 'idle';
-      this.updateAgentStatus(agentId, 'idle');
+      agent.status = AgentStatus.IDLE;
+      this.updateAgentStatus(agentId, AgentStatus.IDLE);
 
       this.logger.info('Started agent', { agentId, name: agent.name });
       this.emit('agent:started', { agent });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      agent.status = 'error';
+      agent.status = AgentStatus.ERROR;
       this.addAgentError(agentId, {
         timestamp: new Date(),
-        type: 'startup_failed',
+        type: 'INITIALIZATION_ERROR',
         message: errorMessage,
         context: { agentId },
         severity: 'critical',
@@ -567,13 +567,13 @@ export class AgentManager extends EventEmitter {
       throw new Error(`Agent ${agentId} not found`);
     }
 
-    if (agent.status === 'offline' || agent.status === 'terminated') {
+    if (agent.status === AgentStatus.TERMINATED) {
       return; // Already stopped
     }
 
     try {
-      agent.status = 'terminating';
-      this.updateAgentStatus(agentId, 'terminating');
+      agent.status = AgentStatus.TERMINATED;
+      this.updateAgentStatus(agentId, AgentStatus.TERMINATED);
 
       // Send graceful shutdown signal
       const process = this.processes.get(agentId);
@@ -591,8 +591,8 @@ export class AgentManager extends EventEmitter {
       // Wait for process to exit
       await this.waitForProcessExit(agentId, this.config.defaultTimeout);
 
-      agent.status = 'terminated';
-      this.updateAgentStatus(agentId, 'terminated');
+      agent.status = AgentStatus.TERMINATED;
+      this.updateAgentStatus(agentId, AgentStatus.TERMINATED);
 
       // Cleanup
       this.processes.delete(agentId);
@@ -603,7 +603,7 @@ export class AgentManager extends EventEmitter {
       this.logger.error('Failed to stop agent gracefully', { agentId, error });
       // Force cleanup
       this.processes.delete(agentId);
-      agent.status = 'terminated';
+      agent.status = AgentStatus.TERMINATED;
     }
   }
 
@@ -933,7 +933,7 @@ export class AgentManager extends EventEmitter {
       ) {
         this.logger.warn('Agent heartbeat timeout', { agentId, timeSinceHeartbeat });
 
-        agent.status = 'error';
+        agent.status = AgentStatus.ERROR;
         this.addAgentError(agentId, {
           timestamp: new Date(),
           type: 'heartbeat_timeout',
@@ -1093,7 +1093,7 @@ export class AgentManager extends EventEmitter {
 
     const agent = this.agents.get(data.agentId);
     if (agent && data.error.severity === 'critical') {
-      agent.status = 'error';
+      agent.status = AgentStatus.ERROR;
       this.updateAgentStatus(data.agentId, 'error');
     }
   }
