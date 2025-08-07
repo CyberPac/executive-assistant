@@ -192,14 +192,8 @@ export enum PEAAgentType {
   PERFORMANCE_OPTIMIZATION = 'performance-optimization'
 }
 
-export enum AgentStatus {
-  INITIALIZING = 'initializing',
-  ACTIVE = 'active',
-  BUSY = 'busy',
-  IDLE = 'idle',
-  ERROR = 'error',
-  MAINTENANCE = 'maintenance'
-}
+// Using centralized AgentStatus from swarm/types.ts to avoid conflicts
+export { AgentStatus } from '../swarm/types';
 
 export enum SecurityLevel {
   EXECUTIVE_PERSONAL = 'executive-personal',
@@ -358,13 +352,14 @@ export interface DocumentItem {
 
 export interface SecurityThreat {
   id: string;
-  type: 'behavioral-anomaly' | 'access-violation' | 'data-breach' | 'system-intrusion';
+  type: 'behavioral-anomaly' | 'access-violation' | 'data-breach' | 'system-intrusion' | 'unauthorized_access' | 'privilege_escalation' | 'malware' | 'phishing' | 'insider_threat';
   severity: 'low' | 'medium' | 'high' | 'critical';
   confidence: number;
   description: string;
   affectedSystems: string[];
   recommendedActions: string[];
   detectedAt: string;
+  responseImplemented?: boolean;
 }
 
 export interface ClaudeFlowMCPIntegration {

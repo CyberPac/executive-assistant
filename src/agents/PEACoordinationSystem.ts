@@ -403,7 +403,7 @@ export class PEACoordinationSystem {
   }
 
   private async initializeFinancialIntelligence(): Promise<void> {
-    const financialAgent = new FinancialIntelligenceAgent(this.mcpIntegration);
+    const financialAgent = new FinancialIntelligenceAgent('financial-001', this.mcpIntegration, SecurityLevel.EXECUTIVE_PERSONAL);
     await financialAgent.initialize();
     this.agents.set(PEAAgentType.FINANCIAL_MANAGEMENT, financialAgent);
     await this.executiveOrchestrator.registerAgent(financialAgent);
@@ -411,7 +411,7 @@ export class PEACoordinationSystem {
   }
 
   private async initializeCrisisManagement(): Promise<void> {
-    const crisisAgent = new CrisisManagementAgent();
+    const crisisAgent = new CrisisManagementAgent('crisis-001', this.mcpIntegration, SecurityLevel.STRATEGIC_CONFIDENTIAL);
     await crisisAgent.initialize();
     this.agents.set(PEAAgentType.CRISIS_MANAGEMENT, crisisAgent);
     await this.executiveOrchestrator.registerAgent(crisisAgent);

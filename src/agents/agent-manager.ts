@@ -227,6 +227,10 @@ export class AgentManager extends EventEmitter {
       name: 'Research Agent',
       type: AgentType.RESEARCHER,
       capabilities: {
+        skills: ['research', 'analysis', 'information-gathering'],
+        maxConcurrentTasks: 5,
+        supportedTaskTypes: ['research', 'analysis', 'document-analysis'],
+        specializations: ['web-search', 'document-analysis', 'data-extraction'],
         codeGeneration: false,
         codeReview: false,
         testing: false,
@@ -241,7 +245,6 @@ export class AgentManager extends EventEmitter {
         frameworks: [],
         domains: ['research', 'analysis', 'information-gathering'],
         tools: ['web-search', 'document-analysis', 'data-extraction'],
-        maxConcurrentTasks: 5,
         maxMemoryUsage: 256 * 1024 * 1024,
         maxExecutionTime: 600000,
         reliability: 0.9,
@@ -452,16 +455,60 @@ export class AgentManager extends EventEmitter {
       name: overrides.name || `${template.name}-${agentId.slice(-8)}`,
       type: template.type,
       status: AgentStatus.INITIALIZING,
-      capabilities: { ...template.capabilities },
+      capabilities: {
+        skills: [],
+        maxConcurrentTasks: template.capabilities.maxConcurrentTasks,
+        supportedTaskTypes: template.capabilities.supportedTaskTypes || template.capabilities.domains || [],
+        specializations: template.capabilities.domains || [],
+        codeGeneration: template.capabilities.codeGeneration,
+        ...template.capabilities
+      },
       metrics: this.createDefaultMetrics(),
-      workload: 0,
-      health: 1.0,
+      workload: {
+        currentTasks: 0,
+        maxTasks: template.config.maxConcurrentTasks ?? 3,
+        utilizationRate: 0
+      },
+      health: {
+        status: 'healthy' as const,
+        lastCheck: new Date(),
+        issues: [],
+        overall: 1.0
+      },
       config: {
+        id: agentId,
+        type: template.type,
+        capabilities: {
+          skills: [],
+          maxConcurrentTasks: template.capabilities.maxConcurrentTasks,
+          supportedTaskTypes: template.capabilities.supportedTaskTypes || template.capabilities.domains || [],
+          specializations: template.capabilities.domains || [],
+          codeGeneration: template.capabilities.codeGeneration,
+          ...template.capabilities
+        },
+        environment: {
+          resourceLimits: {
+            memory: this.config.resourceLimits.memory,
+            cpu: this.config.resourceLimits.cpu,
+            networkBandwidth: 100 * 1024 * 1024
+          },
+          permissions: template.environment.permissions ?? [],
+          accessTokens: template.environment.accessTokens ?? {},
+          runtime: template.environment.runtime ?? this.config.environmentDefaults.runtime,
+          version: template.environment.version ?? '1.40.0',
+          workingDirectory: template.environment.workingDirectory ?? this.config.environmentDefaults.workingDirectory,
+          tempDirectory: template.environment.tempDirectory ?? this.config.environmentDefaults.tempDirectory,
+          logDirectory: template.environment.logDirectory ?? this.config.environmentDefaults.logDirectory,
+          apiEndpoints: template.environment.apiEndpoints ?? {},
+          credentials: template.environment.credentials ?? {},
+          availableTools: template.environment.availableTools ?? [],
+          toolConfigs: template.environment.toolConfigs ?? {},
+          ...overrides.environment
+        },
+        settings: {},
         autonomyLevel: template.config.autonomyLevel ?? this.config.agentDefaults.autonomyLevel,
-        learningEnabled:
-          template.config.learningEnabled ?? this.config.agentDefaults.learningEnabled,
-        adaptationEnabled:
-          template.config.adaptationEnabled ?? this.config.agentDefaults.adaptationEnabled,
+        learningEnabled: template.config.learningEnabled ?? this.config.agentDefaults.learningEnabled,
+        adaptationEnabled: template.config.adaptationEnabled ?? this.config.agentDefaults.adaptationEnabled,
         maxTasksPerHour: template.config.maxTasksPerHour ?? 10,
         maxConcurrentTasks: template.config.maxConcurrentTasks ?? 3,
         timeoutThreshold: template.config.timeoutThreshold ?? 300000,
@@ -469,7 +516,7 @@ export class AgentManager extends EventEmitter {
         heartbeatInterval: template.config.heartbeatInterval ?? 10000,
         permissions: template.config.permissions ?? [],
         trustedAgents: template.config.trustedAgents ?? [],
-        expertise: template.config.expertise ?? {},
+        expertise: [],
         preferences: template.config.preferences ?? {},
         ...overrides.config,
       },
@@ -486,14 +533,19 @@ export class AgentManager extends EventEmitter {
         credentials: template.environment.credentials ?? {},
         availableTools: template.environment.availableTools ?? [],
         toolConfigs: template.environment.toolConfigs ?? {},
+        resourceLimits: {
+          memory: this.config.resourceLimits.memory,
+          cpu: this.config.resourceLimits.cpu,
+          networkBandwidth: 100 * 1024 * 1024 // 100MB
+        },
+        permissions: template.environment.permissions ?? [],
+        accessTokens: template.environment.accessTokens ?? {},
         ...overrides.environment,
       },
-      endpoints: [],
       lastHeartbeat: new Date(),
-      taskHistory: [],
+      lastActivity: new Date(),
+      currentTask: undefined,
       errorHistory: [],
-      childAgents: [],
-      collaborators: [],
     };
 
     this.agents.set(agentId, agent);
@@ -510,9 +562,13 @@ export class AgentManager extends EventEmitter {
 
     // Store in memory for persistence
     await this.memory.store(`agent:${agentId}`, agent, {
-      type: 'agent-state',
-      tags: [agent.type, 'active'],
-      partition: 'state',
+      ttl: 86400000, // 24 hours
+      namespace: 'agents',
+      agentId,
+      metadata: {
+        type: 'agent-state',
+        tags: [agent.type, 'active']
+      }
     });
 
     return agentId;
@@ -548,12 +604,14 @@ export class AgentManager extends EventEmitter {
       const errorMessage = error instanceof Error ? error.message : String(error);
       agent.status = AgentStatus.ERROR;
       this.addAgentError(agentId, {
+        id: `error-${Date.now()}`,
+        agentId,
+        name: 'InitializationError',
         timestamp: new Date(),
         type: 'INITIALIZATION_ERROR',
         message: errorMessage,
         context: { agentId },
         severity: 'critical',
-        resolved: false,
       });
 
       this.logger.error('Failed to start agent', { agentId, error });
@@ -623,7 +681,7 @@ export class AgentManager extends EventEmitter {
     }
 
     // Stop agent if running
-    if (agent.status !== 'terminated' && agent.status !== 'offline') {
+    if (agent.status !== AgentStatus.TERMINATED && agent.status !== AgentStatus.OFFLINE) {
       await this.stopAgent(agentId, 'removal');
     }
 
@@ -733,8 +791,8 @@ export class AgentManager extends EventEmitter {
       // Scale down
       const agentsToRemove = pool.availableAgents.slice(0, Math.abs(delta));
       for (const agentId of agentsToRemove) {
-        await this.removeAgent(agentId.id);
-        pool.availableAgents = pool.availableAgents.filter((a) => a.id !== agentId.id);
+        await this.removeAgent(agentId);
+        pool.availableAgents = pool.availableAgents.filter((a) => a !== agentId);
       }
     }
 
@@ -889,7 +947,6 @@ export class AgentManager extends EventEmitter {
         severity: health.components.responsiveness < 0.2 ? 'critical' : 'high',
         message: 'Agent is not responding to heartbeats',
         timestamp: new Date(),
-        resolved: false,
         recommendedAction: 'Restart agent or check network connectivity',
       });
     }
@@ -900,7 +957,6 @@ export class AgentManager extends EventEmitter {
         severity: health.components.performance < 0.3 ? 'high' : 'medium',
         message: 'Agent performance is below expected levels',
         timestamp: new Date(),
-        resolved: false,
         recommendedAction: 'Check resource allocation or agent configuration',
       });
     }
@@ -911,7 +967,6 @@ export class AgentManager extends EventEmitter {
         severity: health.components.resourceUsage < 0.2 ? 'critical' : 'high',
         message: 'Agent resource usage is critically high',
         timestamp: new Date(),
-        resolved: false,
         recommendedAction: 'Increase resource limits or reduce workload',
       });
     }
@@ -928,8 +983,8 @@ export class AgentManager extends EventEmitter {
 
       if (
         timeSinceHeartbeat > timeout &&
-        agent.status !== 'offline' &&
-        agent.status !== 'terminated'
+        agent.status !== AgentStatus.OFFLINE &&
+        agent.status !== AgentStatus.TERMINATED
       ) {
         this.logger.warn('Agent heartbeat timeout', { agentId, timeSinceHeartbeat });
 
@@ -940,8 +995,7 @@ export class AgentManager extends EventEmitter {
           message: 'Agent failed to send heartbeat within timeout period',
           context: { timeout, timeSinceHeartbeat },
           severity: 'high',
-          resolved: false,
-        });
+          });
 
         this.emit('agent:heartbeat-timeout', { agentId, timeSinceHeartbeat });
 
@@ -960,7 +1014,7 @@ export class AgentManager extends EventEmitter {
   private async spawnAgentProcess(agent: AgentState): Promise<ChildProcess> {
     const env: NodeJS.ProcessEnv = {
       ...process.env,
-      AGENT_ID: agent.id.id,
+      AGENT_ID: agent.id,
       AGENT_TYPE: agent.type,
       AGENT_NAME: agent.name,
       WORKING_DIR: agent.environment.workingDirectory,
@@ -983,11 +1037,11 @@ export class AgentManager extends EventEmitter {
 
     // Handle process events
     childProcess.on('exit', (code: number | null) => {
-      this.handleProcessExit(agent.id.id, code);
+      this.handleProcessExit(agent.id, code);
     });
 
     childProcess.on('error', (error: Error) => {
-      this.handleProcessError(agent.id.id, error);
+      this.handleProcessError(agent.id, error);
     });
 
     return childProcess;
@@ -1044,11 +1098,10 @@ export class AgentManager extends EventEmitter {
         message: `Agent process exited with code ${code}`,
         context: { exitCode: code },
         severity: 'high',
-        resolved: false,
       });
     }
 
-    agent.status = 'offline';
+    agent.status = AgentStatus.OFFLINE;
     this.emit('agent:process-exit', { agentId, exitCode: code });
   }
 
@@ -1082,9 +1135,9 @@ export class AgentManager extends EventEmitter {
     }
 
     // Update health if agent was previously unresponsive
-    if (agent.status === 'error') {
-      agent.status = 'idle';
-      this.updateAgentStatus(data.agentId, 'idle');
+    if (agent.status === AgentStatus.ERROR) {
+      agent.status = AgentStatus.IDLE;
+      this.updateAgentStatus(data.agentId, AgentStatus.IDLE);
     }
   }
 
@@ -1094,7 +1147,7 @@ export class AgentManager extends EventEmitter {
     const agent = this.agents.get(data.agentId);
     if (agent && data.error.severity === 'critical') {
       agent.status = AgentStatus.ERROR;
-      this.updateAgentStatus(data.agentId, 'error');
+      this.updateAgentStatus(data.agentId, AgentStatus.ERROR);
     }
   }
 
@@ -1288,7 +1341,7 @@ export class AgentManager extends EventEmitter {
 
     return {
       totalAgents: agents.length,
-      activeAgents: agents.filter((a) => a.status === 'idle' || a.status === 'busy').length,
+      activeAgents: agents.filter((a) => a.status === AgentStatus.IDLE || a.status === AgentStatus.BUSY).length,
       healthyAgents,
       pools: this.pools.size,
       clusters: this.clusters.size,

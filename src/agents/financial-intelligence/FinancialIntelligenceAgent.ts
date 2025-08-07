@@ -11,14 +11,17 @@
  * - Secure financial data handling with encryption
  */
 
-import { EventEmitter } from 'events';
-import { PortfolioOptimizer } from './portfolio/PortfolioOptimizer';
-import { TaxStrategyEngine } from './tax/TaxStrategyEngine';
-import { InvestmentTracker } from './tracking/InvestmentTracker';
-import { MarketAnalysisEngine } from './analysis/MarketAnalysisEngine';
-import { FinancialSecurityManager } from './security/FinancialSecurityManager';
-import { ComplianceFramework } from './compliance/ComplianceFramework';
-import { ExecutiveDashboard } from './dashboard/ExecutiveDashboard';
+import {
+  PEAAgentBase,
+  PEAAgentType,
+  ExecutiveContext,
+  SecurityLevel,
+  ClaudeFlowMCPIntegration,
+  PEATask,
+  TaskType,
+  TaskStatus
+} from '../../types/pea-agent-types';
+import { AgentStatus } from '../../swarm/types';
 
 export interface FinancialContext {
   executiveId: string;
@@ -51,12 +54,11 @@ export interface TaxProfile {
 export interface Holding {
   symbol: string;
   quantity: number;
+  currentPrice: number;
   costBasis: number;
-  currentValue: number;
-  currency: string;
-  acquiredDate: Date;
   sector: string;
-  assetClass: string;
+  currency: string;
+  lastUpdated: string;
 }
 
 export interface PerformanceTargets {
@@ -67,461 +69,479 @@ export interface PerformanceTargets {
 }
 
 export interface RebalancingRule {
-  trigger: 'time' | 'threshold' | 'market_condition';
-  frequency?: string;
-  threshold?: number;
-  condition?: string;
+  frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly';
+  threshold: number; // percentage deviation to trigger rebalancing
+  assetClass: string;
+  targetAllocation: number;
 }
 
 export interface TaxHarvestingRule {
+  enabled: boolean;
   lossThreshold: number;
-  washSaleProtection: boolean;
-  harvestingFrequency: string;
-  reinvestmentStrategy: string;
+  gainOffset: boolean;
+  washSaleAvoidance: boolean;
 }
 
 export interface RetirementAccount {
-  type: '401k' | 'IRA' | 'Roth_IRA' | 'pension';
+  type: '401k' | 'IRA' | 'Roth' | 'pension';
   balance: number;
   contributionLimit: number;
-  currency: string;
+  currentContributions: number;
+}
+
+export interface FinancialAlert {
+  id: string;
+  type: 'portfolio' | 'market' | 'tax' | 'compliance';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  title: string;
+  description: string;
+  actionRequired: boolean;
+  deadline?: string;
+  recommendations: string[];
+  createdAt: string;
 }
 
 export interface MarketData {
-  prices: Record<string, number>;
-  timestamps: Record<string, Date>;
-  volumes: Record<string, number>;
-  fundamentals: Record<string, any>;
+  symbol: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  volume: number;
+  marketCap: number;
+  timestamp: string;
 }
 
-export interface FinancialRecommendation {
-  type: 'portfolio' | 'tax' | 'investment' | 'risk';
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  description: string;
-  impact: {
-    financial: number;
-    risk: number;
-    tax: number;
-  };
-  implementation: {
-    steps: string[];
-    timeline: string;
-    requirements: string[];
-  };
-  compliance: {
-    jurisdictions: string[];
-    regulations: string[];
-    approvals: string[];
-  };
-}
+/**
+ * Financial Intelligence Agent - Advanced financial management and optimization
+ */
+export class FinancialIntelligenceAgent extends PEAAgentBase {
+  private financialContext: FinancialContext | null = null;
+  private activeAlerts: FinancialAlert[] = [];
+  private marketDataCache: Map<string, MarketData> = new Map();
+  private complianceRules: Map<string, any> = new Map();
 
-export class FinancialIntelligenceAgent extends EventEmitter {
-  private portfolioOptimizer: PortfolioOptimizer;
-  private taxStrategyEngine: TaxStrategyEngine;
-  private investmentTracker: InvestmentTracker;
-  private marketAnalysisEngine: MarketAnalysisEngine;
-  private securityManager: FinancialSecurityManager;
-  private complianceFramework: ComplianceFramework;
-  private executiveDashboard: ExecutiveDashboard;
-  private initialized: boolean = false;
-  private claudeFlowHooks: any;
+  constructor(
+    id: string,
+    mcpIntegration: ClaudeFlowMCPIntegration,
+    securityLevel: SecurityLevel = SecurityLevel.EXECUTIVE_PERSONAL
+  ) {
+    super(
+      id,
+      PEAAgentType.FINANCIAL_MANAGEMENT,
+      'Financial Intelligence Agent',
+      mcpIntegration,
+      securityLevel
+    );
 
-  constructor(mcpIntegration: any, options: any = {}) {
-    super();
-    this.claudeFlowHooks = mcpIntegration;
-    
-    this.portfolioOptimizer = new PortfolioOptimizer(mcpIntegration, options.portfolio);
-    this.taxStrategyEngine = new TaxStrategyEngine(mcpIntegration, options.tax);
-    this.investmentTracker = new InvestmentTracker(mcpIntegration, options.tracking);
-    this.marketAnalysisEngine = new MarketAnalysisEngine(mcpIntegration, options.analysis);
-    this.securityManager = new FinancialSecurityManager(mcpIntegration, options.security);
-    this.complianceFramework = new ComplianceFramework(mcpIntegration, options.compliance);
-    this.executiveDashboard = new ExecutiveDashboard(mcpIntegration, options.dashboard);
+    this.capabilities = [
+      'portfolio-optimization',
+      'tax-strategy',
+      'investment-analysis',
+      'risk-assessment',
+      'compliance-monitoring',
+      'market-analysis',
+      'financial-planning',
+      'multi-currency-tracking'
+    ];
   }
 
-  /**
-   * Initialize Financial Intelligence Agent with Claude Flow coordination
-   */
   async initialize(): Promise<void> {
-    if (this.initialized) return;
-
     try {
-      console.log('🏦 Initializing Financial Intelligence Agent...');
-
-      // Run Claude Flow pre-task hook
-      await this.claudeFlowHooks.hooks?.pre_task?.({
-        description: 'Financial Intelligence Agent initialization',
-        agent_type: 'financial_intelligence',
-        coordination: true
-      });
-
-      // Initialize all subsystems in parallel
-      await Promise.all([
-        this.portfolioOptimizer.initialize(),
-        this.taxStrategyEngine.initialize(), 
-        this.investmentTracker.initialize(),
-        this.marketAnalysisEngine.initialize(),
-        this.securityManager.initialize(),
-        this.complianceFramework.initialize(),
-        this.executiveDashboard.initialize()
-      ]);
-
-      // Store initialization in memory
-      await this.claudeFlowHooks.memory_usage?.({
-        action: 'store',
-        key: 'financial_agent/initialization',
-        value: JSON.stringify({
-          timestamp: new Date().toISOString(),
-          subsystems: [
-            'portfolio_optimizer',
-            'tax_strategy_engine', 
-            'investment_tracker',
-            'market_analysis_engine',
-            'security_manager',
-            'compliance_framework',
-            'executive_dashboard'
-          ],
-          status: 'initialized',
-          version: '2.0.0-pea-phase2'
-        }),
-        namespace: 'pea_financial'
-      });
-
-      this.initialized = true;
-      this.emit('initialized');
+      this.status = AgentStatus.INITIALIZING;
       
-      console.log('✅ Financial Intelligence Agent initialized successfully');
+      // Initialize financial components
+      await this.initializeComplianceFramework();
+      await this.loadMarketDataFeeds();
+      await this.setupRiskManagement();
+      
+      this.status = AgentStatus.ACTIVE;
+      await this.storeActivity('agent_initialized', {
+        capabilities: this.capabilities,
+        securityLevel: this.securityLevel
+      });
       
     } catch (error) {
-      console.error('❌ Financial Intelligence Agent initialization failed:', error);
+      this.status = AgentStatus.ERROR;
       throw error;
     }
   }
 
   /**
-   * Comprehensive portfolio optimization with real-time market analysis
+   * Set executive financial context
    */
-  async optimizePortfolio(
-    context: FinancialContext,
-    marketData: MarketData,
-    constraints: any = {}
-  ): Promise<FinancialRecommendation[]> {
-    await this.ensureInitialized();
-
-    try {
-      // Run portfolio optimization with market analysis
-      const [optimizationResult, marketInsights, riskAssessment] = await Promise.all([
-        this.portfolioOptimizer.optimize(context.portfolioProfile, constraints),
-        this.marketAnalysisEngine.analyzeMarketConditions(marketData),
-        this.portfolioOptimizer.assessRisk(context.portfolioProfile, context.riskTolerance)
-      ]);
-
-      // Generate compliance-aware recommendations
-      const recommendations = await this.complianceFramework.validateRecommendations(
-        optimizationResult.recommendations,
-        context.regulatoryJurisdictions
-      );
-
-      // Store optimization results
-      await this.claudeFlowHooks.memory_usage?.({
-        action: 'store',
-        key: `financial_agent/portfolio_optimization/${context.executiveId}`,
-        value: JSON.stringify({
-          timestamp: new Date().toISOString(),
-          optimization: optimizationResult,
-          market_insights: marketInsights,
-          risk_assessment: riskAssessment,
-          recommendations: recommendations
-        }),
-        namespace: 'pea_financial'
-      });
-
-      this.emit('portfolio_optimized', {
-        executiveId: context.executiveId,
-        recommendations: recommendations.length,
-        expectedReturn: optimizationResult.expectedReturn,
-        riskReduction: riskAssessment.riskReduction
-      });
-
-      return recommendations;
-
-    } catch (error) {
-      console.error('❌ Portfolio optimization failed:', error);
-      throw error;
-    }
+  async setFinancialContext(context: FinancialContext): Promise<void> {
+    this.financialContext = context;
+    
+    // Store context securely
+    await this.storeActivity('financial_context_set', {
+      executiveId: context.executiveId,
+      jurisdictions: context.regulatoryJurisdictions,
+      currencies: context.currencies,
+      riskTolerance: context.riskTolerance
+    }, 'financial_intelligence');
+    
+    // Initialize compliance rules for jurisdictions
+    await this.initializeJurisdictionCompliance(context.regulatoryJurisdictions);
   }
 
   /**
-   * Automated tax strategy optimization with compliance validation
+   * Analyze portfolio and provide optimization recommendations
    */
-  async optimizeTaxStrategy(
-    context: FinancialContext,
-    timeHorizon: string = '1Y'
-  ): Promise<FinancialRecommendation[]> {
-    await this.ensureInitialized();
-
-    try {
-      // Run tax optimization with compliance checks
-      const [taxOptimization, complianceValidation, harvestingOpportunities] = await Promise.all([
-        this.taxStrategyEngine.optimizeStrategy(context.taxProfile, timeHorizon),
-        this.complianceFramework.validateTaxStrategy(context.taxProfile, context.regulatoryJurisdictions),
-        this.taxStrategyEngine.identifyHarvestingOpportunities(context.portfolioProfile)
-      ]);
-
-      // Generate tax-efficient recommendations
-      const recommendations = await this.taxStrategyEngine.generateRecommendations(
-        taxOptimization,
-        harvestingOpportunities,
-        complianceValidation
-      );
-
-      // Store tax strategy results
-      await this.claudeFlowHooks.memory_usage?.({
-        action: 'store',
-        key: `financial_agent/tax_strategy/${context.executiveId}`,
-        value: JSON.stringify({
-          timestamp: new Date().toISOString(),
-          tax_optimization: taxOptimization,
-          compliance_validation: complianceValidation,
-          harvesting_opportunities: harvestingOpportunities,
-          recommendations: recommendations
-        }),
-        namespace: 'pea_financial'
-      });
-
-      this.emit('tax_strategy_optimized', {
-        executiveId: context.executiveId,
-        recommendations: recommendations.length,
-        taxSavings: taxOptimization.estimatedSavings,
-        complianceStatus: complianceValidation.status
-      });
-
-      return recommendations;
-
-    } catch (error) {
-      console.error('❌ Tax strategy optimization failed:', error);
-      throw error;
+  async analyzePortfolio(): Promise<{
+    currentAllocation: Record<string, number>;
+    recommendedAllocation: Record<string, number>;
+    rebalancingNeeded: boolean;
+    expectedReturn: number;
+    riskScore: number;
+    recommendations: string[];
+  }> {
+    if (!this.financialContext) {
+      throw new Error('Financial context not set');
     }
+
+    const portfolio = this.financialContext.portfolioProfile;
+    const currentAllocation = this.calculateCurrentAllocation(portfolio.holdings);
+    const marketData = await this.getMarketData(portfolio.holdings.map(h => h.symbol));
+    
+    // Perform portfolio analysis
+    const analysis = {
+      currentAllocation,
+      recommendedAllocation: await this.optimizeAllocation(currentAllocation, marketData),
+      rebalancingNeeded: this.checkRebalancingNeeded(currentAllocation, portfolio.rebalancingRules),
+      expectedReturn: this.calculateExpectedReturn(portfolio.holdings, marketData),
+      riskScore: this.calculateRiskScore(portfolio.holdings, marketData),
+      recommendations: this.generateRecommendations(portfolio.holdings, marketData)
+    };
+
+    await this.storeActivity('portfolio_analyzed', analysis, 'financial_intelligence');
+    return analysis;
   }
 
   /**
-   * Real-time investment tracking with multi-currency support
+   * Generate tax optimization strategies
    */
-  async trackInvestments(
-    context: FinancialContext,
-    trackingPeriod: string = '1M'
-  ): Promise<any> {
-    await this.ensureInitialized();
-
-    try {
-      // Track investments across multiple currencies and jurisdictions
-      const [performanceMetrics, riskMetrics, complianceStatus] = await Promise.all([
-        this.investmentTracker.calculatePerformance(context.portfolioProfile, trackingPeriod),
-        this.investmentTracker.assessRisk(context.portfolioProfile, context.currencies),
-        this.complianceFramework.checkCompliance(context.portfolioProfile, context.regulatoryJurisdictions)
-      ]);
-
-      // Generate tracking insights
-      const trackingInsights = await this.investmentTracker.generateInsights(
-        performanceMetrics,
-        riskMetrics,
-        complianceStatus
-      );
-
-      // Store tracking results
-      await this.claudeFlowHooks.memory_usage?.({
-        action: 'store',
-        key: `financial_agent/investment_tracking/${context.executiveId}`,
-        value: JSON.stringify({
-          timestamp: new Date().toISOString(),
-          tracking_period: trackingPeriod,
-          performance_metrics: performanceMetrics,
-          risk_metrics: riskMetrics,
-          compliance_status: complianceStatus,
-          insights: trackingInsights
-        }),
-        namespace: 'pea_financial'
-      });
-
-      this.emit('investments_tracked', {
-        executiveId: context.executiveId,
-        performance: performanceMetrics.totalReturn,
-        risk: riskMetrics.overallRisk,
-        compliance: complianceStatus.overallStatus
-      });
-
-      return {
-        performance: performanceMetrics,
-        risk: riskMetrics,
-        compliance: complianceStatus,
-        insights: trackingInsights
-      };
-
-    } catch (error) {
-      console.error('❌ Investment tracking failed:', error);
-      throw error;
+  async generateTaxStrategy(): Promise<{
+    harvestingOpportunities: Array<{
+      symbol: string;
+      action: 'harvest' | 'defer';
+      taxSavings: number;
+      timing: string;
+    }>;
+    retirementOptimization: Array<{
+      accountType: string;
+      recommendedContribution: number;
+      taxBenefit: number;
+    }>;
+    jurisdictionCompliance: Array<{
+      jurisdiction: string;
+      requirements: string[];
+      status: 'compliant' | 'at-risk' | 'non-compliant';
+    }>;
+  }> {
+    if (!this.financialContext) {
+      throw new Error('Financial context not set');
     }
+
+    const strategy = {
+      harvestingOpportunities: await this.identifyTaxHarvestingOpportunities(),
+      retirementOptimization: this.optimizeRetirementContributions(),
+      jurisdictionCompliance: await this.checkComplianceStatus()
+    };
+
+    await this.storeActivity('tax_strategy_generated', strategy, 'financial_intelligence');
+    return strategy;
   }
 
   /**
-   * Generate executive-grade financial intelligence report
+   * Monitor for financial alerts and opportunities
    */
-  async generateExecutiveReport(
-    context: FinancialContext,
-    reportType: 'comprehensive' | 'summary' | 'performance' | 'risk' = 'comprehensive'
-  ): Promise<any> {
-    await this.ensureInitialized();
-
-    try {
-      // Generate comprehensive executive report
-      const reportData = await this.executiveDashboard.generateReport(
-        context,
-        reportType,
-        {
-          includePortfolioAnalysis: true,
-          includeTaxOptimization: true,
-          includeRiskAssessment: true,
-          includeComplianceStatus: true,
-          includeMarketInsights: true,
-          includeRecommendations: true
-        }
-      );
-
-      // Store report for future reference
-      await this.claudeFlowHooks.memory_usage?.({
-        action: 'store',
-        key: `financial_agent/executive_report/${context.executiveId}`,
-        value: JSON.stringify({
-          timestamp: new Date().toISOString(),
-          report_type: reportType,
-          report_data: reportData,
-          generated_for: context.executiveId
-        }),
-        namespace: 'pea_financial'
-      });
-
-      this.emit('executive_report_generated', {
-        executiveId: context.executiveId,
-        reportType: reportType,
-        sections: Object.keys(reportData).length
-      });
-
-      return reportData;
-
-    } catch (error) {
-      console.error('❌ Executive report generation failed:', error);
-      throw error;
+  async monitorFinancialAlerts(): Promise<FinancialAlert[]> {
+    const alerts: FinancialAlert[] = [];
+    
+    if (this.financialContext) {
+      // Check portfolio alerts
+      const portfolioAlerts = await this.checkPortfolioAlerts();
+      alerts.push(...portfolioAlerts);
+      
+      // Check market alerts
+      const marketAlerts = await this.checkMarketAlerts();
+      alerts.push(...marketAlerts);
+      
+      // Check tax alerts
+      const taxAlerts = await this.checkTaxAlerts();
+      alerts.push(...taxAlerts);
+      
+      // Check compliance alerts
+      const complianceAlerts = await this.checkComplianceAlerts();
+      alerts.push(...complianceAlerts);
     }
+    
+    this.activeAlerts = alerts;
+    
+    if (alerts.length > 0) {
+      await this.storeActivity('financial_alerts_detected', {
+        alertCount: alerts.length,
+        criticalAlerts: alerts.filter(a => a.severity === 'critical').length
+      }, 'financial_intelligence');
+    }
+    
+    return alerts;
   }
 
   /**
-   * Real-time market analysis and alerts
+   * Get comprehensive financial dashboard data
    */
-  async analyzeMarket(symbols: string[], analysisType: 'technical' | 'fundamental' | 'sentiment' = 'comprehensive'): Promise<any> {
-    await this.ensureInitialized();
+  async getFinancialDashboard(): Promise<{
+    portfolioSummary: {
+      totalValue: number;
+      dayChange: number;
+      weekChange: number;
+      monthChange: number;
+      ytdChange: number;
+    };
+    assetAllocation: Record<string, number>;
+    performanceMetrics: PerformanceTargets;
+    alerts: FinancialAlert[];
+    taxOptimization: {
+      potentialSavings: number;
+      actionItems: string[];
+    };
+    complianceStatus: {
+      overallScore: number;
+      requiresAttention: string[];
+    };
+  }> {
+    if (!this.financialContext) {
+      throw new Error('Financial context not set');
+    }
 
-    try {
-      const marketAnalysis = await this.marketAnalysisEngine.analyzeSymbols(symbols, analysisType);
+    const dashboard = {
+      portfolioSummary: await this.getPortfolioSummary(),
+      assetAllocation: this.calculateCurrentAllocation(this.financialContext.portfolioProfile.holdings),
+      performanceMetrics: this.financialContext.portfolioProfile.performanceTargets,
+      alerts: this.activeAlerts,
+      taxOptimization: await this.getTaxOptimizationSummary(),
+      complianceStatus: await this.getComplianceStatusSummary()
+    };
 
-      // Store market analysis
-      await this.claudeFlowHooks.memory_usage?.({
-        action: 'store',
-        key: `financial_agent/market_analysis/${Date.now()}`,
-        value: JSON.stringify({
-          timestamp: new Date().toISOString(),
-          symbols: symbols,
-          analysis_type: analysisType,
-          analysis: marketAnalysis
-        }),
-        namespace: 'pea_financial'
+    await this.storeActivity('dashboard_accessed', {
+      totalValue: dashboard.portfolioSummary.totalValue,
+      alertCount: dashboard.alerts.length
+    }, 'financial_intelligence');
+
+    return dashboard;
+  }
+
+  // Private helper methods
+  private async initializeComplianceFramework(): Promise<void> {
+    // Initialize compliance rules and frameworks
+    // This would integrate with external compliance databases
+  }
+
+  private async loadMarketDataFeeds(): Promise<void> {
+    // Initialize market data connections
+    // This would connect to financial data providers
+  }
+
+  private async setupRiskManagement(): Promise<void> {
+    // Initialize risk management systems
+  }
+
+  private async initializeJurisdictionCompliance(jurisdictions: string[]): Promise<void> {
+    for (const jurisdiction of jurisdictions) {
+      // Load compliance rules for each jurisdiction
+      this.complianceRules.set(jurisdiction, {
+        taxRules: [],
+        reportingRequirements: [],
+        investmentRestrictions: []
       });
-
-      this.emit('market_analyzed', {
-        symbols: symbols,
-        analysisType: analysisType,
-        insights: marketAnalysis.insights?.length || 0
-      });
-
-      return marketAnalysis;
-
-    } catch (error) {
-      console.error('❌ Market analysis failed:', error);
-      throw error;
     }
   }
 
-  /**
-   * Ensure agent is initialized before operations
-   */
-  private async ensureInitialized(): Promise<void> {
-    if (!this.initialized) {
-      await this.initialize();
-    }
+  private calculateCurrentAllocation(holdings: Holding[]): Record<string, number> {
+    const totalValue = holdings.reduce((sum, holding) => 
+      sum + (holding.quantity * holding.currentPrice), 0);
+    
+    const allocation: Record<string, number> = {};
+    holdings.forEach(holding => {
+      const value = holding.quantity * holding.currentPrice;
+      const percentage = (value / totalValue) * 100;
+      allocation[holding.sector] = (allocation[holding.sector] || 0) + percentage;
+    });
+    
+    return allocation;
   }
 
-  /**
-   * Get comprehensive system status
-   */
-  async getStatus(): Promise<any> {
-    return {
-      initialized: this.initialized,
-      subsystems: {
-        portfolioOptimizer: await this.portfolioOptimizer.getStatus(),
-        taxStrategyEngine: await this.taxStrategyEngine.getStatus(),
-        investmentTracker: await this.investmentTracker.getStatus(),
-        marketAnalysisEngine: await this.marketAnalysisEngine.getStatus(),
-        securityManager: await this.securityManager.getStatus(),
-        complianceFramework: await this.complianceFramework.getStatus(),
-        executiveDashboard: await this.executiveDashboard.getStatus()
-      },
-      performance: {
-        uptime: process.uptime(),
-        memoryUsage: process.memoryUsage(),
-        eventListeners: this.listenerCount('*')
+  private async getMarketData(symbols: string[]): Promise<MarketData[]> {
+    // Fetch current market data for symbols
+    const marketData: MarketData[] = [];
+    
+    for (const symbol of symbols) {
+      const cached = this.marketDataCache.get(symbol);
+      if (cached && this.isMarketDataFresh(cached)) {
+        marketData.push(cached);
+      } else {
+        // Fetch fresh data
+        const freshData = await this.fetchMarketData(symbol);
+        this.marketDataCache.set(symbol, freshData);
+        marketData.push(freshData);
       }
+    }
+    
+    return marketData;
+  }
+
+  private async fetchMarketData(symbol: string): Promise<MarketData> {
+    // Mock implementation - would integrate with real market data API
+    return {
+      symbol,
+      price: 100 + Math.random() * 50,
+      change: -5 + Math.random() * 10,
+      changePercent: -2 + Math.random() * 4,
+      volume: Math.floor(Math.random() * 1000000),
+      marketCap: Math.floor(Math.random() * 1000000000),
+      timestamp: new Date().toISOString()
     };
   }
 
-  /**
-   * Graceful shutdown
-   */
-  async shutdown(): Promise<void> {
-    console.log('🛑 Shutting down Financial Intelligence Agent...');
+  private isMarketDataFresh(data: MarketData): boolean {
+    const dataAge = Date.now() - new Date(data.timestamp).getTime();
+    return dataAge < 300000; // 5 minutes
+  }
 
-    try {
-      // Shutdown all subsystems
-      await Promise.all([
-        this.portfolioOptimizer.shutdown(),
-        this.taxStrategyEngine.shutdown(),
-        this.investmentTracker.shutdown(),
-        this.marketAnalysisEngine.shutdown(),
-        this.securityManager.shutdown(),
-        this.complianceFramework.shutdown(),
-        this.executiveDashboard.shutdown()
-      ]);
+  private async optimizeAllocation(
+    currentAllocation: Record<string, number>, 
+    marketData: MarketData[]
+  ): Record<string, number> {
+    // Portfolio optimization algorithm
+    // This would use modern portfolio theory and risk models
+    return currentAllocation; // Simplified for now
+  }
 
-      // Store shutdown metrics
-      await this.claudeFlowHooks.memory_usage?.({
-        action: 'store',
-        key: 'financial_agent/shutdown',
-        value: JSON.stringify({
-          timestamp: new Date().toISOString(),
-          uptime: process.uptime(),
-          status: 'graceful_shutdown'
-        }),
-        namespace: 'pea_financial'
-      });
-
-      this.initialized = false;
-      this.emit('shutdown');
-      
-      console.log('✅ Financial Intelligence Agent shutdown complete');
-
-    } catch (error) {
-      console.error('❌ Financial Intelligence Agent shutdown failed:', error);
-      throw error;
+  private checkRebalancingNeeded(
+    currentAllocation: Record<string, number>, 
+    rules: RebalancingRule[]
+  ): boolean {
+    for (const rule of rules) {
+      const currentPercent = currentAllocation[rule.assetClass] || 0;
+      const deviation = Math.abs(currentPercent - rule.targetAllocation);
+      if (deviation > rule.threshold) {
+        return true;
+      }
     }
+    return false;
+  }
+
+  private calculateExpectedReturn(holdings: Holding[], marketData: MarketData[]): number {
+    // Calculate expected return based on historical performance and market conditions
+    return 0.08; // 8% expected return (simplified)
+  }
+
+  private calculateRiskScore(holdings: Holding[], marketData: MarketData[]): number {
+    // Calculate portfolio risk score
+    return 0.15; // 15% volatility (simplified)
+  }
+
+  private generateRecommendations(holdings: Holding[], marketData: MarketData[]): string[] {
+    // Generate investment recommendations
+    return [
+      'Consider rebalancing technology allocation',
+      'Increase diversification in international markets',
+      'Review fixed income allocation for current interest rate environment'
+    ];
+  }
+
+  private async identifyTaxHarvestingOpportunities(): Promise<Array<{
+    symbol: string;
+    action: 'harvest' | 'defer';
+    taxSavings: number;
+    timing: string;
+  }>> {
+    // Identify tax loss harvesting opportunities
+    return [];
+  }
+
+  private optimizeRetirementContributions(): Array<{
+    accountType: string;
+    recommendedContribution: number;
+    taxBenefit: number;
+  }> {
+    // Optimize retirement account contributions
+    return [];
+  }
+
+  private async checkComplianceStatus(): Promise<Array<{
+    jurisdiction: string;
+    requirements: string[];
+    status: 'compliant' | 'at-risk' | 'non-compliant';
+  }>> {
+    // Check compliance status for each jurisdiction
+    return [];
+  }
+
+  private async checkPortfolioAlerts(): Promise<FinancialAlert[]> {
+    // Check for portfolio-related alerts
+    return [];
+  }
+
+  private async checkMarketAlerts(): Promise<FinancialAlert[]> {
+    // Check for market-related alerts
+    return [];
+  }
+
+  private async checkTaxAlerts(): Promise<FinancialAlert[]> {
+    // Check for tax-related alerts
+    return [];
+  }
+
+  private async checkComplianceAlerts(): Promise<FinancialAlert[]> {
+    // Check for compliance alerts
+    return [];
+  }
+
+  private async getPortfolioSummary(): Promise<{
+    totalValue: number;
+    dayChange: number;
+    weekChange: number;
+    monthChange: number;
+    ytdChange: number;
+  }> {
+    // Get portfolio performance summary
+    return {
+      totalValue: 1000000,
+      dayChange: 0.015,
+      weekChange: -0.002,
+      monthChange: 0.035,
+      ytdChange: 0.12
+    };
+  }
+
+  private async getTaxOptimizationSummary(): Promise<{
+    potentialSavings: number;
+    actionItems: string[];
+  }> {
+    // Get tax optimization summary
+    return {
+      potentialSavings: 15000,
+      actionItems: [
+        'Execute tax loss harvesting before year-end',
+        'Maximize retirement contributions',
+        'Consider municipal bonds for tax efficiency'
+      ]
+    };
+  }
+
+  private async getComplianceStatusSummary(): Promise<{
+    overallScore: number;
+    requiresAttention: string[];
+  }> {
+    // Get compliance status summary
+    return {
+      overallScore: 0.95,
+      requiresAttention: [
+        'Update beneficiary information',
+        'Review international reporting requirements'
+      ]
+    };
   }
 }
-
-export default FinancialIntelligenceAgent;

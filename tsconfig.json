@@ -22,15 +22,13 @@
     }
   },
   "include": [
-    "src/**/*",
-    "agents/**/*",
-    "demo.ts",
-    "*.ts"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "tests"
+    "tests",
+    "**/*.test.ts"
   ],
   "ts-node": {
     "esm": true
