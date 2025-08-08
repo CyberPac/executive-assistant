@@ -9,6 +9,7 @@
 import {
   PEAAgentBase,
   PEAAgentType,
+  AgentStatus,
   ExecutiveContext,
   PEATask,
   TaskStatus,
@@ -131,14 +132,14 @@ export class DocumentIntelligenceAgent extends PEAAgentBase {
         'pea_foundation'
       );
 
-      this.status = 'active';
+      this.status = AgentStatus.ACTIVE;
       this.performanceMetrics.responseTimeMs = Date.now() - startTime;
 
       console.log(`✅ Document Intelligence Agent initialized (${Date.now() - startTime}ms)`);
       console.log(`🎯 Ready for multi-modal document processing and analysis`);
 
     } catch (error) {
-      this.status = 'failed';
+      this.status = AgentStatus.ERROR;
       console.error('❌ Document Intelligence Agent initialization failed:', error);
       throw error;
     }
@@ -242,7 +243,7 @@ export class DocumentIntelligenceAgent extends PEAAgentBase {
           executiveContext: {
             focus: comparisonCriteria,
             decisionPoints: ['comparative_evaluation'],
-            stakeholders: context.stakeholders
+            stakeholders: context.stakeholders.map(s => s.name)
           },
           outputFormat: 'detailed_report'
         };

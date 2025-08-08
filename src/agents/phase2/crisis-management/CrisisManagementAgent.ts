@@ -24,8 +24,9 @@ import {
   ClaudeFlowMCPIntegration,
   PEATask,
   TaskType,
-  TaskStatus
-} from '../../types/pea-agent-types';
+  TaskStatus,
+  AgentStatus
+} from '../../../types/pea-agent-types';
 
 export interface CrisisEvent {
   id: string;
@@ -151,7 +152,7 @@ export class CrisisManagementAgent extends PEAAgentBase {
     console.log(`🚨 Initializing Crisis Management Agent [${this.id}]...`);
 
     try {
-      this.status = 'initializing';
+      this.status = AgentStatus.INITIALIZING;
 
       // Initialize Claude Flow neural patterns for crisis management
       await this.mcpIntegration.neuralTrain(
@@ -195,11 +196,11 @@ export class CrisisManagementAgent extends PEAAgentBase {
         }
       );
 
-      this.status = 'active';
+      this.status = AgentStatus.ACTIVE;
       console.log(`✅ Crisis Management Agent initialized successfully (${Date.now() - startTime}ms)`);
 
     } catch (error) {
-      this.status = 'error';
+      this.status = AgentStatus.ERROR;
       console.error(`❌ Crisis Management Agent initialization failed:`, error);
       throw error;
     }

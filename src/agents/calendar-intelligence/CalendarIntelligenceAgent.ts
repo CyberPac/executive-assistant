@@ -9,6 +9,7 @@
 import {
   PEAAgentBase,
   PEAAgentType,
+  AgentStatus,
   ExecutiveContext,
   PEATask,
   TaskStatus,
@@ -24,6 +25,7 @@ export interface SchedulingOptimization {
   conflictsResolved: number;
   travelTimeReduced: number;
   recommendations: string[];
+  culturalConsiderations?: string[];
 }
 
 export interface CalendarEvent {
@@ -114,14 +116,14 @@ export class CalendarIntelligenceAgent extends PEAAgentBase {
         'pea_foundation'
       );
 
-      this.status = 'active';
+      this.status = AgentStatus.ACTIVE;
       this.performanceMetrics.responseTimeMs = Date.now() - startTime;
 
       console.log(`✅ Calendar Intelligence Agent initialized (${Date.now() - startTime}ms)`);
       console.log(`🌍 Ready with ${this.culturalProtocols.size} cultural protocols`);
 
     } catch (error) {
-      this.status = 'failed';
+      this.status = AgentStatus.ERROR;
       console.error('❌ Calendar Intelligence Agent initialization failed:', error);
       throw error;
     }
@@ -174,7 +176,7 @@ export class CalendarIntelligenceAgent extends PEAAgentBase {
           originalScheduleLength: currentSchedule.length,
           efficiencyGain: culturalOptimization.efficiencyGain,
           conflictsResolved: culturalOptimization.conflictsResolved,
-          culturalConsiderations: culturalOptimization.culturalConsiderations?.length || 0,
+          culturalConsiderations: (culturalOptimization as any).culturalConsiderations?.length || 0,
           executionTime: Date.now() - startTime,
           timestamp: new Date().toISOString()
         }),
@@ -194,7 +196,7 @@ export class CalendarIntelligenceAgent extends PEAAgentBase {
         success: true,
         optimization: culturalOptimization,
         predictiveInsights,
-        culturalConsiderations: culturalOptimization.culturalConsiderations || [],
+        culturalConsiderations: (culturalOptimization as any).culturalConsiderations || [],
         executionTime: Date.now() - startTime
       };
 
@@ -328,7 +330,7 @@ export class CalendarIntelligenceAgent extends PEAAgentBase {
 
     return {
       ...optimization,
-      culturalConsiderations,
+      culturalConsiderations: culturalConsiderations,
       efficiencyGain: optimization.efficiencyGain * 1.1 // Cultural optimization boost
     };
   }

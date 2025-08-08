@@ -412,7 +412,7 @@ export class FinancialIntelligenceAgent extends PEAAgentBase {
   private async optimizeAllocation(
     currentAllocation: Record<string, number>, 
     marketData: MarketData[]
-  ): Record<string, number> {
+  ): Promise<Record<string, number>> {
     // Portfolio optimization algorithm
     // This would use modern portfolio theory and risk models
     return currentAllocation; // Simplified for now

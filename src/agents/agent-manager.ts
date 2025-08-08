@@ -16,9 +16,42 @@ import {
   AgentEnvironment,
   AgentMetrics,
   AgentError,
+  AgentHealth,
+  AgentWorkload
 } from '../swarm/types';
 import type { DistributedMemorySystem } from '../memory/distributed-memory';
 import { generateId } from '../utils/helpers';
+
+/**
+ * Custom Error class that implements AgentError interface
+ */
+class AgentErrorImpl extends Error implements AgentError {
+  public id: string;
+  public agentId: AgentId;
+  public type: 'INITIALIZATION_ERROR' | 'EXECUTION_ERROR' | 'COMMUNICATION_ERROR' | 'RESOURCE_ERROR';
+  public timestamp: Date;
+  public context?: Record<string, any>;
+  public severity: 'low' | 'medium' | 'high' | 'critical';
+
+  constructor(
+    id: string,
+    agentId: AgentId,
+    name: string,
+    message: string,
+    type: 'INITIALIZATION_ERROR' | 'EXECUTION_ERROR' | 'COMMUNICATION_ERROR' | 'RESOURCE_ERROR',
+    severity: 'low' | 'medium' | 'high' | 'critical',
+    context?: Record<string, any>
+  ) {
+    super(message);
+    this.name = name;
+    this.id = id;
+    this.agentId = agentId;
+    this.type = type;
+    this.timestamp = new Date();
+    this.severity = severity;
+    this.context = context;
+  }
+}
 
 export interface AgentManagerConfig {
   maxAgents: number;
@@ -94,20 +127,6 @@ export interface ScalingRule {
   action: 'scale-up' | 'scale-down';
   amount: number;
   conditions?: string[];
-}
-
-export interface AgentHealth {
-  agentId: string;
-  overall: number; // 0-1 health score
-  components: {
-    responsiveness: number;
-    performance: number;
-    reliability: number;
-    resourceUsage: number;
-  };
-  issues: HealthIssue[];
-  lastCheck: Date;
-  trend: 'improving' | 'stable' | 'degrading';
 }
 
 export interface HealthIssue {
@@ -262,7 +281,7 @@ export class AgentManager extends EventEmitter {
         heartbeatInterval: 10000,
         permissions: ['web-access', 'file-read'],
         trustedAgents: [],
-        expertise: { research: 0.9, analysis: 0.8, documentation: 0.7 },
+        expertise: ['research', 'analysis', 'documentation'],
         preferences: { verbose: true, detailed: true },
       },
       environment: {
@@ -284,6 +303,10 @@ export class AgentManager extends EventEmitter {
       name: 'Developer Agent',
       type: AgentType.CODER,
       capabilities: {
+        skills: ['programming', 'debugging', 'architecture'],
+        maxConcurrentTasks: 3,
+        supportedTaskTypes: ['development', 'testing', 'review'],
+        specializations: ['typescript', 'javascript', 'python'],
         codeGeneration: true,
         codeReview: true,
         testing: true,
@@ -298,7 +321,6 @@ export class AgentManager extends EventEmitter {
         frameworks: ['deno', 'node', 'react', 'svelte'],
         domains: ['web-development', 'backend', 'api-design'],
         tools: ['git', 'editor', 'debugger', 'linter', 'formatter'],
-        maxConcurrentTasks: 3,
         maxMemoryUsage: 512 * 1024 * 1024,
         maxExecutionTime: 1200000,
         reliability: 0.95,
@@ -316,7 +338,7 @@ export class AgentManager extends EventEmitter {
         heartbeatInterval: 15000,
         permissions: ['file-read', 'file-write', 'terminal-access', 'git-access'],
         trustedAgents: [],
-        expertise: { coding: 0.95, testing: 0.8, debugging: 0.9 },
+        expertise: ['coding', 'testing', 'debugging'],
         preferences: { codeStyle: 'functional', testFramework: 'deno-test' },
       },
       environment: {
@@ -343,6 +365,10 @@ export class AgentManager extends EventEmitter {
       name: 'Analyzer Agent',
       type: AgentType.ANALYST,
       capabilities: {
+        skills: ['data-analysis', 'statistics', 'visualization'],
+        maxConcurrentTasks: 4,
+        supportedTaskTypes: ['analysis', 'reporting', 'visualization'],
+        specializations: ['statistical-analysis', 'data-mining', 'reporting'],
         codeGeneration: false,
         codeReview: true,
         testing: false,
@@ -357,7 +383,6 @@ export class AgentManager extends EventEmitter {
         frameworks: ['pandas', 'numpy', 'matplotlib'],
         domains: ['data-analysis', 'statistics', 'visualization'],
         tools: ['data-processor', 'chart-generator', 'statistical-analyzer'],
-        maxConcurrentTasks: 4,
         maxMemoryUsage: 1024 * 1024 * 1024,
         maxExecutionTime: 900000,
         reliability: 0.9,
@@ -375,7 +400,7 @@ export class AgentManager extends EventEmitter {
         heartbeatInterval: 12000,
         permissions: ['file-read', 'data-access'],
         trustedAgents: [],
-        expertise: { analysis: 0.95, visualization: 0.8, statistics: 0.85 },
+        expertise: ['analysis', 'visualization', 'statistics'],
         preferences: { outputFormat: 'detailed', includeCharts: true },
       },
       environment: {
@@ -464,6 +489,7 @@ export class AgentManager extends EventEmitter {
         ...template.capabilities
       },
       metrics: this.createDefaultMetrics(),
+      performance: this.createDefaultMetrics(),
       workload: {
         currentTasks: 0,
         maxTasks: template.config.maxConcurrentTasks ?? 3,
@@ -474,6 +500,24 @@ export class AgentManager extends EventEmitter {
         lastCheck: new Date(),
         issues: [],
         overall: 1.0
+      },
+      environment: {
+        resourceLimits: {
+          memory: this.config.resourceLimits.memory,
+          cpu: this.config.resourceLimits.cpu,
+          networkBandwidth: 100 * 1024 * 1024
+        },
+        permissions: template.environment?.permissions ?? [],
+        accessTokens: template.environment?.accessTokens ?? {},
+        runtime: template.environment?.runtime ?? this.config.environmentDefaults.runtime,
+        version: template.environment?.version ?? '1.40.0',
+        workingDirectory: template.environment?.workingDirectory ?? this.config.environmentDefaults.workingDirectory,
+        tempDirectory: template.environment?.tempDirectory ?? this.config.environmentDefaults.tempDirectory,
+        logDirectory: template.environment?.logDirectory ?? this.config.environmentDefaults.logDirectory,
+        apiEndpoints: template.environment?.apiEndpoints ?? {},
+        credentials: template.environment?.credentials ?? {},
+        availableTools: template.environment?.availableTools ?? [],
+        toolConfigs: template.environment?.toolConfigs ?? {}
       },
       config: {
         id: agentId,
@@ -519,28 +563,6 @@ export class AgentManager extends EventEmitter {
         expertise: [],
         preferences: template.config.preferences ?? {},
         ...overrides.config,
-      },
-      environment: {
-        runtime: template.environment.runtime ?? this.config.environmentDefaults.runtime,
-        version: template.environment.version ?? '1.40.0',
-        workingDirectory:
-          template.environment.workingDirectory ?? this.config.environmentDefaults.workingDirectory,
-        tempDirectory:
-          template.environment.tempDirectory ?? this.config.environmentDefaults.tempDirectory,
-        logDirectory:
-          template.environment.logDirectory ?? this.config.environmentDefaults.logDirectory,
-        apiEndpoints: template.environment.apiEndpoints ?? {},
-        credentials: template.environment.credentials ?? {},
-        availableTools: template.environment.availableTools ?? [],
-        toolConfigs: template.environment.toolConfigs ?? {},
-        resourceLimits: {
-          memory: this.config.resourceLimits.memory,
-          cpu: this.config.resourceLimits.cpu,
-          networkBandwidth: 100 * 1024 * 1024 // 100MB
-        },
-        permissions: template.environment.permissions ?? [],
-        accessTokens: template.environment.accessTokens ?? {},
-        ...overrides.environment,
       },
       lastHeartbeat: new Date(),
       lastActivity: new Date(),
@@ -603,19 +625,25 @@ export class AgentManager extends EventEmitter {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       agent.status = AgentStatus.ERROR;
-      this.addAgentError(agentId, {
-        id: `error-${Date.now()}`,
+      const agentError = new AgentErrorImpl(
+        `error-${Date.now()}`,
         agentId,
-        name: 'InitializationError',
-        timestamp: new Date(),
-        type: 'INITIALIZATION_ERROR',
-        message: errorMessage,
-        context: { agentId },
-        severity: 'critical',
-      });
+        'InitializationError',
+        errorMessage,
+        'INITIALIZATION_ERROR',
+        'critical',
+        { agentId }
+      );
+      
+      // Copy stack trace if available
+      if (error instanceof Error && error.stack) {
+        agentError.stack = error.stack;
+      }
+      
+      this.addAgentError(agentId, agentError);
 
-      this.logger.error('Failed to start agent', { agentId, error });
-      throw error;
+      this.logger.error('Failed to start agent', error, { agentId });
+      throw agentError;
     }
   }
 
@@ -658,7 +686,7 @@ export class AgentManager extends EventEmitter {
       this.logger.info('Stopped agent', { agentId, reason });
       this.emit('agent:stopped', { agent, reason });
     } catch (error) {
-      this.logger.error('Failed to stop agent gracefully', { agentId, error });
+      this.logger.error('Failed to stop agent gracefully', error, { agentId });
       // Force cleanup
       this.processes.delete(agentId);
       agent.status = AgentStatus.TERMINATED;
@@ -743,12 +771,7 @@ export class AgentManager extends EventEmitter {
         name: `${name}-${i + 1}`,
       });
       await this.startAgent(agentId);
-      pool.availableAgents.push({
-        id: agentId,
-        swarmId: 'default',
-        type: template.type,
-        instance: i + 1,
-      });
+      pool.availableAgents.push(agentId);
       pool.currentSize++;
     }
 
@@ -780,12 +803,7 @@ export class AgentManager extends EventEmitter {
           name: `${pool.name}-${currentSize + i + 1}`,
         });
         await this.startAgent(agentId);
-        pool.availableAgents.push({
-          id: agentId,
-          swarmId: 'default',
-          type: pool.type,
-          instance: currentSize + i + 1,
-        });
+        pool.availableAgents.push(agentId);
       }
     } else if (delta < 0) {
       // Scale down
@@ -863,7 +881,7 @@ export class AgentManager extends EventEmitter {
       health.lastCheck = now;
 
       // Update agent health
-      agent.health = overall;
+      agent.health = health;
 
       // Check for issues
       this.detectHealthIssues(agentId, health);
@@ -874,7 +892,7 @@ export class AgentManager extends EventEmitter {
         await this.restartAgent(agentId, 'health_critical');
       }
     } catch (error) {
-      this.logger.error('Health check failed', { agentId, error });
+      this.logger.error('Health check failed', error, { agentId });
       health.overall = 0;
       health.lastCheck = now;
     }
@@ -947,6 +965,7 @@ export class AgentManager extends EventEmitter {
         severity: health.components.responsiveness < 0.2 ? 'critical' : 'high',
         message: 'Agent is not responding to heartbeats',
         timestamp: new Date(),
+        resolved: false,
         recommendedAction: 'Restart agent or check network connectivity',
       });
     }
@@ -957,6 +976,7 @@ export class AgentManager extends EventEmitter {
         severity: health.components.performance < 0.3 ? 'high' : 'medium',
         message: 'Agent performance is below expected levels',
         timestamp: new Date(),
+        resolved: false,
         recommendedAction: 'Check resource allocation or agent configuration',
       });
     }
@@ -967,11 +987,12 @@ export class AgentManager extends EventEmitter {
         severity: health.components.resourceUsage < 0.2 ? 'critical' : 'high',
         message: 'Agent resource usage is critically high',
         timestamp: new Date(),
+        resolved: false,
         recommendedAction: 'Increase resource limits or reduce workload',
       });
     }
 
-    health.issues = issues;
+    health.issues = issues.map(issue => issue.type);
   }
 
   private checkHeartbeats(): void {
@@ -989,20 +1010,23 @@ export class AgentManager extends EventEmitter {
         this.logger.warn('Agent heartbeat timeout', { agentId, timeSinceHeartbeat });
 
         agent.status = AgentStatus.ERROR;
-        this.addAgentError(agentId, {
-          timestamp: new Date(),
-          type: 'heartbeat_timeout',
-          message: 'Agent failed to send heartbeat within timeout period',
-          context: { timeout, timeSinceHeartbeat },
-          severity: 'high',
-          });
+        const heartbeatError = new AgentErrorImpl(
+          `heartbeat_timeout_${agentId}_${Date.now()}`,
+          agentId,
+          'HeartbeatTimeoutError',
+          'Agent failed to send heartbeat within timeout period',
+          'COMMUNICATION_ERROR',
+          'high',
+          { timeout, timeSinceHeartbeat }
+        );
+        this.addAgentError(agentId, heartbeatError);
 
         this.emit('agent:heartbeat-timeout', { agentId, timeSinceHeartbeat });
 
         // Auto-restart if enabled
         if (this.config.autoRestart) {
           this.restartAgent(agentId, 'heartbeat_timeout').catch((error) => {
-            this.logger.error('Failed to auto-restart agent', { agentId, error });
+            this.logger.error('Failed to auto-restart agent', error, { agentId });
           });
         }
       }
@@ -1092,13 +1116,16 @@ export class AgentManager extends EventEmitter {
     this.logger.info('Agent process exited', { agentId, exitCode: code });
 
     if (code !== 0 && code !== null) {
-      this.addAgentError(agentId, {
-        timestamp: new Date(),
-        type: 'process_exit',
-        message: `Agent process exited with code ${code}`,
-        context: { exitCode: code },
-        severity: 'high',
-      });
+      const exitError = new AgentErrorImpl(
+        `process_exit_${agentId}_${Date.now()}`,
+        agentId,
+        'ProcessExitError',
+        `Agent process exited with code ${code}`,
+        'EXECUTION_ERROR',
+        'high',
+        { exitCode: code }
+      );
+      this.addAgentError(agentId, exitError);
     }
 
     agent.status = AgentStatus.OFFLINE;
@@ -1106,16 +1133,24 @@ export class AgentManager extends EventEmitter {
   }
 
   private handleProcessError(agentId: string, error: Error): void {
-    this.logger.error('Agent process error', { agentId, error });
+    this.logger.error('Agent process error', error, { agentId });
 
-    this.addAgentError(agentId, {
-      timestamp: new Date(),
-      type: 'process_error',
-      message: error instanceof Error ? error.message : String(error),
-      context: { error: error.toString() },
-      severity: 'critical',
-      resolved: false,
-    });
+    const agentError = new AgentErrorImpl(
+      `error-${Date.now()}`,
+      agentId,
+      'ProcessError',
+      error instanceof Error ? error.message : String(error),
+      'EXECUTION_ERROR',
+      'critical',
+      { error: error.toString() }
+    );
+    
+    // Copy stack trace if available
+    if (error instanceof Error && error.stack) {
+      agentError.stack = error.stack;
+    }
+    
+    this.addAgentError(agentId, agentError);
 
     this.emit('agent:process-error', { agentId, error });
   }
@@ -1165,7 +1200,8 @@ export class AgentManager extends EventEmitter {
     const agent = this.agents.get(agentId);
     if (!agent) return;
 
-    agent.workload = Math.max(0, agent.workload + delta);
+    agent.workload.currentTasks = Math.max(0, agent.workload.currentTasks + delta);
+    agent.workload.utilizationRate = agent.workload.currentTasks / agent.workload.maxTasks;
   }
 
   private updateAgentMetrics(agentId: string, metrics: AgentMetrics): void {
@@ -1209,25 +1245,19 @@ export class AgentManager extends EventEmitter {
     return {
       tasksCompleted: 0,
       tasksFailed: 0,
+      averageResponseTime: 0,
       averageExecutionTime: 0,
       successRate: 1.0,
-      cpuUsage: 0,
-      memoryUsage: 0,
-      diskUsage: 0,
-      networkUsage: 0,
-      codeQuality: 0.8,
-      testCoverage: 0,
-      bugRate: 0,
-      userSatisfaction: 0.8,
-      totalUptime: 0,
-      lastActivity: new Date(),
-      responseTime: 0,
+      errorRate: 0,
+      lastUpdated: new Date()
     };
   }
 
   private createDefaultHealth(agentId: string): AgentHealth {
     return {
-      agentId,
+      status: 'healthy',
+      lastCheck: new Date(),
+      issues: [],
       overall: 1.0,
       components: {
         responsiveness: 1.0,
@@ -1235,23 +1265,21 @@ export class AgentManager extends EventEmitter {
         reliability: 1.0,
         resourceUsage: 1.0,
       },
-      issues: [],
-      lastCheck: new Date(),
-      trend: 'stable',
+      trend: 'stable'
     };
   }
 
   private removeAgentFromPoolsAndClusters(agentId: string): void {
     // Remove from pools
     for (const pool of Array.from(this.pools.values())) {
-      pool.availableAgents = pool.availableAgents.filter((a) => a.id !== agentId);
-      pool.busyAgents = pool.busyAgents.filter((a) => a.id !== agentId);
+      pool.availableAgents = pool.availableAgents.filter((a) => a !== agentId);
+      pool.busyAgents = pool.busyAgents.filter((a) => a !== agentId);
       pool.currentSize = pool.availableAgents.length + pool.busyAgents.length;
     }
 
     // Remove from clusters
     for (const cluster of Array.from(this.clusters.values())) {
-      cluster.agents = cluster.agents.filter((a) => a.id !== agentId);
+      cluster.agents = cluster.agents.filter((a) => a !== agentId);
     }
   }
 

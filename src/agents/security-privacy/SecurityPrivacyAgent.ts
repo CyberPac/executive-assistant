@@ -13,20 +13,11 @@ import {
   PEATask,
   TaskStatus,
   ClaudeFlowMCPIntegration,
-  PerformanceMetrics
+  PerformanceMetrics,
+  SecurityLevel,
+  AgentStatus,
+  SecurityThreat
 } from '../../types/pea-agent-types';
-
-export interface SecurityThreat {
-  id: string;
-  type: 'unauthorized_access' | 'data_breach' | 'privilege_escalation' | 'malware' | 'phishing' | 'insider_threat';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  source: string;
-  target: string;
-  description: string;
-  detectedAt: string;
-  mitigated: boolean;
-  impact: string[];
-}
 
 export interface PrivacyClassification {
   dataId: string;
@@ -132,14 +123,14 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
         'pea_foundation'
       );
 
-      this.status = 'active';
+      this.status = AgentStatus.ACTIVE;
       this.performanceMetrics.responseTimeMs = Date.now() - startTime;
 
       console.log(`✅ Security Privacy Agent initialized (${Date.now() - startTime}ms)`);
       console.log(`🔒 Zero-trust monitoring active, quantum-ready encryption enabled`);
 
     } catch (error) {
-      this.status = 'failed';
+      this.status = AgentStatus.ERROR;
       console.error('❌ Security Privacy Agent initialization failed:', error);
       throw error;
     }
@@ -307,7 +298,6 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
       // Store incident details
       this.threatDatabase.set(incident.id, {
         ...incident,
-        mitigated: containmentResult.success,
         responseImplemented: true
       });
 
@@ -470,7 +460,7 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
     context: ExecutiveContext
   ): Promise<any> {
     return {
-      dataAtRisk: incident.impact,
+      dataAtRisk: incident.affectedSystems,
       stakeholdersAffected: context.stakeholders.length,
       businessImpact: incident.severity === 'critical' ? 'high' : 'medium',
       recoveryTime: '4 hours'

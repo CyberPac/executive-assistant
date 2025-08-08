@@ -21,7 +21,7 @@ import {
   ExecutiveContext,
   ClaudeFlowMCPIntegration,
   SecurityLevel
-} from '../../types/pea-agent-types';
+} from '../../../types/pea-agent-types';
 
 export interface MonitoringSource {
   id: string;

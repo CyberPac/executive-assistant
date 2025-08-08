@@ -33,6 +33,9 @@ export interface CulturalAnalysis {
     timingConcerns: string[];
   };
   confidence: number;
+  appropriatenessScore: number;
+  adaptationRecommendations: string[];
+  culturalRisks: string[];
 }
 
 export class CulturalAnalyzer {
@@ -103,7 +106,10 @@ export class CulturalAnalyzer {
         complianceIssues: ['data-privacy', 'business-regulations'],
         timingConcerns: ['business-hours-alignment', 'holiday-considerations']
       },
-      confidence: profile.appropriatenessScore
+      confidence: profile.appropriatenessScore,
+      appropriatenessScore: profile.appropriatenessScore,
+      adaptationRecommendations: profile.businessProtocols,
+      culturalRisks: this.identifyRiskFactors(profile)
     };
   }
 
@@ -160,7 +166,10 @@ export class CulturalAnalyzer {
         complianceIssues: ['regional-compliance-requirements'],
         timingConcerns: ['timezone-coordination']
       },
-      confidence: 0.7
+      confidence: 0.7,
+      appropriatenessScore: 0.7,
+      adaptationRecommendations: ['standard-business-practices'],
+      culturalRisks: ['unknown-cultural-context']
     };
   }
 }

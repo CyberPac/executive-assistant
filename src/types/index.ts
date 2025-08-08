@@ -3,8 +3,26 @@
 // export * from '../agents/types.js'; // File not found
 // export * from '../integrations/types.js'; // File not found
 // export * from '../memory/types.js'; // File not found
-export * from '../swarm/types.js';
-// export * from '../workflows/types.js'; // File not found
+// Import specific types from swarm to avoid AgentStatus conflict
+export {
+  AgentId,
+  AgentType,
+  AgentState,
+  AgentCapabilities,
+  AgentConfig,
+  AgentEnvironment,
+  AgentMetrics,
+  AgentError,
+  AgentHealth,
+  AgentWorkload,
+  SwarmConfiguration,
+  TaskRequest,
+  TaskConstraints,
+  TaskResult
+} from '../swarm/types.js';
+
+// Re-export enums with PEA-specific types
+export * from "./enums";
 
 // Memory-specific types that may be referenced
 export interface MemoryEntry {

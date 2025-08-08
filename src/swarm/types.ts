@@ -21,7 +21,9 @@ export enum AgentStatus {
   IDLE = 'idle',
   BUSY = 'busy',
   ERROR = 'error',
-  TERMINATED = 'terminated'
+  TERMINATED = 'terminated',
+  OFFLINE = 'offline',
+  MAINTENANCE = 'maintenance'
 }
 
 export interface AgentState {
@@ -48,6 +50,24 @@ export interface AgentCapabilities {
   supportedTaskTypes: string[];
   specializations: string[];
   codeGeneration: boolean;
+  codeReview?: boolean;
+  testing?: boolean;
+  documentation?: boolean;
+  research?: boolean;
+  analysis?: boolean;
+  webSearch?: boolean;
+  apiIntegration?: boolean;
+  fileSystem?: boolean;
+  terminalAccess?: boolean;
+  languages?: string[];
+  frameworks?: string[];
+  domains?: string[];
+  tools?: string[];
+  maxMemoryUsage?: number;
+  maxExecutionTime?: number;
+  reliability?: number;
+  speed?: number;
+  quality?: number;
 }
 
 export interface AgentConfig {
@@ -113,12 +133,22 @@ export interface AgentHealth {
   status: 'healthy' | 'degraded' | 'unhealthy';
   lastCheck: Date;
   issues: string[];
+  overall?: number;
+  components?: {
+    responsiveness: number;
+    performance: number;
+    reliability: number;
+    resourceUsage: number;
+  };
+  trend?: 'improving' | 'stable' | 'degrading';
 }
 
 export interface AgentWorkload {
   currentTasks: number;
   maxTasks: number;
   utilizationRate: number;
+  tasksQueued?: number;
+  averageTaskTime?: number;
 }
 
 export interface SwarmConfiguration {

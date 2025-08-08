@@ -13,6 +13,7 @@ export interface AgentRegistryEntry {
   lastUpdated: Date;
   tags: string[];
   metadata: Record<string, any>;
+  ttl?: number; // Time to live in milliseconds
 }
 
 export interface AgentQuery {
@@ -73,17 +74,18 @@ export class AgentRegistry extends EventEmitter {
     };
 
     // Store in memory
-    const key = this.getAgentKey(agent.id.id);
+    const key = this.getAgentKey(agent.id);
     await this.memory.store(key, entry, {
-      type: 'agent-registry',
-      tags: entry.tags,
-      partition: this.namespace,
+      ttl: entry.ttl || 86400000, // Default 24 hours if not specified
+      namespace: this.namespace,
+      agentId: agent.id,
+      metadata: { tags: entry.tags }
     });
 
     // Update cache
-    this.cache.set(agent.id.id, entry);
+    this.cache.set(agent.id, entry);
 
-    this.emit('agent:registered', { agentId: agent.id.id, agent });
+    this.emit('agent:registered', { agentId: agent.id, agent });
   }
 
   /**
@@ -107,9 +109,10 @@ export class AgentRegistry extends EventEmitter {
     // Store updated entry
     const key = this.getAgentKey(agentId);
     await this.memory.store(key, entry, {
-      type: 'agent-registry',
-      tags: entry.tags,
-      partition: this.namespace,
+      ttl: entry.ttl || 86400000, // Default 24 hours if not specified
+      namespace: this.namespace,
+      agentId: agentId,
+      metadata: { tags: entry.tags }
     });
 
     // Update cache
@@ -138,10 +141,11 @@ export class AgentRegistry extends EventEmitter {
           reason: 'agent_removed',
         },
         {
-          type: 'agent-archive',
-          tags: [...entry.tags, 'archived'],
-          partition: 'archived',
-        },
+          ttl: entry.ttl || 86400000, // Default 24 hours if not specified
+          namespace: 'archived',
+          agentId: agentId,
+          metadata: { tags: [...entry.tags, 'archived'] }
+        }
       );
     }
 
@@ -204,7 +208,7 @@ export class AgentRegistry extends EventEmitter {
     }
 
     if (query.healthThreshold !== undefined) {
-      agents = agents.filter((agent) => agent.health >= query.healthThreshold!);
+      agents = agents.filter((agent) => agent.health.overall >= query.healthThreshold!);
     }
 
     if (query.namePattern) {
@@ -227,7 +231,7 @@ export class AgentRegistry extends EventEmitter {
     }
 
     if (query.lastActiveAfter) {
-      agents = agents.filter((agent) => agent.metrics.lastActivity >= query.lastActiveAfter!);
+      agents = agents.filter((agent) => agent.lastActivity >= query.lastActiveAfter!);
     }
 
     return agents;
@@ -291,12 +295,12 @@ export class AgentRegistry extends EventEmitter {
         stats.activeAgents++;
       }
 
-      stats.totalUptime += agent.metrics.totalUptime;
+      // totalUptime not available in AgentMetrics
       stats.tasksCompleted += agent.metrics.tasksCompleted;
     }
 
     // Calculate averages
-    stats.averageHealth = agents.reduce((sum, agent) => sum + agent.health, 0) / agents.length;
+    stats.averageHealth = agents.reduce((sum, agent) => sum + agent.health.overall, 0) / agents.length;
 
     const totalTasks = agents.reduce(
       (sum, agent) => sum + agent.metrics.tasksCompleted + agent.metrics.tasksFailed,
@@ -348,7 +352,7 @@ export class AgentRegistry extends EventEmitter {
     // Prefer specific agent if available and healthy
     if (preferredAgent) {
       const preferred = candidates.find(
-        (agent) => agent.id.id === preferredAgent || agent.name === preferredAgent,
+        (agent) => agent.id === preferredAgent || agent.name === preferredAgent,
       );
       if (preferred) return preferred;
     }
@@ -357,7 +361,7 @@ export class AgentRegistry extends EventEmitter {
     candidates = candidates.filter(
       (agent) =>
         agent.status === 'idle' &&
-        agent.workload < 0.8 &&
+        agent.workload.utilizationRate < 0.8 &&
         agent.capabilities.maxConcurrentTasks > 0,
     );
 
@@ -388,10 +392,11 @@ export class AgentRegistry extends EventEmitter {
         timestamp: new Date(),
       },
       {
-        type: 'agent-coordination',
-        tags: ['coordination', agentId],
-        partition: this.namespace,
-      },
+        ttl: 3600000, // 1 hour
+        namespace: this.namespace,
+        agentId: agentId,
+        metadata: { tags: ['coordination', agentId] }
+      }
     );
   }
 
@@ -409,7 +414,6 @@ export class AgentRegistry extends EventEmitter {
   private async loadFromMemory(): Promise<void> {
     try {
       const entries = await this.memory.query({
-        type: 'state' as const,
         namespace: this.namespace,
       });
 
@@ -452,13 +456,13 @@ export class AgentRegistry extends EventEmitter {
     let score = 0;
 
     // Base health score (0-40 points)
-    score += agent.health * 40;
+    score += (agent.health.overall || 0) * 40;
 
     // Success rate score (0-30 points)
     score += agent.metrics.successRate * 30;
 
     // Availability score (0-20 points)
-    const availability = 1 - agent.workload;
+    const availability = 1 - agent.workload.utilizationRate;
     score += availability * 20;
 
     // Capability match score (0-10 points)

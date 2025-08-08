@@ -23,7 +23,9 @@ import {
   ConsensusRequest,
   ConsensusResult,
   ClaudeFlowMCPIntegration,
-  PerformanceMetrics
+  PerformanceMetrics,
+  SecurityLevel,
+  AgentStatus
 } from '../../types/pea-agent-types';
 
 import { CulturalContext, CulturalAnalysis, culturalAnalyzer } from '../../cultural-intelligence/models/cultural-analyzer';
@@ -681,7 +683,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
         'pea_travel_logistics'
       );
 
-      this.status = 'active';
+      this.status = AgentStatus.ACTIVE;
       this.performanceMetrics.responseTimeMs = Date.now() - startTime;
 
       console.log(`✅ Travel Logistics Agent initialized (${Date.now() - startTime}ms)`);
@@ -689,7 +691,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
       console.log(`🎯 Ready for executive travel coordination with ${this.capabilities.length} capabilities`);
 
     } catch (error) {
-      this.status = 'failed';
+      this.status = AgentStatus.ERROR;
       console.error('❌ Travel Logistics Agent initialization failed:', error);
       throw error;
     }
@@ -931,8 +933,8 @@ export class TravelLogisticsAgent extends PEAAgentBase {
           score: culturalAnalysis.appropriatenessScore,
           validator: 'cultural-intelligence-agent',
           timestamp: new Date().toISOString(),
-          recommendations: culturalAnalysis.adaptationRecommendations.map(r => r.recommendation),
-          risks: culturalAnalysis.culturalRisks.map(r => r.description)
+          recommendations: culturalAnalysis.adaptationRecommendations,
+          risks: culturalAnalysis.culturalRisks
         },
         securityValidation: {
           level: request.securityLevel,
@@ -1003,20 +1005,24 @@ class TravelCulturalIntelligence {
     }
     
     const defaultContext: CulturalContext = {
-      primaryCulture: cultureData.id,
-      language: cultureData.languages[0],
-      setting: 'business',
-      participants: [],
-      timeContext: {
-        timezone: destination.timezone,
-        localTime: new Date(),
-        businessHours: true
+      country: destination.country,
+      region: destination.culturalRegion,
+      businessProtocols: cultureData.businessCulture?.hierarchyStyle ? [cultureData.businessCulture.hierarchyStyle] : ['standard'],
+      communicationPreferences: cultureData.communicationPatterns?.map(p => p.channel) || ['email'],
+      appropriatenessScore: 0.8,
+      timeZone: destination.timezone,
+      currency: cultureData.economicProfile?.currency || 'USD',
+      language: cultureData.communicationPatterns?.[0]?.preferredLanguages?.[0] || 'English',
+      businessHours: {
+        start: cultureData.economicProfile?.businessHours?.standard?.start || '09:00',
+        end: cultureData.economicProfile?.businessHours?.standard?.end || '17:00',
+        workingDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
       }
     };
 
     return culturalAnalyzer.analyzeCulturalContext(
-      `Executive travel to ${destination.city}, ${destination.country}`,
-      context || defaultContext
+      destination.country,
+      destination.culturalRegion
     );
   }
   async generateCulturalGuidancePlan(request: TravelRequest, analysis: CulturalAnalysis): Promise<CulturalGuidancePlan> {

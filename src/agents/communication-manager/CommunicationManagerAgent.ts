@@ -9,6 +9,7 @@
 import {
   PEAAgentBase,
   PEAAgentType,
+  AgentStatus,
   ExecutiveContext,
   PEATask,
   TaskStatus,
@@ -130,14 +131,14 @@ export class CommunicationManagerAgent extends PEAAgentBase {
         'pea_foundation'
       );
 
-      this.status = 'active';
+      this.status = AgentStatus.ACTIVE;
       this.performanceMetrics.responseTimeMs = Date.now() - startTime;
 
       console.log(`✅ Communication Manager Agent initialized (${Date.now() - startTime}ms)`);
       console.log(`🎯 Ready with ${this.voiceProfiles.size} voice profiles and ${this.stakeholderDatabase.size} stakeholder records`);
 
     } catch (error) {
-      this.status = 'failed';
+      this.status = AgentStatus.ERROR;
       console.error('❌ Communication Manager Agent initialization failed:', error);
       throw error;
     }

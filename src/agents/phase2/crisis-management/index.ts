@@ -70,7 +70,7 @@ import {
   ClaudeFlowMCPIntegration,
   ExecutiveContext,
   SecurityLevel
-} from '../../types/pea-agent-types';
+} from '../../../types/pea-agent-types';
 
 /**
  * Complete Crisis Management System Integration

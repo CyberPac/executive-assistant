@@ -265,6 +265,20 @@ export class CulturalDatabase {
   public isInitialized(): boolean {
     return this.initialized;
   }
+
+  public getSupportedCountries(): string[] {
+    if (!this.initialized) {
+      this.initializeDatabase();
+    }
+    return Array.from(this.cultureData.keys());
+  }
+
+  public getCultureByCountry(countryCode: string): CultureData | null {
+    if (!this.initialized) {
+      this.initializeDatabase();
+    }
+    return this.cultureData.get(countryCode.toUpperCase()) || null;
+  }
 }
 
 // Export singleton instance

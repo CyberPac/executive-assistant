@@ -9,9 +9,12 @@
 import {
   PEAAgentBase,
   PEAAgentType,
+  AgentStatus,
   ExecutiveContext,
   PEATask,
   TaskStatus,
+  TaskType,
+  SecurityLevel,
   ConsensusRequest,
   ConsensusResult,
   ClaudeFlowMCPIntegration,
@@ -22,7 +25,7 @@ import {
 export interface ExecutiveDecisionContext {
   decisionId: string;
   executiveId: string;
-  priority: 'high' | 'critical' | 'urgent';
+  priority: 'low' | 'medium' | 'high' | 'critical';
   stakeholders: string[];
   timeConstraints: {
     immediate: boolean;
@@ -110,14 +113,14 @@ export class ExecutiveOrchestratorAgent extends PEAAgentBase {
         'pea_foundation'
       );
 
-      this.status = 'active';
+      this.status = AgentStatus.ACTIVE;
       this.performanceMetrics.responseTimeMs = Date.now() - startTime;
 
       console.log(`✅ Executive Orchestrator Agent initialized (${Date.now() - startTime}ms)`);
       console.log(`🎯 Ready for executive coordination with ${this.capabilities.length} capabilities`);
 
     } catch (error) {
-      this.status = 'failed';
+      this.status = AgentStatus.ERROR;
       console.error('❌ Executive Orchestrator Agent initialization failed:', error);
       throw error;
     }
@@ -138,14 +141,18 @@ export class ExecutiveOrchestratorAgent extends PEAAgentBase {
         decisionId: coordinationId,
         executiveId: task.context.executiveId,
         priority: task.priority as any,
-        stakeholders: task.context.stakeholders,
+        stakeholders: task.context.stakeholders.map(s => typeof s === 'string' ? s : s.toString()),
         timeConstraints: {
           immediate: task.priority === 'critical',
-          deadline: task.context.deadline,
-          timezone: task.context.timezone || 'UTC'
+          deadline: task.context.deadline ? task.context.deadline.toISOString() : undefined,
+          timezone: task.context.timeZone || 'UTC'
         },
-        culturalContext: task.context.culturalContext,
-        confidentialityLevel: task.context.confidentialityLevel || 'internal'
+        culturalContext: task.context.culturalContext ? {
+          ...task.context.culturalContext,
+          protocol: task.context.culturalContext.businessProtocols?.[0] || 'standard',
+          sensitivity: 'medium' as 'low' | 'medium' | 'high'
+        } : undefined,
+        confidentialityLevel: this.mapSecurityLevelToConfidentiality(task.context.confidentialityLevel) || 'internal'
       };
 
       this.activeCoordinations.set(coordinationId, decisionContext);
@@ -179,12 +186,13 @@ export class ExecutiveOrchestratorAgent extends PEAAgentBase {
       // Apply consensus validation if required
       let consensusResult: ConsensusResult | undefined;
       if (decisionContext.priority === 'critical' || participatingAgents.length > 2) {
+        const mappedRiskLevel = this.mapPriorityToRiskLevel(decisionContext.priority);
         consensusResult = await this.validateThroughConsensus({
           id: coordinationId,
           decisionPoint: task.description,
-          domain: task.type,
+          domain: task.type.toString(),
           stakeholderImpact: decisionContext.stakeholders.length,
-          riskLevel: decisionContext.priority,
+          riskLevel: mappedRiskLevel,
           requiresConsensus: true,
           agents: participatingAgents.map(a => a.id),
           timestamp: new Date().toISOString()
@@ -276,11 +284,19 @@ export class ExecutiveOrchestratorAgent extends PEAAgentBase {
 
     const crisisTask: PEATask = {
       id: `crisis-${Date.now()}`,
-      type: 'crisis-management',
+      type: TaskType.CRISIS_MANAGEMENT,
       description: `Crisis response: ${crisisType}`,
       priority: severity === 'critical' ? 'critical' : 'high',
+      assignedAgents: [],
+      dependencies: [],
       context,
       status: TaskStatus.IN_PROGRESS,
+      performanceTargets: {
+        maxResponseTimeMs: 30000,
+        minAccuracy: 0.95,
+        minConsensusScore: 0.8,
+        maxErrorRate: 0.05
+      },
       createdAt: new Date().toISOString()
     };
 
@@ -331,7 +347,7 @@ export class ExecutiveOrchestratorAgent extends PEAAgentBase {
       }
     }
 
-    return [...new Set(agents)]; // Remove duplicates
+    return Array.from(new Set(agents)); // Remove duplicates
   }
 
   private async executeMultiAgentCoordination(
@@ -427,6 +443,48 @@ export class ExecutiveOrchestratorAgent extends PEAAgentBase {
     const successRate = results.agentResults.filter(r => r.success).length / results.agentResults.length;
     return Math.min(successRate * 0.9, 0.95); // Cap at 95% efficiency
   }
+
+  /**
+   * Map SecurityLevel to confidentiality level string
+   */
+  private mapSecurityLevelToConfidentiality(
+    securityLevel?: SecurityLevel
+  ): 'public' | 'internal' | 'confidential' | 'restricted' {
+    switch (securityLevel) {
+      case SecurityLevel.EXECUTIVE_PERSONAL:
+        return 'restricted';
+      case SecurityLevel.STRATEGIC_CONFIDENTIAL:
+        return 'confidential';
+      case SecurityLevel.BUSINESS_SENSITIVE:
+        return 'confidential';
+      case SecurityLevel.OPERATIONAL:
+        return 'internal';
+      case SecurityLevel.ADMINISTRATIVE:
+        return 'internal';
+      default:
+        return 'internal';
+    }
+  }
+
+  /**
+   * Map priority to risk level for consensus validation
+   */
+  private mapPriorityToRiskLevel(
+    priority: 'low' | 'medium' | 'high' | 'critical'
+  ): 'low' | 'medium' | 'high' | 'critical' {
+    switch (priority) {
+      case 'critical':
+        return 'critical';
+      case 'high':
+        return 'high';
+      case 'medium':
+        return 'medium';
+      case 'low':
+        return 'low';
+      default:
+        return 'medium';
+    }
+  }
 }
 
 /**
@@ -475,9 +533,10 @@ class ByzantineConsensusValidator {
       id: request.id,
       consensus: true,
       confidence,
+      agentVotes: [],
+      byzantineToleranceApplied: true,
+      reasoning: ['Byzantine fault tolerance consensus achieved'],
       participatingAgents: request.agents.length,
-      faultsTolerated: this.config.toleranceLevel,
-      validationAlgorithm: this.config.validationAlgorithm,
       timestamp: new Date().toISOString(),
       recommendation: 'Consensus achieved with high confidence'
     };

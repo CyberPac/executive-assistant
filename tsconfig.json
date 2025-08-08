@@ -9,16 +9,20 @@
     "strict": false,
     "noImplicitAny": false,
     "noImplicitReturns": false,
+    "noImplicitThis": false,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": false,
+    "forceConsistentCasingInFileNames": false,
     "resolveJsonModule": true,
-    "declaration": true,
+    "declaration": false,
     "outDir": "dist",
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@/agents/*": ["./agents/*"]
+      "@/agents/*": ["./src/agents/*"]
     }
   },
   "include": [

@@ -21,6 +21,7 @@
 import {
   PEAAgentBase,
   PEAAgentType,
+  AgentStatus,
   ExecutiveContext,
   SecurityLevel,
   ClaudeFlowMCPIntegration,
@@ -29,7 +30,7 @@ import {
   TaskStatus,
   ConsensusRequest,
   ConsensusResult
-} from '../../types/pea-agent-types';
+} from '../../../types/pea-agent-types';
 
 import {
   CrisisEvent,
@@ -252,7 +253,7 @@ export class EnhancedCrisisManagementAgent extends PEAAgentBase {
     console.log(`🚨 Initializing Enhanced Crisis Management Agent [${this.id}]...`);
 
     try {
-      this.status = 'initializing';
+      this.status = AgentStatus.INITIALIZING;
 
       // Initialize all components in parallel for faster startup
       const initPromises = [
@@ -307,7 +308,7 @@ export class EnhancedCrisisManagementAgent extends PEAAgentBase {
         }
       );
 
-      this.status = 'active';
+      this.status = AgentStatus.ACTIVE;
       console.log(`✅ Enhanced Crisis Management Agent initialized successfully (${Date.now() - startTime}ms)`);
       console.log(`   🎯 Performance target: 75% faster response times`);
       console.log(`   🔍 Detection target: <${this.configuration.response.responseTimeTargets.detection}ms`);
@@ -315,7 +316,7 @@ export class EnhancedCrisisManagementAgent extends PEAAgentBase {
       console.log(`   👥 Coordination target: <${this.configuration.response.responseTimeTargets.stakeholderActivation}ms`);
 
     } catch (error) {
-      this.status = 'error';
+      this.status = AgentStatus.ERROR;
       console.error(`❌ Enhanced Crisis Management Agent initialization failed:`, error);
       throw error;
     }
@@ -981,7 +982,13 @@ class AdaptiveResponseOptimizer {
       timelineEstimate: this.calculateOptimizedTimeline(crisisEvent, detectionResult),
       successProbability: this.calculateOptimizedSuccessProbability(crisisEvent, detectionResult),
       resourceRequirements: [],
-      culturalAdaptations: detectionResult.culturalConsiderations
+      culturalAdaptations: detectionResult.culturalConsiderations.map(context => ({
+        country: context.country,
+        communicationStyle: context.appropriateResponseStyle,
+        protocolRequirements: context.communicationProtocols,
+        appropriatenessScore: 0.8, // Default score based on cultural context analysis
+        timeZoneConsiderations: context.timeZoneConsiderations
+      }))
     };
 
     return response;

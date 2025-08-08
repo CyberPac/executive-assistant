@@ -18,7 +18,10 @@ import {
   ClaudeFlowMCPIntegration,
   ExecutiveContext,
   ExecutivePreferences,
-  PEAAgentType
+  PEAAgentType,
+  StakeholderContext,
+  CommunicationEvent,
+  SecurityLevel
 } from '../../types/pea-agent-types';
 
 /**
@@ -118,7 +121,7 @@ export async function exampleBasicInitialization(): Promise<void> {
     preferences: {
       communicationStyle: 'diplomatic',
       decisionThreshold: 0.8,
-      privacyLevel: 'executive-personal' as any,
+      privacyLevel: SecurityLevel.EXECUTIVE_PERSONAL,
       timeZone: 'America/New_York',
       languages: ['en', 'es'],
       culturalAdaptation: true
@@ -160,13 +163,37 @@ export async function exampleSchedulingRequest(): Promise<void> {
     preferences: {
       communicationStyle: 'direct',
       decisionThreshold: 0.75,
-      privacyLevel: 'business-sensitive' as any,
+      privacyLevel: SecurityLevel.BUSINESS_SENSITIVE,
       timeZone: 'Europe/London',
       languages: ['en', 'fr'],
       culturalAdaptation: true
     },
     currentPriority: 'high',
-    stakeholders: ['board-member-001', 'cto-001', 'investor-001']
+    timeZone: 'Europe/London',
+    confidentialityLevel: SecurityLevel.BUSINESS_SENSITIVE,
+    stakeholders: [
+      {
+        id: 'board-member-001',
+        name: 'Board Member 001',
+        relationship: 'board' as const,
+        priority: 'high' as const,
+        communicationHistory: [] as CommunicationEvent[]
+      },
+      {
+        id: 'cto-001',
+        name: 'CTO 001',
+        relationship: 'executive' as const,
+        priority: 'high' as const,
+        communicationHistory: [] as CommunicationEvent[]
+      },
+      {
+        id: 'investor-001',
+        name: 'Investor 001',
+        relationship: 'partner' as const,
+        priority: 'high' as const,
+        communicationHistory: [] as CommunicationEvent[]
+      }
+    ]
   };
 
   const schedulingRequest: PEAExecutiveRequest = {
@@ -216,13 +243,51 @@ export async function exampleCrisisManagement(): Promise<void> {
     preferences: {
       communicationStyle: 'formal',
       decisionThreshold: 0.9,
-      privacyLevel: 'strategic-confidential' as any,
+      privacyLevel: SecurityLevel.STRATEGIC_CONFIDENTIAL,
       timeZone: 'UTC',
       languages: ['en'],
       culturalAdaptation: false
     },
     currentPriority: 'critical',
-    stakeholders: ['board-chair', 'cfo', 'head-of-pr', 'legal-counsel', 'major-investors']
+    timeZone: 'UTC',
+    confidentialityLevel: SecurityLevel.STRATEGIC_CONFIDENTIAL,
+    stakeholders: [
+      {
+        id: 'board-chair',
+        name: 'Board Chair',
+        relationship: 'board' as const,
+        priority: 'critical' as const,
+        communicationHistory: [] as CommunicationEvent[]
+      },
+      {
+        id: 'cfo',
+        name: 'CFO',
+        relationship: 'executive' as const,
+        priority: 'critical' as const,
+        communicationHistory: [] as CommunicationEvent[]
+      },
+      {
+        id: 'head-of-pr',
+        name: 'Head of PR',
+        relationship: 'employee' as const,
+        priority: 'high' as const,
+        communicationHistory: [] as CommunicationEvent[]
+      },
+      {
+        id: 'legal-counsel',
+        name: 'Legal Counsel',
+        relationship: 'partner' as const,
+        priority: 'critical' as const,
+        communicationHistory: [] as CommunicationEvent[]
+      },
+      {
+        id: 'major-investors',
+        name: 'Major Investors',
+        relationship: 'partner' as const,
+        priority: 'critical' as const,
+        communicationHistory: [] as CommunicationEvent[]
+      }
+    ]
   };
 
   const crisisRequest: PEAExecutiveRequest = {
@@ -274,13 +339,37 @@ export async function exampleDocumentAnalysis(): Promise<void> {
     preferences: {
       communicationStyle: 'collaborative',
       decisionThreshold: 0.85,
-      privacyLevel: 'strategic-confidential' as any,
+      privacyLevel: SecurityLevel.STRATEGIC_CONFIDENTIAL,
       timeZone: 'America/Los_Angeles',
       languages: ['en'],
       culturalAdaptation: false
     },
     currentPriority: 'high',
-    stakeholders: ['strategy-team', 'finance-team', 'operations-team']
+    timeZone: 'America/New_York',
+    confidentialityLevel: SecurityLevel.BUSINESS_SENSITIVE,
+    stakeholders: [
+      {
+        id: 'strategy-team',
+        name: 'Strategy Team',
+        relationship: 'employee' as const,
+        priority: 'high' as const,
+        communicationHistory: [] as CommunicationEvent[]
+      },
+      {
+        id: 'finance-team',
+        name: 'Finance Team',
+        relationship: 'employee' as const,
+        priority: 'high' as const,
+        communicationHistory: [] as CommunicationEvent[]
+      },
+      {
+        id: 'operations-team',
+        name: 'Operations Team',
+        relationship: 'employee' as const,
+        priority: 'high' as const,
+        communicationHistory: [] as CommunicationEvent[]
+      }
+    ]
   };
 
   const analysisRequest: PEAExecutiveRequest = {

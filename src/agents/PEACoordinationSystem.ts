@@ -21,8 +21,9 @@ import {
   ConsensusRequest,
   ConsensusResult,
   ClaudeFlowMCPIntegration,
-  ByzantineFaultTolerance
-} from '../../src/types/pea-agent-types';
+  ByzantineFaultTolerance,
+  SecurityLevel
+} from '../types/pea-agent-types';
 
 // Tier 1: Executive Orchestration
 import { ExecutiveOrchestratorAgent } from './executive-orchestrator/ExecutiveOrchestratorAgent';
