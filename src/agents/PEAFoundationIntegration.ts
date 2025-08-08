@@ -12,8 +12,7 @@ import {
   ExecutiveContext, 
   PEATask,
   TaskStatus,
-  ExecutivePreferences,
-  PEAAgentType
+  ExecutivePreferences
 } from '../../src/types/pea-agent-types';
 
 export interface PEAFoundationConfig {
@@ -163,7 +162,7 @@ export class PEAFoundationIntegration {
   async executeExecutiveRequest(
     request: PEAExecutiveRequest,
     executiveContext: ExecutiveContext
-  ): Promise<any> {
+  ): Promise<Record<string, unknown>> {
     if (!this.initialized) {
       throw new Error('PEA Foundation System not initialized. Call initializeFoundation() first.');
     }
@@ -176,7 +175,7 @@ export class PEAFoundationIntegration {
       const peaTask: PEATask = {
         id: request.id || `exec-req-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
         description: request.description,
-        type: request.type as any,
+        type: request.type as PEATask['type'],
         priority: request.priority,
         assignedAgents: this.determineRequiredAgents(request),
         dependencies: [],
@@ -229,7 +228,7 @@ export class PEAFoundationIntegration {
   /**
    * Get comprehensive system status and health metrics
    */
-  async getFoundationStatus(): Promise<any> {
+  async getFoundationStatus(): Promise<Record<string, unknown>> {
     if (!this.initialized) {
       return {
         systemId: this.systemId,
@@ -402,7 +401,7 @@ export async function quickStartPEAFoundation(
     preferences: {
       communicationStyle: 'diplomatic',
       decisionThreshold: 0.8,
-      privacyLevel: 'executive-personal' as any,
+      privacyLevel: 'executive-personal' as ExecutivePreferences['privacyLevel'],
       timeZone: 'UTC',
       languages: ['en'],
       culturalAdaptation: true,

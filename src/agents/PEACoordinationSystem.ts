@@ -88,7 +88,7 @@ export interface SecurityStatus {
 export interface TaskExecutionResult {
   taskId: string;
   success: boolean;
-  result: any;
+  result: Record<string, unknown>;
   executionTime: number;
   agentsInvolved: string[];
   consensusApplied: boolean;
@@ -261,7 +261,7 @@ export class PEACoordinationSystem {
         consensusApplied: !!consensusResult,
         performanceMetrics: {
           responseTime: Date.now() - startTime,
-          accuracyScore: synthesizedResult.accuracy || 0.9,
+          accuracyScore: (synthesizedResult as { accuracy?: number }).accuracy || 0.9,
           resourceUtilization: this.calculateResourceUtilization(participatingAgents),
           coordinationEfficiency: orchestrationResult.efficiency || 0.85
         }
@@ -421,7 +421,7 @@ export class PEACoordinationSystem {
 
   private async establishCoordinationProtocols(): Promise<void> {
     // Establish coordination protocols between all agents
-    const coordinationResult = await this.mcpIntegration.taskOrchestrate(
+    await this.mcpIntegration.taskOrchestrate(
       'Establish 5-agent foundation coordination protocols',
       'adaptive',
       'critical'
@@ -459,25 +459,29 @@ export class PEACoordinationSystem {
 
     // Determine other agents based on task type
     switch (task.type) {
-      case 'scheduling':
+      case 'scheduling': {
         const calendarAgent = this.agents.get(PEAAgentType.CALENDAR_INTELLIGENCE);
         if (calendarAgent) agents.push(calendarAgent);
         break;
+      }
 
-      case 'communication':
+      case 'communication': {
         const commAgent = this.agents.get(PEAAgentType.COMMUNICATION_MANAGER);
         if (commAgent) agents.push(commAgent);
         break;
+      }
 
-      case 'document-analysis':
+      case 'document-analysis': {
         const docAgent = this.agents.get(PEAAgentType.DOCUMENT_INTELLIGENCE);
         if (docAgent) agents.push(docAgent);
         break;
+      }
 
-      case 'security-monitoring':
+      case 'security-monitoring': {
         const securityAgent = this.agents.get(PEAAgentType.SECURITY_PRIVACY);
         if (securityAgent) agents.push(securityAgent);
         break;
+      }
 
       default:
         // For complex tasks, include multiple relevant agents
@@ -501,12 +505,12 @@ export class PEACoordinationSystem {
   private async coordinateAgentExecution(
     task: PEATask,
     agents: PEAAgentBase[],
-    executiveContext: ExecutiveContext
-  ): Promise<any[]> {
+    _executiveContext: ExecutiveContext
+  ): Promise<Record<string, unknown>[]> {
     // Execute task across participating agents in parallel
     const agentPromises = agents.map(agent => {
       // Route task to appropriate agent method based on agent type
-      return this.executeAgentTask(agent, task, executiveContext);
+      return this.executeAgentTask(agent, task, _executiveContext);
     });
 
     return Promise.all(agentPromises);
@@ -514,9 +518,9 @@ export class PEACoordinationSystem {
 
   private async executeAgentTask(
     agent: PEAAgentBase,
-    task: PEATask,
-    executiveContext: ExecutiveContext
-  ): Promise<any> {
+    _task: PEATask,
+    _executiveContext: ExecutiveContext
+  ): Promise<Record<string, unknown>> {
     // Execute task on specific agent based on agent type
     switch (agent.type) {
       case PEAAgentType.EXECUTIVE_ORCHESTRATOR:
@@ -541,7 +545,7 @@ export class PEACoordinationSystem {
 
   private async applyConsensusValidation(
     task: PEATask,
-    agentResults: any[],
+    _agentResults: Record<string, unknown>[],
     participatingAgents: PEAAgentBase[]
   ): Promise<ConsensusResult> {
     const consensusRequest: ConsensusRequest = {
@@ -549,7 +553,7 @@ export class PEACoordinationSystem {
       decisionPoint: task.description,
       domain: task.type,
       stakeholderImpact: task.context.stakeholders.length,
-      riskLevel: task.priority as any,
+      riskLevel: task.priority as unknown as ConsensusRequest['riskLevel'],
       requiresConsensus: true,
       agents: participatingAgents.map(a => a.id),
       timestamp: new Date().toISOString()
@@ -560,10 +564,10 @@ export class PEACoordinationSystem {
   }
 
   private async synthesizeAgentResults(
-    agentResults: any[],
+    agentResults: Record<string, unknown>[],
     consensusResult?: ConsensusResult,
     task?: PEATask
-  ): Promise<any> {
+  ): Promise<Record<string, unknown>> {
     // Synthesize results from all participating agents
     const successfulResults = agentResults.filter(result => result.success);
     
@@ -607,7 +611,8 @@ export class PEACoordinationSystem {
   }
 
   private async getSecurityStatus(): Promise<SecurityStatus> {
-    const securityAgent = this.agents.get(PEAAgentType.SECURITY_PRIVACY);
+    // Note: securityAgent could be used for dynamic status checking
+    // const securityAgent = this.agents.get(PEAAgentType.SECURITY_PRIVACY);
     
     return {
       threatLevel: 'low',
@@ -618,7 +623,7 @@ export class PEACoordinationSystem {
     };
   }
 
-  private async attemptSystemRecovery(issue: string): Promise<void> {
+  private async attemptSystemRecovery(_issue: string): Promise<void> {
     console.log('🔄 Attempting system recovery...');
     
     // Implement system recovery logic
@@ -628,7 +633,7 @@ export class PEACoordinationSystem {
     console.log('✅ System recovery completed');
   }
 
-  private async applyGracefulDegradation(issue: string): Promise<void> {
+  private async applyGracefulDegradation(_issue: string): Promise<void> {
     console.log('⚡ Applying graceful degradation strategies...');
     
     // Implement graceful degradation logic

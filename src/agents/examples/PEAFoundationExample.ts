@@ -219,7 +219,7 @@ export async function exampleSchedulingRequest(): Promise<void> {
     console.log(`   Task ID: ${result.taskId}`);
     console.log(`   Success: ${result.success}`);
     console.log(`   Execution time: ${result.executionTime}ms`);
-    console.log(`   Agents involved: ${result.agentsInvolved.join(', ')}`);
+    console.log(`   Agents involved: ${(result.agentsInvolved as string[]).join(', ')}`);
     console.log(`   Consensus applied: ${result.consensusApplied}`);
 
   } catch (error) {
@@ -314,7 +314,7 @@ export async function exampleCrisisManagement(): Promise<void> {
     console.log(`   Task ID: ${result.taskId}`);
     console.log(`   Success: ${result.success}`);
     console.log(`   Execution time: ${result.executionTime}ms`);
-    console.log(`   All 5 agents coordinated: ${result.agentsInvolved.length === 5}`);
+    console.log(`   All 5 agents coordinated: ${(result.agentsInvolved as string[]).length === 5}`);
     console.log(`   Byzantine consensus: ${result.consensusApplied}`);
     console.log(`   Security validation: Active`);
 
@@ -396,7 +396,7 @@ export async function exampleDocumentAnalysis(): Promise<void> {
     console.log(`   Task ID: ${result.taskId}`);
     console.log(`   Success: ${result.success}`);
     console.log(`   Execution time: ${result.executionTime}ms`);
-    console.log(`   Analysis confidence: ${result.performanceMetrics.accuracyScore * 100}%`);
+    console.log(`   Analysis confidence: ${(result.performanceMetrics as any).accuracyScore * 100}%`);
     console.log(`   Strategic insights generated: Yes`);
 
   } catch (error) {
@@ -422,16 +422,16 @@ export async function exampleSystemHealthMonitoring(): Promise<void> {
     console.log(`   Initialized: ${status.initialized}`);
     console.log(`   Overall Status: ${status.status}`);
     console.log(`   Agents: ${status.agentCount}/5 operational`);
-    console.log(`   Coordination Health: ${status.coordinationHealth.byzantineFaultTolerance ? 'Excellent' : 'Needs attention'}`);
-    console.log(`   Security Status: ${status.securityStatus.threatLevel} threat level`);
+    console.log(`   Coordination Health: ${(status.coordinationHealth as any).byzantineFaultTolerance ? 'Excellent' : 'Needs attention'}`);
+    console.log(`   Security Status: ${(status.securityStatus as any).threatLevel} threat level`);
     console.log(`   Performance Metrics:`);
-    console.log(`     - Average Response Time: ${status.performanceMetrics.averageResponseTime}ms`);
-    console.log(`     - System Reliability: ${(status.performanceMetrics.systemReliability * 100).toFixed(1)}%`);
-    console.log(`     - Uptime: ${status.performanceMetrics.uptime.toFixed(1)} hours`);
+    console.log(`     - Average Response Time: ${(status.performanceMetrics as any).averageResponseTime}ms`);
+    console.log(`     - System Reliability: ${((status.performanceMetrics as any).systemReliability * 100).toFixed(1)}%`);
+    console.log(`     - Uptime: ${(status.performanceMetrics as any).uptime.toFixed(1)} hours`);
 
     // Agent-specific health details
     console.log('\n👥 Agent Health Details:');
-    status.agentHealthDetails.forEach((agent: any) => {
+    (status.agentHealthDetails as any[]).forEach((agent: any) => {
       console.log(`   ${agent.type}: ${agent.status} (${agent.capabilities.length} capabilities)`);
     });
 
