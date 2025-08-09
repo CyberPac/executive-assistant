@@ -411,7 +411,7 @@ export class FinancialIntelligenceAgent extends PEAAgentBase {
 
   private async optimizeAllocation(
     currentAllocation: Record<string, number>, 
-    marketData: MarketData[]
+    _marketData: MarketData[]
   ): Promise<Record<string, number>> {
     // Portfolio optimization algorithm
     // This would use modern portfolio theory and risk models
@@ -432,17 +432,17 @@ export class FinancialIntelligenceAgent extends PEAAgentBase {
     return false;
   }
 
-  private calculateExpectedReturn(holdings: Holding[], marketData: MarketData[]): number {
+  private calculateExpectedReturn(_holdings: Holding[], _marketData: MarketData[]): number {
     // Calculate expected return based on historical performance and market conditions
     return 0.08; // 8% expected return (simplified)
   }
 
-  private calculateRiskScore(holdings: Holding[], marketData: MarketData[]): number {
+  private calculateRiskScore(_holdings: Holding[], _marketData: MarketData[]): number {
     // Calculate portfolio risk score
     return 0.15; // 15% volatility (simplified)
   }
 
-  private generateRecommendations(holdings: Holding[], marketData: MarketData[]): string[] {
+  private generateRecommendations(_holdings: Holding[], _marketData: MarketData[]): string[] {
     // Generate investment recommendations
     return [
       'Consider rebalancing technology allocation',

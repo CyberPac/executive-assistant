@@ -7,7 +7,6 @@
  */
 
 import { 
-  PEAFoundationIntegration, 
   createPEAFoundation, 
   quickStartPEAFoundation,
   PEAFoundationConfig,
@@ -17,11 +16,8 @@ import {
 import {
   ClaudeFlowMCPIntegration,
   ExecutiveContext,
-  ExecutivePreferences,
-  PEAAgentType,
-  StakeholderContext,
-  CommunicationEvent,
-  SecurityLevel
+  SecurityLevel,
+  CommunicationEvent
 } from '../../types/pea-agent-types';
 
 /**
@@ -95,7 +91,7 @@ class MockMCPIntegration implements ClaudeFlowMCPIntegration {
     };
   }
 
-  async neuralPatterns(action: string, operation: string, metadata: any): Promise<any> {
+  async neuralPatterns(action: string, operation: string, _metadata: unknown): Promise<unknown> {
     console.log(`🔬 Mock Neural Patterns: ${action} - ${operation}`);
     return {
       success: true,

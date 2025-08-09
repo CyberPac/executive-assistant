@@ -372,9 +372,9 @@ export class ExecutiveOrchestratorAgent extends PEAAgentBase {
 
   private async coordinateAgentExecution(
     agent: PEAAgentBase,
-    task: PEATask,
-    context: ExecutiveDecisionContext
-  ): Promise<any> {
+    _task: PEATask,
+    _context: ExecutiveDecisionContext
+  ): Promise<unknown> {
     // Execute task coordination on specific agent
     switch (agent.type) {
       case PEAAgentType.EXECUTIVE_ORCHESTRATOR:

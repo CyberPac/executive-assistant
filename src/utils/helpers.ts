@@ -62,11 +62,11 @@ export async function retry<T>(
 /**
  * Debounce a function
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout;
+  let timeout: ReturnType<typeof setTimeout>;
 
   return (...args: Parameters<T>) => {
     clearTimeout(timeout);
@@ -77,7 +77,7 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * Throttle a function
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -101,18 +101,18 @@ export function deepClone<T>(obj: T): T {
   }
 
   if (obj instanceof Date) {
-    return new Date(obj.getTime()) as any;
+    return new Date(obj.getTime()) as T;
   }
 
   if (obj instanceof Array) {
-    return obj.map(item => deepClone(item)) as any;
+    return obj.map(item => deepClone(item)) as T;
   }
 
   if (typeof obj === 'object') {
-    const clonedObj = {} as any;
+    const clonedObj = {} as T;
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        clonedObj[key] = deepClone(obj[key]);
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        (clonedObj as Record<string, unknown>)[key] = deepClone((obj as Record<string, unknown>)[key]);
       }
     }
     return clonedObj;
@@ -124,7 +124,7 @@ export function deepClone<T>(obj: T): T {
 /**
  * Merge objects deeply
  */
-export function deepMerge<T extends Record<string, any>>(
+export function deepMerge<T extends Record<string, unknown>>(
   target: T,
   ...sources: Partial<T>[]
 ): T {
@@ -148,8 +148,8 @@ export function deepMerge<T extends Record<string, any>>(
 /**
  * Check if value is an object
  */
-export function isObject(item: any): boolean {
-  return item && typeof item === 'object' && !Array.isArray(item);
+export function isObject(item: unknown): item is Record<string, unknown> {
+  return item !== null && typeof item === 'object' && !Array.isArray(item);
 }
 
 /**

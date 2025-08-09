@@ -11,10 +11,7 @@ import {
   PEAAgentType,
   AgentStatus,
   ExecutiveContext,
-  PEATask,
-  TaskStatus,
-  ClaudeFlowMCPIntegration,
-  PerformanceMetrics
+  ClaudeFlowMCPIntegration
 } from '../../types/pea-agent-types';
 
 export interface ExecutiveVoiceProfile {
@@ -322,7 +319,7 @@ export class CommunicationManagerAgent extends PEAAgentBase {
   private async validateCommunicationAccuracy(
     content: string,
     voiceProfile: ExecutiveVoiceProfile,
-    culturalAdaptations: any
+    _culturalAdaptations: unknown
   ): Promise<number> {
     // Validate communication accuracy against voice profile
     return Math.min(voiceProfile.accuracyScore + 0.02, 0.98); // Slightly improve over time
@@ -330,11 +327,11 @@ export class CommunicationManagerAgent extends PEAAgentBase {
 
   private async generateStakeholderInsights(
     recipient: string,
-    stakeholderContext: any
+    _stakeholderContext: unknown
   ): Promise<string[]> {
     return [
       `Strong relationship with ${recipient} based on communication history`,
-      `Preferred communication style: ${stakeholderContext.preferredStyle || 'professional'}`,
+      `Preferred communication style: professional`,
       `Cultural considerations: ${stakeholderContext.culturalContext || 'standard business protocol'}`
     ];
   }
@@ -411,7 +408,7 @@ export class CommunicationManagerAgent extends PEAAgentBase {
 
   private async getCommunicationHistory(
     executiveId: string,
-    timeRange: { start: string; end: string }
+    _timeRange: { start: string; end: string }
   ): Promise<CommunicationRequest[]> {
     return this.communicationHistory.get(executiveId) || [];
   }
@@ -427,7 +424,7 @@ class VoiceModelingEngine {
     console.log('🎤 Voice Modeling Engine initialized');
   }
 
-  async createVoiceProfile(executiveId: string, context: ExecutiveContext): Promise<ExecutiveVoiceProfile> {
+  async createVoiceProfile(executiveId: string, _context: ExecutiveContext): Promise<ExecutiveVoiceProfile> {
     return {
       executiveId,
       communicationStyle: {
@@ -450,8 +447,8 @@ class VoiceModelingEngine {
   async generateCommunication(
     request: CommunicationRequest,
     voiceProfile: ExecutiveVoiceProfile,
-    stakeholderContext: any,
-    culturalAdaptations: any
+    _stakeholderContext: unknown,
+    _culturalAdaptations: unknown
   ): Promise<string> {
     // Generate communication using voice profile and context
     const content = `${voiceProfile.signatureElements.greeting} ${request.recipient},
@@ -474,7 +471,7 @@ class StakeholderIntelligenceEngine {
     console.log('🤝 Stakeholder Intelligence Engine initialized');
   }
 
-  async analyzeStakeholder(recipient: string, context?: any): Promise<any> {
+  async analyzeStakeholder(recipient: string, _context?: unknown): Promise<unknown> {
     return {
       name: recipient,
       relationship: 'business',
@@ -521,7 +518,7 @@ class CulturalCommunicationEngine {
 
   async adaptCommunication(
     request: CommunicationRequest,
-    stakeholderContext: any,
+    _stakeholderContext: unknown,
     culturalContext?: any
   ): Promise<any> {
     const adaptations = [];
