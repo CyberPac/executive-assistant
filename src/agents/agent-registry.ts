@@ -3,8 +3,9 @@
  * Provides persistent storage and coordination for agent management
  */
 
-import type { DistributedMemorySystem } from '../memory/distributed-memory.js';
-import type { AgentState, AgentId, AgentType, AgentStatus } from '../swarm/types.js';
+import type { DistributedMemorySystem } from '../memory/distributed-memory';
+import type { AgentState, AgentType } from '../swarm/types';
+import { AgentStatus } from '../swarm/types';
 import { EventEmitter } from 'node:events';
 
 export interface AgentRegistryEntry {
@@ -12,7 +13,7 @@ export interface AgentRegistryEntry {
   createdAt: Date;
   lastUpdated: Date;
   tags: string[];
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   ttl?: number; // Time to live in milliseconds
 }
 
@@ -291,7 +292,7 @@ export class AgentRegistry extends EventEmitter {
       stats.byType[agent.type] = (stats.byType[agent.type] || 0) + 1;
       stats.byStatus[agent.status] = (stats.byStatus[agent.status] || 0) + 1;
 
-      if (agent.status === 'idle' || agent.status === 'busy') {
+      if (agent.status === AgentStatus.IDLE || agent.status === AgentStatus.BUSY) {
         stats.activeAgents++;
       }
 
@@ -360,7 +361,7 @@ export class AgentRegistry extends EventEmitter {
     // Filter by availability
     candidates = candidates.filter(
       (agent) =>
-        agent.status === 'idle' &&
+        agent.status === AgentStatus.IDLE &&
         agent.workload.utilizationRate < 0.8 &&
         agent.capabilities.maxConcurrentTasks > 0,
     );
@@ -382,7 +383,7 @@ export class AgentRegistry extends EventEmitter {
   /**
    * Store agent coordination data
    */
-  async storeCoordinationData(agentId: string, data: any): Promise<void> {
+  async storeCoordinationData(agentId: string, data: unknown): Promise<void> {
     const key = `coordination:${agentId}`;
     await this.memory.store(
       key,
@@ -403,7 +404,7 @@ export class AgentRegistry extends EventEmitter {
   /**
    * Retrieve agent coordination data
    */
-  async getCoordinationData(agentId: string): Promise<any> {
+  async getCoordinationData(agentId: string): Promise<unknown> {
     const key = `coordination:${agentId}`;
     const result = await this.memory.retrieve(key);
     return result?.value || null;
@@ -420,7 +421,7 @@ export class AgentRegistry extends EventEmitter {
       this.cache.clear();
       for (const entry of entries) {
         if (entry.value && entry.value.agent) {
-          this.cache.set(entry.value.agent.id.id, entry.value);
+          this.cache.set(entry.value.agent.id, entry.value);
         }
       }
 
