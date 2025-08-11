@@ -19,7 +19,7 @@ export {
   TaskRequest,
   TaskConstraints,
   TaskResult
-} from '../swarm/types.js';
+} from '../swarm/types';
 
 // Re-export enums with PEA-specific types
 export * from "./enums";
