@@ -185,7 +185,7 @@ export interface CulturalPreferences {
 
 export interface TravelPlan {
   id: string;
-  requestId: string;
+  _requestId: string;
   status: 'draft' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
   
   aviation: AviationItinerary;
@@ -691,17 +691,17 @@ export class TravelLogisticsAgent extends PEAAgentBase {
   }
 
   /**
-   * Primary method for coordinating executive travel requests
+   * Primary method for coordinating executive travel _requests
    */
-  async coordinateExecutiveTravel(request: TravelRequest): Promise<TravelCoordinationResult> {
+  async coordinateExecutiveTravel(_request: TravelRequest): Promise<TravelCoordinationResult> {
     const startTime = Date.now();
     const coordinationId = `travel-coord-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
     
-    console.log(`✈️ Coordinating executive travel: ${request.destination.city}, ${request.destination.country} [${request.priority}]`);
+    console.log(`✈️ Coordinating executive travel: ${_request.destination.city}, ${_request.destination.country} [${_request.priority}]`);
 
     try {
-      // Store active request
-      this.activeRequests.set(request.id, request);
+      // Store active _request
+      this.activeRequests.set(_request.id, _request);
 
       // Initialize Claude Flow swarm coordination for travel logistics
       const swarmResult = await this.mcpIntegration.swarmInit(
@@ -714,21 +714,21 @@ export class TravelLogisticsAgent extends PEAAgentBase {
 
       // Orchestrate travel planning across all coordinators
       await this.mcpIntegration.taskOrchestrate(
-        `Executive travel coordination: ${request.destination.city}, ${request.destination.country}`,
+        `Executive travel coordination: ${_request.destination.city}, ${_request.destination.country}`,
         'adaptive',
-        request.priority === 'critical' ? 'critical' : 'high'
+        _request.priority === 'critical' ? 'critical' : 'high'
       );
 
       // Analyze cultural context for destination
       const culturalAnalysis = await this.culturalIntelligence.analyzeTravelContext(
-        request.destination,
-        request.culturalContext,
-        request.requirements
+        _request.destination,
+        _request.culturalContext,
+        _request.requirements
       );
 
       // Generate comprehensive travel plan
       const travelPlan = await this.generateComprehensiveTravelPlan(
-        request,
+        _request,
         culturalAnalysis,
         coordinationId
       );
@@ -736,7 +736,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
       // Execute coordination across all travel components
       const coordinationResults = await this.executeMultiModalCoordination(
         travelPlan,
-        request,
+        _request,
         culturalAnalysis
       );
 
@@ -754,12 +754,12 @@ export class TravelLogisticsAgent extends PEAAgentBase {
         'store',
         `travel_plans/${travelPlan.id}`,
         JSON.stringify({
-          requestId: request.id,
+          _requestId: _request.id,
           planId: travelPlan.id,
           coordinationId,
-          destination: request.destination,
+          destination: _request.destination,
           culturalScore: culturalAnalysis.appropriatenessScore,
-          securityLevel: request.securityLevel,
+          securityLevel: _request.securityLevel,
           totalCost: travelPlan.totalCost,
           executionTime: Date.now() - startTime,
           consensusValidation,
@@ -768,15 +768,15 @@ export class TravelLogisticsAgent extends PEAAgentBase {
         'pea_travel_logistics'
       );
 
-      // Clean up active request
-      this.activeRequests.delete(request.id);
+      // Clean up active _request
+      this.activeRequests.delete(_request.id);
 
       const result: TravelCoordinationResult = {
         success: true,
         planId: travelPlan.id,
         executionTime: Date.now() - startTime,
         culturalScore: culturalAnalysis.appropriatenessScore,
-        securityLevel: request.securityLevel,
+        securityLevel: _request.securityLevel,
         totalCost: travelPlan.totalCost,
         recommendations: coordinationResults.recommendations || [],
         nextSteps: coordinationResults.nextSteps || [],
@@ -796,7 +796,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
       return result;
 
     } catch (error) {
-      this.activeRequests.delete(request.id);
+      this.activeRequests.delete(_request.id);
       this.performanceMetrics.errorRate += 0.01;
       
       console.error(`❌ Travel coordination failed [${coordinationId}]:`, error);
@@ -892,7 +892,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
   // This is a comprehensive foundation for the Travel Logistics Agent
 
   private async generateComprehensiveTravelPlan(
-    request: TravelRequest,
+    _request: TravelRequest,
     culturalAnalysis: CulturalAnalysis,
     _coordinationId: string
   ): Promise<TravelPlan> {
@@ -902,16 +902,16 @@ export class TravelLogisticsAgent extends PEAAgentBase {
     
     return {
       id: planId,
-      requestId: request.id,
+      _requestId: _request.id,
       status: 'draft',
-      aviation: await this.aviationCoordinator.generateAviationItinerary(request),
-      transport: await this.transportCoordinator.generateTransportItinerary(request),
-      accommodation: await this.generateAccommodationItinerary(request),
-      documentation: await this.documentationManager.generateDocumentationPlan(request),
-      cultural: await this.culturalIntelligence.generateCulturalGuidancePlan(request, culturalAnalysis),
-      security: await this.securityCoordinator.generateSecurityPlan(request),
-      contingencies: await this.contingencyManager.generateContingencyPlans(request),
-      communications: await this.generateCommunicationPlan(request),
+      aviation: await this.aviationCoordinator.generateAviationItinerary(_request),
+      transport: await this.transportCoordinator.generateTransportItinerary(_request),
+      accommodation: await this.generateAccommodationItinerary(_request),
+      documentation: await this.documentationManager.generateDocumentationPlan(_request),
+      cultural: await this.culturalIntelligence.generateCulturalGuidancePlan(_request, culturalAnalysis),
+      security: await this.securityCoordinator.generateSecurityPlan(_request),
+      contingencies: await this.contingencyManager.generateContingencyPlans(_request),
+      communications: await this.generateCommunicationPlan(_request),
       totalCost: 0, // Would be calculated from all components
       carbonFootprint: 0, // Would be calculated from all components
       executionTimeMs: 0,
@@ -930,7 +930,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
           risks: culturalAnalysis.culturalRisks
         },
         securityValidation: {
-          level: request.securityLevel,
+          level: _request.securityLevel,
           validator: 'security-coordinator',
           timestamp: new Date().toISOString(),
           approvals: [],
@@ -942,7 +942,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
   }
 
   // Placeholder methods for comprehensive implementation
-  private async executeMultiModalCoordination(_plan: TravelPlan, _request: TravelRequest, _culturalAnalysis: CulturalAnalysis): Promise<any> {
+  private async executeMultiModalCoordination(_plan: TravelPlan, __request: TravelRequest, _culturalAnalysis: CulturalAnalysis): Promise<any> {
     return { recommendations: [], nextSteps: [] };
   }
 
@@ -962,11 +962,11 @@ export class TravelLogisticsAgent extends PEAAgentBase {
     return { ...plan, status: 'in_progress' };
   }
 
-  private async generateAccommodationItinerary(_request: TravelRequest): Promise<AccommodationItinerary> {
-    return { stays: [], totalCost: 0, securityLevel: request.securityLevel };
+  private async generateAccommodationItinerary(__request: TravelRequest): Promise<AccommodationItinerary> {
+    return { stays: [], totalCost: 0, securityLevel: _request.securityLevel };
   }
 
-  private async generateCommunicationPlan(_request: TravelRequest): Promise<CommunicationPlan> {
+  private async generateCommunicationPlan(__request: TravelRequest): Promise<CommunicationPlan> {
     return { stakeholders: [], schedules: [], methods: [], protocols: [] };
   }
 }
@@ -975,7 +975,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
 class PrivateAviationCoordinator {
   constructor(private mcpIntegration: ClaudeFlowMCPIntegration) {}
   async initialize(): Promise<void> {}
-  async generateAviationItinerary(_request: TravelRequest): Promise<AviationItinerary> {
+  async generateAviationItinerary(__request: TravelRequest): Promise<AviationItinerary> {
     return { segments: [], totalFlightTime: 0, totalCost: 0, carbonEmissions: 0, alternativeOptions: [] };
   }
 }
@@ -983,8 +983,8 @@ class PrivateAviationCoordinator {
 class GroundTransportCoordinator {
   constructor(private mcpIntegration: ClaudeFlowMCPIntegration) {}
   async initialize(): Promise<void> {}
-  async generateTransportItinerary(request: TravelRequest): Promise<TransportItinerary> {
-    return { segments: [], totalCost: 0, securityLevel: request.securityLevel };
+  async generateTransportItinerary(_request: TravelRequest): Promise<TransportItinerary> {
+    return { segments: [], totalCost: 0, securityLevel: _request.securityLevel };
   }
 }
 
@@ -1018,7 +1018,7 @@ class TravelCulturalIntelligence {
       destination.culturalRegion
     );
   }
-  async generateCulturalGuidancePlan(_request: TravelRequest, _analysis: CulturalAnalysis): Promise<CulturalGuidancePlan> {
+  async generateCulturalGuidancePlan(__request: TravelRequest, _analysis: CulturalAnalysis): Promise<CulturalGuidancePlan> {
     return { briefings: [], protocols: [], languageSupport: [], etiquetteGuidance: [] };
   }
 }
@@ -1026,7 +1026,7 @@ class TravelCulturalIntelligence {
 class TravelSecurityCoordinator {
   constructor(private mcpIntegration: ClaudeFlowMCPIntegration) {}
   async initialize(): Promise<void> {}
-  async generateSecurityPlan(_request: TravelRequest): Promise<SecurityPlan> {
+  async generateSecurityPlan(__request: TravelRequest): Promise<SecurityPlan> {
     return { assessments: [], protocols: [], personnel: [], communications: [], contingencies: [] };
   }
 }
@@ -1034,7 +1034,7 @@ class TravelSecurityCoordinator {
 class TravelDocumentationManager {
   constructor(private mcpIntegration: ClaudeFlowMCPIntegration) {}
   async initialize(): Promise<void> {}
-  async generateDocumentationPlan(_request: TravelRequest): Promise<DocumentationPlan> {
+  async generateDocumentationPlan(__request: TravelRequest): Promise<DocumentationPlan> {
     return { requirements: [], timeline: [], status: 'planning', risksAndMitigation: [] };
   }
 }
@@ -1042,7 +1042,7 @@ class TravelDocumentationManager {
 class TravelContingencyManager {
   constructor(private mcpIntegration: ClaudeFlowMCPIntegration) {}
   async initialize(): Promise<void> {}
-  async generateContingencyPlans(_request: TravelRequest): Promise<ContingencyPlan[]> {
+  async generateContingencyPlans(__request: TravelRequest): Promise<ContingencyPlan[]> {
     return [];
   }
   async activateContingencies(_plan: TravelPlan, _disruptionType: string, _severity: string, _details: any): Promise<any[]> {

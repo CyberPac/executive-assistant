@@ -217,7 +217,7 @@ export class CommunicationManagerAgent extends PEAAgentBase {
         success: true,
         generatedContent,
         accuracyScore,
-        culturalAdaptations: culturalAdaptations.adaptations || [],
+        culturalAdaptations: (culturalAdaptations as { adaptations?: string[] })?.adaptations || [],
         stakeholderInsights,
         recommendations,
         executionTime: Date.now() - startTime
@@ -252,10 +252,10 @@ export class CommunicationManagerAgent extends PEAAgentBase {
     const communicationPromises = stakeholders.map(async (stakeholder) => {
       const crisisRequest: CommunicationRequest = {
         id: `crisis-comm-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
-        type: this.determineCrisisCommunicationType(stakeholder, severity),
+        type: this.determineCrisisCommunicationType(stakeholder, severity) as "email" | "text" | "video" | "voice" | "social" | "formal_letter",
         recipient: stakeholder,
         subject: `Important Update: ${crisisType}`,
-        content: crisisProtocol.template,
+        content: String(crisisProtocol.template),
         priority: severity === 'critical' ? 'urgent' : 'high',
         stakeholderContext: {
           relationship: await this.getStakeholderRelationship(stakeholder),
@@ -395,7 +395,7 @@ export class CommunicationManagerAgent extends PEAAgentBase {
     };
   }
 
-  private determineCrisisCommunicationType(stakeholder: string, severity: string): Record<string, unknown> {
+  private determineCrisisCommunicationType(stakeholder: string, severity: string): "email" | "text" | "video" | "voice" | "social" | "formal_letter" {
     if (severity === 'critical') return 'voice';
     if (stakeholder.includes('board')) return 'formal_letter';
     return 'email';
@@ -534,7 +534,7 @@ class CulturalCommunicationEngine {
     const adaptations = [];
     
     if (culturalContext?.country) {
-      const protocol = this.culturalProtocols.get(culturalContext.country);
+      const protocol = this.culturalProtocols.get(String(culturalContext.country));
       if (protocol) {
         adaptations.push(`Applied ${protocol.protocol} communication style`);
         adaptations.push(`Adjusted formality to ${protocol.formality} level`);

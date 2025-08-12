@@ -206,7 +206,7 @@ export class CrisisManagementAgent extends PEAAgentBase {
   /**
    * Detect and assess potential crisis situations
    */
-  async detectCrisis(monitoringData: any, executiveContext: ExecutiveContext): Promise<CrisisEvent | null> {
+  async detectCrisis(monitoringData: any, _executiveContext: ExecutiveContext): Promise<CrisisEvent | null> {
     const startTime = Date.now();
 
     try {
@@ -216,7 +216,7 @@ export class CrisisManagementAgent extends PEAAgentBase {
         'crisis_detection',
         {
           monitoringData,
-          executiveContext,
+          _executiveContext,
           historicalPatterns: this.responseHistory.slice(-10)
         }
       );
@@ -237,7 +237,7 @@ export class CrisisManagementAgent extends PEAAgentBase {
             operational: 0.4,
             strategic: 0.2
           },
-          geographicScope: crisisAnalysis.geographic_scope || [executiveContext.timeZone],
+          geographicScope: crisisAnalysis.geographic_scope || [_executiveContext.timeZone],
           culturalConsiderations: crisisAnalysis.cultural_considerations || []
         };
 
@@ -269,7 +269,7 @@ export class CrisisManagementAgent extends PEAAgentBase {
   /**
    * Generate adaptive crisis response strategy
    */
-  async generateCrisisResponse(crisisEvent: CrisisEvent, executiveContext: ExecutiveContext): Promise<CrisisResponse> {
+  async generateCrisisResponse(crisisEvent: CrisisEvent, _executiveContext: ExecutiveContext): Promise<CrisisResponse> {
     const startTime = Date.now();
 
     try {
@@ -284,14 +284,14 @@ export class CrisisManagementAgent extends PEAAgentBase {
       const responseStrategy: ResponseStrategy = {
         type: this.determineResponseType(crisisEvent),
         priority: crisisEvent.severity === CrisisSeverity.CRITICAL ? 'immediate' : 'urgent',
-        approachType: executiveContext.preferences.communicationStyle as any,
+        approachType: _executiveContext.preferences.communicationStyle as any,
         communicationTone: crisisEvent.severity === CrisisSeverity.CRITICAL ? 'urgent' : 'reassuring'
       };
 
       // Generate stakeholder communications with cultural adaptation
       const stakeholderCommunications = await this.generateStakeholderCommunications(
         crisisEvent,
-        executiveContext
+        _executiveContext
       );
 
       // Create action plan
@@ -333,7 +333,7 @@ export class CrisisManagementAgent extends PEAAgentBase {
    */
   async executeCrisisResponse(
     crisisResponse: CrisisResponse,
-    _executiveContext: ExecutiveContext
+    __executiveContext: ExecutiveContext
   ): Promise<{ success: boolean; executionTime: number; actionsCompleted: number }> {
     const startTime = Date.now();
 
@@ -361,7 +361,7 @@ export class CrisisManagementAgent extends PEAAgentBase {
 
       // Send stakeholder communications
       const communicationPromises = crisisResponse.stakeholderCommunications.map(async (comm) => {
-        return await this.sendStakeholderCommunication(comm, executiveContext);
+        return await this.sendStakeholderCommunication(comm, _executiveContext);
       });
 
       // Wait for all actions and communications to complete
@@ -527,7 +527,7 @@ export class CrisisManagementAgent extends PEAAgentBase {
 
   private async generateStakeholderCommunications(
     crisisEvent: CrisisEvent,
-    _executiveContext: ExecutiveContext
+    __executiveContext: ExecutiveContext
   ): Promise<StakeholderCommunication[]> {
     return crisisEvent.affectedStakeholders.map(stakeholderId => ({
       stakeholderId,
@@ -535,12 +535,12 @@ export class CrisisManagementAgent extends PEAAgentBase {
       urgency: crisisEvent.severity === CrisisSeverity.CRITICAL ? 'immediate' : 'within_hour',
       communicationMethod: 'email',
       messageTemplate: `Crisis communication template for ${crisisEvent.type}`,
-      culturalAdaptation: this.culturalProtocols.get(executiveContext.preferences.languages[0]) || {
+      culturalAdaptation: this.culturalProtocols.get(_executiveContext.preferences.languages[0]) || {
         country: 'US',
         communicationStyle: 'direct',
         protocolRequirements: [],
         appropriatenessScore: 0.8,
-        timeZoneConsiderations: executiveContext.timeZone
+        timeZoneConsiderations: _executiveContext.timeZone
       },
       approvalRequired: crisisEvent.severity >= CrisisSeverity.HIGH
     }));
@@ -619,7 +619,7 @@ export class CrisisManagementAgent extends PEAAgentBase {
 
   private async sendStakeholderCommunication(
     communication: StakeholderCommunication,
-    _executiveContext: ExecutiveContext
+    __executiveContext: ExecutiveContext
   ): Promise<boolean> {
     try {
       // In production, this would integrate with actual communication systems

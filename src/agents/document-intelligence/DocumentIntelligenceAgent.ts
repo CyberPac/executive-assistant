@@ -162,12 +162,20 @@ export class DocumentIntelligenceAgent extends PEAAgentBase {
       // Extract semantic meaning and relationships
       const semanticAnalysis = await this.semanticAnalyzer.analyzeSemantics(
         processedDocuments,
-        request.executiveContext
+        {
+          executiveId: request.executiveContext?.executiveId || 'default',
+          sessionId: request.executiveContext?.sessionId || 'session-default',
+          preferences: request.executiveContext?.preferences || {},
+          currentPriority: request.executiveContext?.currentPriority || 'medium',
+          timeConstraints: request.executiveContext?.timeConstraints || {},
+          contextualFocus: request.executiveContext?.contextualFocus || {},
+          ...request.executiveContext
+        }
       );
 
       // Perform executive-focused synthesis
       const executiveSynthesis = await this.executiveSynthesizer.synthesizeForExecutive(
-        semanticAnalysis,
+        semanticAnalysis as Record<string, unknown>,
         request.analysisType,
         request.outputFormat,
         context
@@ -181,7 +189,7 @@ export class DocumentIntelligenceAgent extends PEAAgentBase {
 
       // Generate risk assessment
       const riskAssessment = await this.generateRiskAssessment(
-        semanticAnalysis,
+        semanticAnalysis as Record<string, unknown>,
         executiveSynthesis
       );
 
@@ -506,7 +514,7 @@ class ExecutiveSynthesisEngine {
         'Implement quarterly progress reviews'
       ],
       confidenceScore: 0.92,
-      findings: semanticAnalysis
+      findings: _semanticAnalysis
     };
   }
 }

@@ -151,13 +151,13 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
       );
 
       // Detect and analyze threats
-      const threatAnalysis = await this.detectAndAnalyzeThreats(
+      const _threatAnalysis = await this.detectAndAnalyzeThreats(
         zeroTrustResults,
         executiveId
       );
 
       // Validate privacy compliance
-      const privacyValidation = await this.privacyEngine.validatePrivacyCompliance(
+      const _privacyValidation = await this.privacyEngine.validatePrivacyCompliance(
         executiveId,
         context
       );
@@ -170,15 +170,15 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
 
       // Generate security recommendations
       const recommendations = await this.generateSecurityRecommendations(
-        threatAnalysis,
-        privacyValidation,
+        _threatAnalysis,
+        _privacyValidation,
         complianceCheck
       );
 
       // Store monitoring results
       await this.storeMonitoringResults(executiveId, {
-        threats: threatAnalysis,
-        privacy: privacyValidation,
+        threats: _threatAnalysis,
+        privacy: _privacyValidation,
         compliance: complianceCheck,
         recommendations
       });
@@ -190,11 +190,11 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
       const result: SecurityMonitoringResult = {
         success: true,
         monitored_systems: zeroTrustResults.systemsMonitored,
-        threats_detected: threatAnalysis.threatsDetected,
-        privacy_violations: privacyValidation.violationsDetected,
+        threats_detected: _threatAnalysis.threatsDetected,
+        privacy_violations: _privacyValidation.violationsDetected,
         compliance_status: complianceCheck.overallStatus,
         recommendations,
-        next_actions: await this.generateNextActions(threatAnalysis, privacyValidation),
+        next_actions: await this.generateNextActions(_threatAnalysis, _privacyValidation),
         monitoring_period: monitoringPeriod
       };
 
@@ -381,8 +381,8 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
   }
 
   private async generateSecurityRecommendations(
-    _threatAnalysis: any,
-    _privacyValidation: any,
+    __threatAnalysis: any,
+    __privacyValidation: any,
     _complianceCheck: any
   ): Promise<string[]> {
     const recommendations = [
@@ -391,11 +391,11 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
       'Review access control policies quarterly'
     ];
 
-    if (threatAnalysis.threatsDetected > 0) {
+    if (_threatAnalysis.threatsDetected > 0) {
       recommendations.push('Investigate detected security threats immediately');
     }
 
-    if (privacyValidation.violationsDetected > 0) {
+    if (_privacyValidation.violationsDetected > 0) {
       recommendations.push('Address privacy compliance violations');
     }
 
@@ -403,8 +403,8 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
   }
 
   private async generateNextActions(
-    _threatAnalysis: any,
-    _privacyValidation: any
+    __threatAnalysis: any,
+    __privacyValidation: any
   ): Promise<string[]> {
     return [
       'Continue continuous security monitoring',
