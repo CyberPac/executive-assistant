@@ -356,7 +356,7 @@ describe('SecurityPrivacyAgent', () => {
       
       // Should handle critical incidents with high priority
       expect(responseResult.containmentSuccess).toBeDefined();
-      expect(Array.isArray(responseResult.mitigationSteps) ? responseResult.mitigationSteps.length : 0).toBeGreaterThan(0);
+      expect(Array.isArray(responseResult.mitigationSteps) ? (responseResult.mitigationSteps as any[]).length : 0).toBeGreaterThan(0);
       
       // Should log escalation for critical incidents
       expect(console.log).toHaveBeenCalledWith(
@@ -403,7 +403,7 @@ describe('SecurityPrivacyAgent', () => {
         );
         
         expect(responseResult.containmentSuccess).toBeDefined();
-        expect(Array.isArray(responseResult.mitigationSteps) ? responseResult.mitigationSteps.length : 0).toBeGreaterThan(0);
+        expect(Array.isArray(responseResult.mitigationSteps) ? (responseResult.mitigationSteps as any[]).length : 0).toBeGreaterThan(0);
       }
     });
 

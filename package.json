@@ -20,7 +20,7 @@
     "typecheck:watch": "tsc --noEmit --watch",
     "quality:check": "npm run build && npm run lint:check && npm run typecheck && npm run test",
     "quality:fix": "npm run lint:fix && npm run test:coverage",
-    "prepare": "husky install",
+    "prepare": "husky",
     "start:cultural": "tsx agents/cultural-intelligence/index.ts",
     "start:travel": "tsx agents/travel-logistics/index.ts",
     "start:financial": "tsx agents/financial-management/index.ts",
@@ -29,7 +29,7 @@
   "dependencies": {
     "@types/node": "^20.19.7",
     "better-sqlite3": "^12.2.0",
-    "claude-flow": "^2.0.0-alpha.82",
+    "claude-flow": "^1.1.1",
     "nanoid": "^5.0.4",
     "ruv-swarm": "^1.0.14",
     "tsx": "^4.6.2",
@@ -57,7 +57,7 @@
   "author": "CyberPac",
   "license": "MIT",
   "engines": {
-    "node": "18.x",
+    "node": "20.x",
     "npm": ">=9.0.0"
   }
 }

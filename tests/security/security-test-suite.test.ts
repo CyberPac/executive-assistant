@@ -42,17 +42,8 @@ describe('Executive Assistant Security Test Suite', () => {
 
   afterAll(async () => {
     // Generate final security report
-    const results = testRunner.getResults ? testRunner.getResults() : [];
-    const metrics = testRunner.getMetrics ? testRunner.getMetrics() : {
-      testsRun: 0,
-      testsPassed: 0,
-      testsFailed: 0,
-      vulnerabilitiesFound: 0,
-      criticalIssues: 0,
-      complianceScore: 0,
-      coverage: 0,
-      executionTime: 0
-    };
+    const results = testRunner.getResults();
+    const metrics = testRunner.getMetrics();
     
     const report = testRunner.generateSecurityReport ? testRunner.generateSecurityReport(results, metrics) : '';
     const reportPath = path.join(__dirname, '../../../reports/security/security-test-report.md');

@@ -56,42 +56,42 @@ export const mockCalendarEvents = [
  */
 export const createMockMCPIntegration = (overrides: Partial<ClaudeFlowMCPIntegration> = {}): jest.Mocked<ClaudeFlowMCPIntegration> => {
   const mockIntegration = {
-    swarmInit: jest.fn().mockResolvedValue({
+    swarmInit: jest.fn<Promise<SwarmResponse>, [string, number, string]>().mockResolvedValue({
       swarmId: 'test-swarm-123',
       topology: 'hierarchical',
       agentCount: 5,
       success: true
     }),
     
-    agentSpawn: jest.fn().mockResolvedValue({
+    agentSpawn: jest.fn<Promise<AgentSpawnResponse>, [string, string, string[]]>().mockResolvedValue({
       agentId: 'test-agent-456',
       agentType: 'researcher',
       capabilities: ['analysis', 'research'],
       status: 'active'
     }),
     
-    taskOrchestrate: jest.fn().mockResolvedValue({
+    taskOrchestrate: jest.fn<Promise<TaskResponse>, [string, string, string]>().mockResolvedValue({
       taskId: 'test-task-789',
       status: 'assigned',
       assignedAgents: ['test-agent-456'],
       estimatedCompletion: new Date()
     }),
     
-    memoryUsage: jest.fn().mockResolvedValue({
+    memoryUsage: jest.fn<Promise<MemoryResponse>, [string, string, string, string?]>().mockResolvedValue({
       stored: true,
       key: 'test-key',
       timestamp: new Date(),
       namespace: 'test'
     }),
     
-    neuralTrain: jest.fn().mockResolvedValue({
+    neuralTrain: jest.fn<Promise<NeuralResponse>, [string, string, number?]>().mockResolvedValue({
       modelId: 'test-model-101',
       trainingComplete: true,
       accuracy: 0.95,
       epochs: 50
     }),
     
-    neuralPatterns: jest.fn().mockResolvedValue({
+    neuralPatterns: jest.fn<Promise<NeuralResponse>, [string, string, Record<string, unknown>]>().mockResolvedValue({
       patternId: 'test-pattern-202',
       patterns: ['coordination', 'optimization'],
       confidence: 0.92
