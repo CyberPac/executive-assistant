@@ -203,3 +203,162 @@ export const createMockFinancialData = () => ({
     confidence: 0.85
   }
 });
+
+/**
+ * Creates a mock financial context for testing
+ */
+export const createMockFinancialContext = () => ({
+  portfolioId: 'portfolio-123',
+  riskTolerance: 'moderate',
+  investmentHorizon: 'long-term',
+  totalValue: 500000,
+  currency: 'USD'
+});
+
+/**
+ * Creates a mock portfolio profile for testing
+ */
+export const createMockPortfolioProfile = () => ({
+  id: 'profile-456',
+  name: 'Executive Portfolio',
+  strategy: 'balanced',
+  allocation: {
+    stocks: 60,
+    bonds: 30,
+    cash: 10
+  },
+  performance: {
+    ytd: 0.08,
+    oneYear: 0.12
+  }
+});
+
+/**
+ * Creates a mock holdings batch for testing
+ */
+export const createMockHoldingsBatch = () => ([
+  {
+    symbol: 'AAPL',
+    quantity: 100,
+    currentPrice: 150.00,
+    marketValue: 15000
+  },
+  {
+    symbol: 'GOOGL',
+    quantity: 50,
+    currentPrice: 2800.00,
+    marketValue: 140000
+  }
+]);
+
+/**
+ * Creates mock market data for testing
+ */
+export const createMockMarketData = () => ({
+  indices: {
+    sp500: { value: 4500, change: 0.02 },
+    nasdaq: { value: 15000, change: 0.015 }
+  },
+  commodities: {
+    gold: { price: 1800, change: -0.01 },
+    oil: { price: 70, change: 0.03 }
+  }
+});
+
+/**
+ * Creates a mock security threat for testing
+ */
+export const createMockSecurityThreat = (overrides = {}) => ({
+  id: 'threat-789',
+  type: 'unauthorized_access',
+  severity: 'high',
+  source: 'external',
+  target: 'api_endpoint',
+  description: 'Suspicious login attempts',
+  detected: true,
+  mitigated: false,
+  timestamp: new Date(),
+  confidence: 0.85,
+  affectedSystems: ['auth_system'],
+  recommendedActions: ['block_ip', 'review_logs'],
+  detectedAt: new Date().toISOString(),
+  ...overrides
+});
+
+/**
+ * Mock performance timer for testing
+ */
+export class MockPerformanceTimer {
+  private startTime: number = Date.now();
+  
+  start(): void {
+    this.startTime = Date.now();
+  }
+  
+  stop(): number {
+    return Date.now() - this.startTime;
+  }
+  
+  measure(): number {
+    return Date.now() - this.startTime;
+  }
+  
+  reset(): void {
+    this.startTime = Date.now();
+  }
+}
+
+/**
+ * Asserts that an agent is properly initialized
+ */
+export const assertAgentInitialization = (agent: any, expectedType: string) => {
+  expect(agent).toBeDefined();
+  expect(agent.agentType).toBe(expectedType);
+  expect(agent.agentId).toBeDefined();
+  expect(agent.status).toBe('active');
+};
+
+/**
+ * Asserts performance metrics are within expected ranges
+ */
+export const assertPerformanceMetrics = (metrics: any, expectations: any = {}) => {
+  expect(metrics).toBeDefined();
+  expect(typeof metrics.responseTime).toBe('number');
+  expect(metrics.responseTime).toBeGreaterThanOrEqual(0);
+  
+  if (expectations.maxResponseTime) {
+    expect(metrics.responseTime).toBeLessThanOrEqual(expectations.maxResponseTime);
+  }
+  
+  if (expectations.minSuccessRate) {
+    expect(metrics.successRate || 0).toBeGreaterThanOrEqual(expectations.minSuccessRate);
+  }
+};
+
+/**
+ * Creates a complete mock ExecutiveContext with proper preferences
+ */
+export const createMockExecutiveContext = (overrides = {}) => ({
+  executiveId: 'exec-001',
+  sessionId: 'session-123',
+  currentPriority: 'high' as const,
+  stakeholders: ['stakeholder1', 'stakeholder2'],
+  timeZone: 'UTC',
+  confidentialityLevel: 'OPERATIONAL' as const,
+  preferences: {
+    communicationStyle: 'professional' as const,
+    decisionThreshold: 0.8,
+    privacyLevel: 'OPERATIONAL' as const,
+    timeZone: 'UTC',
+    languages: ['en'],
+    culturalAdaptation: true,
+    riskTolerance: 'moderate',
+    decisionSpeed: 'balanced'
+  },
+  currentContext: {
+    meetingStatus: 'available',
+    priority: 'high',
+    workload: 'normal'
+  },
+  ...overrides
+});

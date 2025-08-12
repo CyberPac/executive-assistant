@@ -8,18 +8,24 @@ import { PEAAgentType, AgentStatus, SecurityLevel } from '../../../src/types/enu
 import { SecurityThreat } from '../../../src/types/pea-agent-types';
 import {
   createMockMCPIntegration,
-  mockExecutiveContext
+  createMockSecurityThreat,
+  assertAgentInitialization,
+  assertPerformanceMetrics,
+  MockPerformanceTimer,
+  createMockExecutiveContext
 } from '../../utils/test-factories';
 
 describe('SecurityPrivacyAgent', () => {
   let agent: SecurityPrivacyAgent;
   let mockMcpIntegration: jest.Mocked<any>;
   let performanceTimer: MockPerformanceTimer;
+  let mockExecContext: any;
 
   beforeEach(() => {
     mockMcpIntegration = createMockMCPIntegration();
     agent = new SecurityPrivacyAgent(mockMcpIntegration);
     performanceTimer = new MockPerformanceTimer();
+    mockExecContext = createMockExecutiveContext();
     
     // Mock console methods to reduce test output noise
     jest.spyOn(console, 'log').mockImplementation();
@@ -97,11 +103,11 @@ describe('SecurityPrivacyAgent', () => {
   });
 
   describe('Security Monitoring', () => {
-    let mockExecutiveContext: any;
+    let mockExecContext: any;
 
     beforeEach(async () => {
       await agent.initialize();
-      mockExecutiveContext = mockExecutiveContext;
+      mockExecContext = mockExecContext;
     });
 
     it('should perform comprehensive security monitoring', async () => {
@@ -109,7 +115,7 @@ describe('SecurityPrivacyAgent', () => {
       
       const monitoringResult = await agent.performSecurityMonitoring(
         'exec-001',
-        mockExecutiveContext,
+        mockExecContext,
         '24h'
       );
       
@@ -131,7 +137,7 @@ describe('SecurityPrivacyAgent', () => {
     it('should detect and analyze threats effectively', async () => {
       const monitoringResult = await agent.performSecurityMonitoring(
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       if (monitoringResult.threats_detected > 0) {
@@ -146,7 +152,7 @@ describe('SecurityPrivacyAgent', () => {
     it('should validate privacy compliance during monitoring', async () => {
       const monitoringResult = await agent.performSecurityMonitoring(
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       expect(monitoringResult.compliance_status).toMatch(/compliant|warning|violation/);
@@ -162,7 +168,7 @@ describe('SecurityPrivacyAgent', () => {
       for (const period of periods) {
         const result = await agent.performSecurityMonitoring(
           'exec-001',
-          mockExecutiveContext,
+          mockExecContext,
           period
         );
         
@@ -172,7 +178,7 @@ describe('SecurityPrivacyAgent', () => {
     });
 
     it('should store monitoring results for analysis', async () => {
-      await agent.performSecurityMonitoring('exec-001', mockExecutiveContext);
+      await agent.performSecurityMonitoring('exec-001', mockExecContext);
       
       expect(mockMcpIntegration.memoryUsage).toHaveBeenCalledWith(
         'store',
@@ -187,7 +193,7 @@ describe('SecurityPrivacyAgent', () => {
       mockMcpIntegration.memoryUsage.mockRejectedValueOnce(new Error('Monitoring system failure'));
       
       await expect(
-        agent.performSecurityMonitoring('exec-001', mockExecutiveContext)
+        agent.performSecurityMonitoring('exec-001', mockExecContext)
       ).rejects.toThrow('Monitoring system failure');
       
       // Should track error in performance metrics
@@ -197,7 +203,7 @@ describe('SecurityPrivacyAgent', () => {
     it('should update performance metrics during monitoring', async () => {
       const initialMetrics = { ...agent.performanceMetrics };
       
-      await agent.performSecurityMonitoring('exec-001', mockExecutiveContext);
+      await agent.performSecurityMonitoring('exec-001', mockExecContext);
       
       assertPerformanceMetrics(agent.performanceMetrics, {
         responseTimeMs: 5000,
@@ -209,11 +215,11 @@ describe('SecurityPrivacyAgent', () => {
   });
 
   describe('Data Classification and Protection', () => {
-    let mockExecutiveContext: any;
+    let mockExecContext: any;
 
     beforeEach(async () => {
       await agent.initialize();
-      mockExecutiveContext = mockExecutiveContext;
+      mockExecContext = mockExecContext;
     });
 
     it('should classify data based on sensitivity analysis', async () => {
@@ -229,7 +235,7 @@ describe('SecurityPrivacyAgent', () => {
         'data-001',
         sensitiveData,
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       const classificationTime = performanceTimer.measure();
@@ -252,7 +258,7 @@ describe('SecurityPrivacyAgent', () => {
         'data-002',
         testData,
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       // Should store classification and encryption results
@@ -277,7 +283,7 @@ describe('SecurityPrivacyAgent', () => {
           `data-${type}`,
           data,
           'exec-001',
-          mockExecutiveContext
+          mockExecContext
         );
         
         expect(classification.dataId).toBe(`data-${type}`);
@@ -294,7 +300,7 @@ describe('SecurityPrivacyAgent', () => {
         'personal-data-001',
         personalData,
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       // Should include relevant compliance requirements
@@ -306,19 +312,19 @@ describe('SecurityPrivacyAgent', () => {
       const invalidData = null;
       
       await expect(
-        agent.classifyAndProtectData('invalid-data', invalidData, 'exec-001', mockExecutiveContext)
+        agent.classifyAndProtectData('invalid-data', invalidData, 'exec-001', mockExecContext)
       ).rejects.toBeDefined();
     });
   });
 
   describe('Security Incident Handling', () => {
     let mockThreat: SecurityThreat;
-    let mockExecutiveContext: any;
+    let mockExecContext: any;
 
     beforeEach(async () => {
       await agent.initialize();
       mockThreat = mockThreat;
-      mockExecutiveContext = mockExecutiveContext;
+      mockExecContext = mockExecContext;
     });
 
     it('should handle security incidents with immediate response', async () => {
@@ -327,7 +333,7 @@ describe('SecurityPrivacyAgent', () => {
       const responseResult = await agent.handleSecurityIncident(
         mockThreat,
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       const responseTime = performanceTimer.measure();
@@ -351,7 +357,7 @@ describe('SecurityPrivacyAgent', () => {
       const responseResult = await agent.handleSecurityIncident(
         criticalThreat,
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       // Should handle critical incidents with high priority
@@ -368,7 +374,7 @@ describe('SecurityPrivacyAgent', () => {
       const responseResult = await agent.handleSecurityIncident(
         mockThreat,
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       expect(responseResult).toBeDefined();
@@ -378,7 +384,7 @@ describe('SecurityPrivacyAgent', () => {
     });
 
     it('should store incident details for future analysis', async () => {
-      await agent.handleSecurityIncident(mockThreat, 'exec-001', mockExecutiveContext);
+      await agent.handleSecurityIncident(mockThreat, 'exec-001', mockExecContext);
       
       // Should store incident handling activity
       expect(mockMcpIntegration.memoryUsage).toHaveBeenCalled();
@@ -399,7 +405,7 @@ describe('SecurityPrivacyAgent', () => {
         const responseResult = await agent.handleSecurityIncident(
           threat,
           'exec-001',
-          mockExecutiveContext
+          mockExecContext
         );
         
         expect(responseResult.containmentSuccess).toBeDefined();
@@ -408,7 +414,7 @@ describe('SecurityPrivacyAgent', () => {
     });
 
     it('should update security metrics after incident handling', async () => {
-      await agent.handleSecurityIncident(mockThreat, 'exec-001', mockExecutiveContext);
+      await agent.handleSecurityIncident(mockThreat, 'exec-001', mockExecContext);
       
       // Should update consensus success rate based on incident response
       expect(agent.performanceMetrics.consensusSuccessRate).toBeDefined();
@@ -417,11 +423,11 @@ describe('SecurityPrivacyAgent', () => {
   });
 
   describe('Compliance Validation', () => {
-    let mockExecutiveContext: any;
+    let mockExecContext: any;
 
     beforeEach(async () => {
       await agent.initialize();
-      mockExecutiveContext = mockExecutiveContext;
+      mockExecContext = mockExecContext;
     });
 
     it('should validate compliance across multiple regulations', async () => {
@@ -432,7 +438,7 @@ describe('SecurityPrivacyAgent', () => {
       const validation = await agent.validateComplianceStatus(
         'exec-001',
         regulations,
-        mockExecutiveContext
+        mockExecContext
       );
       
       const validationTime = performanceTimer.measure();
@@ -452,7 +458,7 @@ describe('SecurityPrivacyAgent', () => {
       const validation = await agent.validateComplianceStatus(
         'exec-001',
         ['GDPR'],
-        mockExecutiveContext
+        mockExecContext
       );
       
       expect(mockMcpIntegration.memoryUsage).toHaveBeenCalledWith(
@@ -475,7 +481,7 @@ describe('SecurityPrivacyAgent', () => {
         const validation = await agent.validateComplianceStatus(
           'exec-001',
           regulations,
-          mockExecutiveContext
+          mockExecContext
         );
         
         expect(validation.regulations).toEqual(regulations);
@@ -487,7 +493,7 @@ describe('SecurityPrivacyAgent', () => {
       const validation = await agent.validateComplianceStatus(
         'exec-001',
         ['GDPR', 'CCPA'],
-        mockExecutiveContext
+        mockExecContext
       );
       
       expect(validation.recommendations.length).toBeGreaterThan(0);
@@ -499,8 +505,8 @@ describe('SecurityPrivacyAgent', () => {
 
     it('should track compliance history for executives', async () => {
       // Perform multiple validations
-      await agent.validateComplianceStatus('exec-001', ['GDPR'], mockExecutiveContext);
-      await agent.validateComplianceStatus('exec-001', ['CCPA'], mockExecutiveContext);
+      await agent.validateComplianceStatus('exec-001', ['GDPR'], mockExecContext);
+      await agent.validateComplianceStatus('exec-001', ['CCPA'], mockExecContext);
       
       // Should store both validations in history
       expect(mockMcpIntegration.memoryUsage).toHaveBeenCalledTimes(4); // 2 from init, 2 from validations
@@ -515,7 +521,7 @@ describe('SecurityPrivacyAgent', () => {
     it('should integrate zero-trust engine effectively', async () => {
       const monitoringResult = await agent.performSecurityMonitoring(
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       // Zero-trust engine should contribute to monitoring results
@@ -524,11 +530,11 @@ describe('SecurityPrivacyAgent', () => {
     });
 
     it('should perform security scans through zero-trust engine', async () => {
-      const mockExecutiveContext = mockExecutiveContext;
+      const mockExecContext = createMockExecutiveContext();
       
       const monitoringResult = await agent.performSecurityMonitoring(
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       // Should have performed security scan
@@ -536,12 +542,12 @@ describe('SecurityPrivacyAgent', () => {
     });
 
     it('should contain threats through zero-trust engine', async () => {
-      const mockThreat = mockThreat;
+      const mockThreat = createMockSecurityThreat();
       
       const responseResult = await agent.handleSecurityIncident(
         mockThreat,
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       // Should have contained threat successfully
@@ -557,7 +563,7 @@ describe('SecurityPrivacyAgent', () => {
     it('should validate privacy compliance effectively', async () => {
       const monitoringResult = await agent.performSecurityMonitoring(
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       // Privacy engine should contribute to monitoring
@@ -574,7 +580,7 @@ describe('SecurityPrivacyAgent', () => {
         'sensitive-001',
         sensitiveData,
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       // Should classify as confidential due to sensitive content
@@ -597,7 +603,7 @@ describe('SecurityPrivacyAgent', () => {
         'quantum-001',
         highSecurityData,
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       // Should apply enhanced encryption for high-security data
@@ -616,7 +622,7 @@ describe('SecurityPrivacyAgent', () => {
           `encryption-test-${Math.random()}`,
           data,
           'exec-001',
-          mockExecutiveContext
+          mockExecContext
         );
         
         expect(classification.encryptionLevel).toBeDefined();
@@ -631,7 +637,7 @@ describe('SecurityPrivacyAgent', () => {
 
     it('should handle high-frequency security monitoring', async () => {
       const monitoringTasks = Array.from({ length: 10 }, (_, i) => 
-        agent.performSecurityMonitoring(`exec-${i}`, mockExecutiveContext, '1h')
+        agent.performSecurityMonitoring(`exec-${i}`, mockExecContext, '1h')
       );
       
       performanceTimer.start();
@@ -653,7 +659,7 @@ describe('SecurityPrivacyAgent', () => {
           `data-${i}`,
           { testData: `sample data ${i}` },
           'exec-001',
-          mockExecutiveContext
+          mockExecContext
         )
       );
       
@@ -676,9 +682,9 @@ describe('SecurityPrivacyAgent', () => {
 
     it('should maintain consistent performance under load', async () => {
       const performanceTasks = [
-        () => agent.performSecurityMonitoring('exec-001', mockExecutiveContext),
-        () => agent.classifyAndProtectData('data-001', { test: 'data' }, 'exec-001', mockExecutiveContext),
-        () => agent.validateComplianceStatus('exec-001', ['GDPR'], mockExecutiveContext)
+        () => agent.performSecurityMonitoring('exec-001', mockExecContext),
+        () => agent.classifyAndProtectData('data-001', { test: 'data' }, 'exec-001', mockExecContext),
+        () => agent.validateComplianceStatus('exec-001', ['GDPR'], mockExecContext)
       ];
       
       const responseTimes: number[] = [];
@@ -711,7 +717,7 @@ describe('SecurityPrivacyAgent', () => {
       mockMcpIntegration.memoryUsage.mockRejectedValueOnce(new Error('Security engine failure'));
       
       await expect(
-        agent.performSecurityMonitoring('exec-001', mockExecutiveContext)
+        agent.performSecurityMonitoring('exec-001', mockExecContext)
       ).rejects.toThrow();
       
       // Should track error rate
@@ -722,7 +728,7 @@ describe('SecurityPrivacyAgent', () => {
       // Mock privacy validation failure but allow monitoring to continue
       const result = await agent.performSecurityMonitoring(
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       expect(result.success).toBe(true);
@@ -732,7 +738,7 @@ describe('SecurityPrivacyAgent', () => {
       mockMcpIntegration.memoryUsage.mockRejectedValue(new Error('Compliance system unavailable'));
       
       await expect(
-        agent.validateComplianceStatus('exec-001', ['GDPR'], mockExecutiveContext)
+        agent.validateComplianceStatus('exec-001', ['GDPR'], mockExecContext)
       ).rejects.toThrow();
     });
 
@@ -743,7 +749,7 @@ describe('SecurityPrivacyAgent', () => {
       for (let i = 0; i < 3; i++) {
         try {
           mockMcpIntegration.memoryUsage.mockRejectedValueOnce(new Error(`Error ${i}`));
-          await agent.classifyAndProtectData(`data-${i}`, {}, 'exec-001', mockExecutiveContext);
+          await agent.classifyAndProtectData(`data-${i}`, {}, 'exec-001', mockExecContext);
         } catch (_error) {
           // Expected errors
         }
@@ -759,7 +765,7 @@ describe('SecurityPrivacyAgent', () => {
     });
 
     it('should integrate with Claude Flow memory system', async () => {
-      await agent.performSecurityMonitoring('exec-001', mockExecutiveContext);
+      await agent.performSecurityMonitoring('exec-001', mockExecContext);
       
       // Should store monitoring results
       expect(mockMcpIntegration.memoryUsage).toHaveBeenCalledWith(
@@ -776,7 +782,7 @@ describe('SecurityPrivacyAgent', () => {
       await agent.handleSecurityIncident(
         mockThreat,
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       // Should store incident details for coordination
@@ -788,7 +794,7 @@ describe('SecurityPrivacyAgent', () => {
         'persistent-data-001',
         { sensitive: 'information' },
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       // Should store classification for future reference
