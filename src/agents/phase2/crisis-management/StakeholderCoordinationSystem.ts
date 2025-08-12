@@ -18,8 +18,8 @@
 
 import {
   ExecutiveContext,
-  StakeholderContext,
-  CommunicationEvent,
+  StakeholderContext as _StakeholderContext,
+  CommunicationEvent as _CommunicationEvent,
   ClaudeFlowMCPIntegration,
   SecurityLevel
 } from '../../../types/pea-agent-types';
@@ -644,7 +644,7 @@ export class StakeholderCoordinationSystem {
 
   private async identifyRelevantStakeholders(
     crisisEvent: CrisisEvent,
-    executiveContext: ExecutiveContext
+    _executiveContext: ExecutiveContext
   ): Promise<StakeholderProfile[]> {
     const relevantStakeholders: StakeholderProfile[] = [];
 
@@ -898,7 +898,7 @@ export class StakeholderCoordinationSystem {
 
   private createEscalationLevels(
     stakeholder: StakeholderProfile,
-    crisisEvent: CrisisEvent
+    _crisisEvent: CrisisEvent
   ): EscalationLevel[] {
     const levels: EscalationLevel[] = [];
 
@@ -1062,7 +1062,7 @@ export class StakeholderCoordinationSystem {
     return Math.ceil(totalTime);
   }
 
-  private async checkEscalationNeeded(escalationPath: EscalationPath, planId: string): Promise<boolean> {
+  private async checkEscalationNeeded(_escalationPath: EscalationPath, _planId: string): Promise<boolean> {
     // In production, would check actual response status
     // For now, simulate based on time elapsed and stakeholder reliability
     return Math.random() < 0.2; // 20% chance of escalation needed
@@ -1104,7 +1104,7 @@ class CulturalAdaptationEngine {
   async generateAdaptations(
     stakeholders: StakeholderProfile[],
     crisisEvent: CrisisEvent,
-    executiveContext: ExecutiveContext
+    _executiveContext: ExecutiveContext
   ): Promise<CulturalAdaptation[]> {
     const adaptations: CulturalAdaptation[] = [];
     const cultures = new Set<string>();
@@ -1143,7 +1143,7 @@ class CulturalAdaptationEngine {
     return styles[culture] || 'professional and respectful';
   }
 
-  private getProtocolRequirements(culture: string, crisisEvent: CrisisEvent): string[] {
+  private getProtocolRequirements(culture: string, _crisisEvent: CrisisEvent): string[] {
     const requirements: Record<string, string[]> = {
       'US': ['immediate_disclosure', 'executive_accountability', 'action_plan'],
       'JP': ['respect_for_hierarchy', 'face_saving_approach', 'consensus_building'],
@@ -1182,7 +1182,7 @@ class CommunicationOrchestrator {
   async sendCommunicationWave(
     wave: CommunicationWave,
     culturalAdaptations: CulturalAdaptation[],
-    executiveContext: ExecutiveContext
+    _executiveContext: ExecutiveContext
   ): Promise<{ sent: number; responses: number }> {
     console.log(`📤 Sending communication wave ${wave.waveNumber} to ${wave.targetStakeholders.length} stakeholders`);
 
@@ -1212,7 +1212,7 @@ class CommunicationOrchestrator {
   private async sendStakeholderCommunication(
     stakeholderId: string,
     wave: CommunicationWave,
-    culturalAdaptations: CulturalAdaptation[]
+    _culturalAdaptations: CulturalAdaptation[]
   ): Promise<void> {
     // Get cultural adaptation for this stakeholder
     const adaptation = wave.culturalAdaptations.get(stakeholderId);

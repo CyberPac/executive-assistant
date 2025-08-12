@@ -20,7 +20,7 @@ declare module 'vscode' {
 
   export interface Terminal {
     name: string;
-    processId: Thenable<number | undefined>;
+    processId: Promise<number | undefined>;
     sendText(text: string, addNewLine?: boolean): void;
     show(preserveFocus?: boolean): void;
     hide(): void;
@@ -59,15 +59,15 @@ declare module 'vscode' {
     export function showErrorMessage(
       message: string,
       ...items: string[]
-    ): Thenable<string | undefined>;
+    ): Promise<string | undefined>;
     export function showInformationMessage(
       message: string,
       ...items: string[]
-    ): Thenable<string | undefined>;
+    ): Promise<string | undefined>;
     export function showWarningMessage(
       message: string,
       ...items: string[]
-    ): Thenable<string | undefined>;
+    ): Promise<string | undefined>;
     export const onDidCloseTerminal: Event<Terminal>;
     export function registerTerminalProfileProvider(id: string, provider: any): any;
   }

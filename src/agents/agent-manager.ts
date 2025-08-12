@@ -16,8 +16,7 @@ import {
   AgentEnvironment,
   AgentMetrics,
   AgentError,
-  AgentHealth,
-  AgentWorkload
+  AgentHealth
 } from '../swarm/types';
 import type { DistributedMemorySystem } from '../memory/distributed-memory';
 import { generateId } from '../utils/helpers';
@@ -30,7 +29,7 @@ class AgentErrorImpl extends Error implements AgentError {
   public agentId: AgentId;
   public type: 'INITIALIZATION_ERROR' | 'EXECUTION_ERROR' | 'COMMUNICATION_ERROR' | 'RESOURCE_ERROR';
   public timestamp: Date;
-  public context?: Record<string, any>;
+  public context?: Record<string, unknown>;
   public severity: 'low' | 'medium' | 'high' | 'critical';
 
   constructor(
@@ -40,7 +39,7 @@ class AgentErrorImpl extends Error implements AgentError {
     message: string,
     type: 'INITIALIZATION_ERROR' | 'EXECUTION_ERROR' | 'COMMUNICATION_ERROR' | 'RESOURCE_ERROR',
     severity: 'low' | 'medium' | 'high' | 'critical',
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ) {
     super(message);
     this.name = name;
@@ -156,8 +155,8 @@ export class AgentManager extends EventEmitter {
 
   // Health monitoring
   private healthChecks = new Map<string, AgentHealth>();
-  private healthInterval?: NodeJS.Timeout;
-  private heartbeatInterval?: NodeJS.Timeout;
+  private healthInterval?: ReturnType<typeof setInterval>;
+  private heartbeatInterval?: ReturnType<typeof setInterval>;
 
   // Scaling and policies
   private scalingPolicies = new Map<string, ScalingPolicy>();
@@ -473,7 +472,8 @@ export class AgentManager extends EventEmitter {
     }
 
     const agentId = generateId('agent');
-    const swarmId = 'default'; // Could be parameterized
+    // swarmId could be used for future parameterization
+    // const swarmId = 'default';
 
     const agent: AgentState = {
       id: agentId,
@@ -915,7 +915,7 @@ export class AgentManager extends EventEmitter {
       } else {
         return 1.0; // Responsive
       }
-    } catch (error) {
+    } catch (_error) {
       return 0; // Failed to respond
     }
   }
@@ -1036,7 +1036,7 @@ export class AgentManager extends EventEmitter {
   // === UTILITY METHODS ===
 
   private async spawnAgentProcess(agent: AgentState): Promise<ChildProcess> {
-    const env: NodeJS.ProcessEnv = {
+    const env: Record<string, string | undefined> = {
       ...process.env,
       AGENT_ID: agent.id,
       AGENT_TYPE: agent.type,
@@ -1253,7 +1253,7 @@ export class AgentManager extends EventEmitter {
     };
   }
 
-  private createDefaultHealth(agentId: string): AgentHealth {
+  private createDefaultHealth(_agentId: string): AgentHealth {
     return {
       status: 'healthy',
       lastCheck: new Date(),

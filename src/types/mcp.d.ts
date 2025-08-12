@@ -1,11 +1,26 @@
 // Type definitions for Model Context Protocol SDK
+
+// Base transport interface
+export interface Transport {
+  start(): Promise<void>;
+  close(): Promise<void>;
+}
+
+export interface RequestParams {
+  [key: string]: unknown;
+}
+
+export interface ServerResponse {
+  [key: string]: unknown;
+}
+
 declare module '@modelcontextprotocol/sdk/types.js' {
   export interface Tool {
     name: string;
     description: string;
     inputSchema: {
       type: string;
-      properties?: Record<string, any>;
+      properties?: Record<string, unknown>;
       required?: string[];
     };
   }
@@ -14,7 +29,7 @@ declare module '@modelcontextprotocol/sdk/types.js' {
     method: string;
     params: {
       name: string;
-      arguments?: Record<string, any>;
+      arguments?: Record<string, unknown>;
     };
   }
 
@@ -32,17 +47,12 @@ declare module '@modelcontextprotocol/sdk/types.js' {
 }
 
 declare module '@modelcontextprotocol/sdk/server/index.js' {
-  import {
-    Tool,
-    CallToolRequest,
-    CallToolResult,
-    ListToolsResult,
-  } from '@modelcontextprotocol/sdk/types.js';
+  import { Transport } from './mcp';
 
   export class Server {
     constructor();
-    setRequestHandler<T>(method: string, handler: (request: T) => Promise<any>): void;
-    connect(transport: any): Promise<void>;
+    setRequestHandler<T>(method: string, handler: (request: T) => Promise<unknown>): void;
+    connect(transport: Transport): Promise<void>;
     close(): Promise<void>;
   }
 }
@@ -54,10 +64,12 @@ declare module '@modelcontextprotocol/sdk/server/stdio.js' {
 }
 
 declare module '@modelcontextprotocol/sdk/client/index.js' {
+  import { Transport, RequestParams, ServerResponse } from './mcp';
+  
   export class Client {
     constructor(config: { name: string; version: string });
-    connect(transport: any): Promise<void>;
-    request(method: string, params?: any): Promise<any>;
+    connect(transport: Transport): Promise<void>;
+    request(method: string, params?: RequestParams): Promise<ServerResponse>;
     close(): Promise<void>;
   }
 }

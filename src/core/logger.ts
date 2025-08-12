@@ -257,7 +257,7 @@ export class Logger implements ILogger {
     }
   }
 
-  private outputToFile(entry: LogEntry): void {
+  private outputToFile(_entry: LogEntry): void {
     // File output would be implemented here
     // For now, just a placeholder
   }

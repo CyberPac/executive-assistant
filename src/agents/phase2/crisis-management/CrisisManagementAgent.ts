@@ -22,9 +22,6 @@ import {
   ExecutiveContext,
   SecurityLevel,
   ClaudeFlowMCPIntegration,
-  PEATask,
-  TaskType,
-  TaskStatus,
   AgentStatus
 } from '../../../types/pea-agent-types';
 
@@ -277,7 +274,7 @@ export class CrisisManagementAgent extends PEAAgentBase {
 
     try {
       // Orchestrate response planning with other agents
-      const coordinationTask = await this.mcpIntegration.taskOrchestrate(
+      await this.mcpIntegration.taskOrchestrate(
         `Crisis response planning: ${crisisEvent.type} [${crisisEvent.severity}]`,
         'adaptive',
         'critical'
@@ -336,7 +333,7 @@ export class CrisisManagementAgent extends PEAAgentBase {
    */
   async executeCrisisResponse(
     crisisResponse: CrisisResponse,
-    executiveContext: ExecutiveContext
+    _executiveContext: ExecutiveContext
   ): Promise<{ success: boolean; executionTime: number; actionsCompleted: number }> {
     const startTime = Date.now();
 
@@ -530,7 +527,7 @@ export class CrisisManagementAgent extends PEAAgentBase {
 
   private async generateStakeholderCommunications(
     crisisEvent: CrisisEvent,
-    executiveContext: ExecutiveContext
+    _executiveContext: ExecutiveContext
   ): Promise<StakeholderCommunication[]> {
     return crisisEvent.affectedStakeholders.map(stakeholderId => ({
       stakeholderId,
@@ -549,7 +546,7 @@ export class CrisisManagementAgent extends PEAAgentBase {
     }));
   }
 
-  private async generateCrisisActions(crisisEvent: CrisisEvent, strategy: ResponseStrategy): Promise<CrisisAction[]> {
+  private async generateCrisisActions(crisisEvent: CrisisEvent, _strategy: ResponseStrategy): Promise<CrisisAction[]> {
     // Generate actions based on crisis type and strategy
     const baseActions: CrisisAction[] = [
       {
@@ -622,7 +619,7 @@ export class CrisisManagementAgent extends PEAAgentBase {
 
   private async sendStakeholderCommunication(
     communication: StakeholderCommunication,
-    executiveContext: ExecutiveContext
+    _executiveContext: ExecutiveContext
   ): Promise<boolean> {
     try {
       // In production, this would integrate with actual communication systems

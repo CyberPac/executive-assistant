@@ -1,15 +1,8 @@
-/**
- * Jest test setup configuration
- * Emergency infrastructure repair for test execution
- */
-
-// Global test timeout
-jest.setTimeout(30000);
+// Jest setup file for global test configuration
 
 // Mock console methods to reduce noise in tests
-const originalConsole = global.console;
 global.console = {
-  ...originalConsole,
+  ...console,
   log: jest.fn(),
   warn: jest.fn(),
   error: jest.fn(),
@@ -17,46 +10,41 @@ global.console = {
   debug: jest.fn()
 };
 
-// Mock external dependencies
-jest.mock('better-sqlite3', () => ({
-  __esModule: true,
-  default: jest.fn(() => ({
-    prepare: jest.fn(() => ({
-      run: jest.fn(),
-      get: jest.fn(),
-      all: jest.fn()
-    })),
-    close: jest.fn(),
-    exec: jest.fn()
-  }))
-}));
+// Set test timeout
+jest.setTimeout(10000);
 
-// Mock WebSocket
-jest.mock('ws', () => ({
-  WebSocket: jest.fn(() => ({
-    on: jest.fn(),
-    send: jest.fn(),
-    close: jest.fn(),
-    readyState: 1
-  }))
-}));
+// Mock environment variables for tests
+process.env.NODE_ENV = 'test';
 
-// Mock nanoid
-jest.mock('nanoid', () => ({
-  nanoid: () => 'test-id-123'
-}));
-
-// Global test utilities (moved to avoid TS2669 error)
-
-// Custom matchers
-expect.extend({
-  toBeWithinRange(received: number, min: number, max: number) {
-    const pass = received >= min && received <= max;
-    return {
-      message: () => `expected ${received} to be within range ${min} - ${max}`,
-      pass
-    };
+// Global test utilities
+declare global {
+  namespace jest {
+    interface Matchers<R> {
+      toBeValidAgent(): R;
+    }
   }
+}
+
+// Custom Jest matchers
+expect.extend({
+  toBeValidAgent(received: any) {
+    const pass = received && 
+                 typeof received.id === 'string' &&
+                 typeof received.name === 'string' &&
+                 typeof received.capabilities === 'object';
+
+    if (pass) {
+      return {
+        message: () => `expected ${received} not to be a valid agent`,
+        pass: true,
+      };
+    } else {
+      return {
+        message: () => `expected ${received} to be a valid agent with id, name, and capabilities`,
+        pass: false,
+      };
+    }
+  },
 });
 
 // Cleanup after tests

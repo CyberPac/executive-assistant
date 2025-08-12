@@ -118,7 +118,7 @@ export abstract class PEAAgentBase implements PEAAgentInterface {
   public configureCoordinationProtocol(
     type: CoordinationProtocol['type'],
     enabled: boolean,
-    parameters?: Record<string, any>
+    parameters?: Record<string, unknown>
   ): void {
     const existingProtocol = this.coordinationProtocols.find(p => p.type === type);
     
@@ -141,7 +141,7 @@ export abstract class PEAAgentBase implements PEAAgentInterface {
    */
   protected async storeActivity(
     activityType: string,
-    data: any,
+    data: unknown,
     namespace: string = 'pea_foundation'
   ): Promise<void> {
     await this.mcpIntegration.memoryUsage(
@@ -161,13 +161,13 @@ export abstract class PEAAgentBase implements PEAAgentInterface {
   /**
    * Get coordination data from other agents
    */
-  protected async getCoordinationData(pattern: string): Promise<any[]> {
+  protected async getCoordinationData(pattern: string): Promise<unknown[]> {
     try {
       // This is a mock implementation - in reality would query memory
       return [];
     } catch (error) {
       console.error(`Failed to get coordination data for pattern ${pattern}:`, error);
-      return [];
+      throw error; // Re-throw to avoid unreachable code
     }
   }
 }
@@ -186,7 +186,7 @@ export interface PerformanceMetrics {
 export interface CoordinationProtocol {
   type: 'byzantine-fault-tolerance' | 'consensus-validation' | 'crisis-escalation' | 'memory-coordination';
   enabled: boolean;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
 }
 
 export interface ExecutiveContext {
@@ -320,13 +320,46 @@ export interface SecurityThreat {
   responseImplemented?: boolean;
 }
 
+// MCP Integration Response Types
+export interface SwarmResponse {
+  swarmId: string;
+  topology: string;
+  maxAgents: number;
+  status: string;
+}
+
+export interface AgentSpawnResponse {
+  agentId: string;
+  type: string;
+  name: string;
+  status: string;
+}
+
+export interface TaskResponse {
+  taskId: string;
+  status: string;
+  assignedAgents: string[];
+}
+
+export interface MemoryResponse {
+  success: boolean;
+  key: string;
+  value?: string;
+}
+
+export interface NeuralResponse {
+  success: boolean;
+  patternId?: string;
+  accuracy?: number;
+}
+
 export interface ClaudeFlowMCPIntegration {
-  swarmInit: (topology: string, maxAgents: number, strategy: string) => Promise<any>;
-  agentSpawn: (type: string, name: string, capabilities: string[]) => Promise<any>;
-  taskOrchestrate: (task: string, strategy: string, priority: string) => Promise<any>;
-  memoryUsage: (action: string, key: string, value: string, namespace?: string) => Promise<any>;
-  neuralTrain: (patternType: string, trainingData: string, epochs?: number) => Promise<any>;
-  neuralPatterns: (action: string, operation: string, metadata: any) => Promise<any>;
+  swarmInit: (topology: string, maxAgents: number, strategy: string) => Promise<SwarmResponse>;
+  agentSpawn: (type: string, name: string, capabilities: string[]) => Promise<AgentSpawnResponse>;
+  taskOrchestrate: (task: string, strategy: string, priority: string) => Promise<TaskResponse>;
+  memoryUsage: (action: string, key: string, value: string, namespace?: string) => Promise<MemoryResponse>;
+  neuralTrain: (patternType: string, trainingData: string, epochs?: number) => Promise<NeuralResponse>;
+  neuralPatterns: (action: string, operation: string, metadata: Record<string, unknown>) => Promise<NeuralResponse>;
 }
 
 export interface ByzantineFaultTolerance {

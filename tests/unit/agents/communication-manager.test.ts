@@ -1,5 +1,5 @@
 import { CommunicationManagerAgent } from '../../../src/agents/communication-manager/CommunicationManagerAgent';
-import { SecurityLevel, AgentStatus, PEAAgentType } from '../../../src/types/enums';
+import { SecurityLevel, AgentStatus as _AgentStatus, PEAAgentType } from '../../../src/types/enums';
 
 const mockMcpIntegration = {
   swarmInit: jest.fn().mockResolvedValue({}),

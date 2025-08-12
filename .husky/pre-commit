@@ -1,0 +1,36 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Emergency Quality Gates - Pre-commit hooks
+echo "🚨 Running Emergency Quality Gates..."
+
+# TypeScript build check
+echo "🔧 Running TypeScript build..."
+npm run build || {
+  echo "❌ TypeScript build failed!"
+  exit 1
+}
+
+# ESLint check with auto-fix
+echo "🔍 Running ESLint..."
+npm run lint:fix || {
+  echo "❌ ESLint errors found!"
+  echo "Run 'npm run lint:fix' to fix automatically fixable issues"
+  exit 1
+}
+
+# Type checking
+echo "🔍 Running type check..."
+npm run typecheck || {
+  echo "❌ TypeScript type errors found!"
+  exit 1
+}
+
+# Test execution
+echo "🧪 Running tests..."
+npm run test || {
+  echo "❌ Tests failed!"
+  exit 1
+}
+
+echo "✅ All quality gates passed!"

@@ -14,12 +14,8 @@
 import {
   PEAAgentBase,
   PEAAgentType,
-  ExecutiveContext,
   SecurityLevel,
-  ClaudeFlowMCPIntegration,
-  PEATask,
-  TaskType,
-  TaskStatus
+  ClaudeFlowMCPIntegration
 } from '../../types/pea-agent-types';
 import { AgentStatus } from '../../swarm/types';
 
@@ -118,7 +114,7 @@ export class FinancialIntelligenceAgent extends PEAAgentBase {
   private financialContext: FinancialContext | null = null;
   private activeAlerts: FinancialAlert[] = [];
   private marketDataCache: Map<string, MarketData> = new Map();
-  private complianceRules: Map<string, any> = new Map();
+  private complianceRules: Map<string, Record<string, unknown>> = new Map();
 
   constructor(
     id: string,

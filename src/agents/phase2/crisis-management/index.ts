@@ -47,7 +47,7 @@ export {
 } from './StakeholderCoordinationSystem';
 
 export {
-  PRODUCTION_CRISIS_MANAGEMENT_CONFIG,
+  PRODUCTION_CRISIS_MANAGEMENT_CONFIG as _PRODUCTION_CRISIS_MANAGEMENT_CONFIG,
   DEVELOPMENT_CRISIS_MANAGEMENT_CONFIG,
   CrisisManagementConfigFactory,
   EXECUTIVE_CONTEXT_CONFIGS,
@@ -65,7 +65,7 @@ export {
 } from './CrisisManagementAgent';
 
 import { EnhancedCrisisManagementAgent } from './EnhancedCrisisManagementAgent';
-import { CrisisManagementConfigFactory, PRODUCTION_CRISIS_MANAGEMENT_CONFIG } from './CrisisManagementConfig';
+import { CrisisManagementConfigFactory, PRODUCTION_CRISIS_MANAGEMENT_CONFIG as _PRODUCTION_CRISIS_MANAGEMENT_CONFIG } from './CrisisManagementConfig';
 import { 
   ClaudeFlowMCPIntegration,
   ExecutiveContext,

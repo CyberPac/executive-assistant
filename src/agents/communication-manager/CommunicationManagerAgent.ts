@@ -11,8 +11,18 @@ import {
   PEAAgentType,
   AgentStatus,
   ExecutiveContext,
-  ClaudeFlowMCPIntegration
+  ClaudeFlowMCPIntegration,
+  CulturalContext
 } from '../../types/pea-agent-types';
+
+export interface StakeholderProfile {
+  id: string;
+  name: string;
+  relationship: string;
+  communicationStyle: string;
+  preferences: Record<string, unknown>;
+  culturalContext?: CulturalContext;
+}
 
 export interface ExecutiveVoiceProfile {
   executiveId: string;
@@ -28,7 +38,7 @@ export interface ExecutiveVoiceProfile {
     commonPhrases: string[];
     preferredStructure: string;
   };
-  stakeholderAdaptations: Map<string, any>;
+  stakeholderAdaptations: Map<string, Record<string, unknown>>;
   accuracyScore: number;
 }
 
@@ -47,7 +57,7 @@ export interface CommunicationRequest {
   stakeholderContext?: {
     relationship: string;
     history: string[];
-    preferences: Record<string, any>;
+    preferences: Record<string, unknown>;
   };
 }
 
@@ -63,7 +73,7 @@ export interface CommunicationResult {
 
 export class CommunicationManagerAgent extends PEAAgentBase {
   private voiceProfiles: Map<string, ExecutiveVoiceProfile> = new Map();
-  private stakeholderDatabase: Map<string, any> = new Map();
+  private stakeholderDatabase: Map<string, StakeholderProfile> = new Map();
   private communicationHistory: Map<string, CommunicationRequest[]> = new Map();
   private voiceModelingEngine: VoiceModelingEngine;
   private stakeholderIntelligence: StakeholderIntelligenceEngine;
@@ -269,11 +279,11 @@ export class CommunicationManagerAgent extends PEAAgentBase {
    */
   async optimizeStakeholderRelationships(
     executiveId: string,
-    timeRange: { start: string; end: string }
+    _timeRange: { start: string; end: string }
   ): Promise<any> {
-    console.log(`🤝 Optimizing stakeholder relationships for period: ${timeRange.start} to ${timeRange.end}`);
+    console.log(`🤝 Optimizing stakeholder relationships for period: ${_timeRange.start} to ${_timeRange.end}`);
 
-    const communicationHistory = await this.getCommunicationHistory(executiveId, timeRange);
+    const communicationHistory = await this.getCommunicationHistory(executiveId, _timeRange);
     const stakeholderAnalysis = await this.stakeholderIntelligence.analyzeRelationships(
       communicationHistory
     );
@@ -289,7 +299,7 @@ export class CommunicationManagerAgent extends PEAAgentBase {
 
     await this.mcpIntegration.memoryUsage(
       'store',
-      `stakeholder_optimization/${executiveId}/${timeRange.start}`,
+      `stakeholder_optimization/${executiveId}/${_timeRange.start}`,
       JSON.stringify(optimization),
       'pea_foundation'
     );
@@ -332,7 +342,7 @@ export class CommunicationManagerAgent extends PEAAgentBase {
     return [
       `Strong relationship with ${recipient} based on communication history`,
       `Preferred communication style: professional`,
-      `Cultural considerations: ${stakeholderContext.culturalContext || 'standard business protocol'}`
+      `Cultural considerations: ${(_stakeholderContext as Record<string, unknown>)?.culturalContext || 'standard business protocol'}`
     ];
   }
 
@@ -377,7 +387,7 @@ export class CommunicationManagerAgent extends PEAAgentBase {
     );
   }
 
-  private async getCrisisProtocol(crisisType: string, severity: string): Promise<any> {
+  private async getCrisisProtocol(crisisType: string, severity: string): Promise<Record<string, unknown>> {
     return {
       template: `Important update regarding ${crisisType}. We are actively addressing the situation and will provide regular updates.`,
       escalationPath: ['stakeholders', 'board', 'public'],
@@ -385,7 +395,7 @@ export class CommunicationManagerAgent extends PEAAgentBase {
     };
   }
 
-  private determineCrisisCommunicationType(stakeholder: string, severity: string): any {
+  private determineCrisisCommunicationType(stakeholder: string, severity: string): Record<string, unknown> {
     if (severity === 'critical') return 'voice';
     if (stakeholder.includes('board')) return 'formal_letter';
     return 'email';
@@ -401,7 +411,7 @@ export class CommunicationManagerAgent extends PEAAgentBase {
     return stakeholderData?.history || [];
   }
 
-  private async getStakeholderPreferences(stakeholder: string): Promise<Record<string, any>> {
+  private async getStakeholderPreferences(stakeholder: string): Promise<Record<string, unknown>> {
     const stakeholderData = this.stakeholderDatabase.get(stakeholder);
     return stakeholderData?.preferences || {};
   }
@@ -482,7 +492,7 @@ class StakeholderIntelligenceEngine {
     };
   }
 
-  async analyzeRelationships(communicationHistory: any[]): Promise<any> {
+  async analyzeRelationships(communicationHistory: CommunicationRequest[]): Promise<Record<string, unknown>> {
     return {
       stakeholderCount: communicationHistory.length,
       healthScore: 0.92,
@@ -498,7 +508,7 @@ class StakeholderIntelligenceEngine {
  * Cultural Communication Engine for international protocol adaptation
  */
 class CulturalCommunicationEngine {
-  private culturalProtocols: Map<string, any> = new Map();
+  private culturalProtocols: Map<string, Record<string, unknown>> = new Map();
 
   async initialize(): Promise<void> {
     // Load cultural communication protocols
@@ -519,8 +529,8 @@ class CulturalCommunicationEngine {
   async adaptCommunication(
     request: CommunicationRequest,
     _stakeholderContext: unknown,
-    culturalContext?: any
-  ): Promise<any> {
+    culturalContext?: Record<string, unknown>
+  ): Promise<Record<string, unknown>> {
     const adaptations = [];
     
     if (culturalContext?.country) {

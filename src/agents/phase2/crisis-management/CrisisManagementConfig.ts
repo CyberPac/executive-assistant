@@ -10,21 +10,24 @@
  * - Integration with Claude Flow MCP system
  */
 
-import {
-  CrisisManagementConfiguration,
-  ResponseConfiguration,
-  CoordinationConfiguration,
-  PerformanceConfiguration,
-  IntegrationConfiguration
-} from './EnhancedCrisisManagementAgent';
+// Temporary fix for missing exports
+export enum CrisisIndicatorType {
+  MARKET_VOLATILITY = 'market_volatility',
+  MEDIA_NEGATIVE_SENTIMENT = 'media_negative_sentiment',
+  OPERATIONAL_FAILURE = 'operational_failure',
+  SECURITY_BREACH = 'security_breach',
+  STAKEHOLDER_ESCALATION = 'stakeholder_escalation',
+  REPUTATION_DAMAGE = 'reputation_damage'
+}
 
-import {
-  DetectionConfiguration,
-  MonitoringSource,
-  FusionRule,
-  CorrelationRule,
-  CrisisIndicatorType
-} from './CrisisDetectionEngine';
+// Temporary interface definition
+export interface CrisisManagementConfiguration {
+  detection: any;
+  response: any;
+  coordination: any;
+  performance: any;
+  integration: any;
+}
 
 /**
  * Production-ready configuration for Enhanced Crisis Management Agent

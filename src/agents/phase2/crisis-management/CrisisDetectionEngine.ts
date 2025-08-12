@@ -17,10 +17,8 @@
  */
 
 import {
-  PEAAgentBase,
   ExecutiveContext,
-  ClaudeFlowMCPIntegration,
-  SecurityLevel
+  ClaudeFlowMCPIntegration
 } from '../../../types/pea-agent-types';
 
 export interface MonitoringSource {
@@ -403,7 +401,7 @@ export class CrisisDetectionEngine {
 
   private async mockSignalCollection(
     source: MonitoringSource,
-    executiveContext: ExecutiveContext
+    _executiveContext: ExecutiveContext
   ): Promise<CrisisSignal[]> {
     // Mock signal generation - in production would connect to real data sources
     const mockSignals: CrisisSignal[] = [];
@@ -452,7 +450,7 @@ export class CrisisDetectionEngine {
 
   private async performDataFusion(
     signals: CrisisSignal[],
-    executiveContext: ExecutiveContext
+    _executiveContext: ExecutiveContext
   ): Promise<{
     probability: number;
     severity: number;
@@ -483,7 +481,7 @@ export class CrisisDetectionEngine {
       if (applicableSignals.length === 0) continue;
 
       switch (rule.algorithm) {
-        case 'weighted_average':
+        case 'weighted_average': {
           const weightedSum = applicableSignals.reduce((sum, signal) => {
             const weight = rule.weights[signal.sourceId] || rule.weights['*'] || 1;
             return sum + (signal.confidence * signal.severity * weight);
@@ -499,8 +497,9 @@ export class CrisisDetectionEngine {
             fusedConfidence = Math.max(fusedConfidence, 0.8); // Base confidence for triggered rule
           }
           break;
+        }
 
-        case 'consensus':
+        case 'consensus': {
           const consensusSignals = applicableSignals.filter(s => 
             s.confidence >= rule.threshold && s.severity >= rule.threshold
           );
@@ -513,8 +512,9 @@ export class CrisisDetectionEngine {
             fusedConfidence = Math.max(fusedConfidence, 0.85); // Higher confidence for consensus
           }
           break;
+        }
 
-        default:
+        default: {
           // Fallback to simple averaging
           const avgProbability = applicableSignals.reduce((sum, s) => sum + s.confidence, 0) / applicableSignals.length;
           const avgSeverity = applicableSignals.reduce((sum, s) => sum + s.severity, 0) / applicableSignals.length;
@@ -523,6 +523,7 @@ export class CrisisDetectionEngine {
           fusedSeverity = Math.max(fusedSeverity, avgSeverity);
           fusedConfidence = Math.max(fusedConfidence, 0.7);
           break;
+        }
       }
     }
 

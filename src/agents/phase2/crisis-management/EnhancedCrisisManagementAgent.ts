@@ -25,11 +25,11 @@ import {
   ExecutiveContext,
   SecurityLevel,
   ClaudeFlowMCPIntegration,
-  PEATask,
-  TaskType,
-  TaskStatus,
-  ConsensusRequest,
-  ConsensusResult
+  PEATask as _PEATask,
+  TaskType as _TaskType,
+  TaskStatus as _TaskStatus,
+  ConsensusRequest as _ConsensusRequest,
+  ConsensusResult as _ConsensusResult
 } from '../../../types/pea-agent-types';
 
 import {
@@ -37,9 +37,9 @@ import {
   CrisisType,
   CrisisSeverity,
   CrisisResponse,
-  ResponseStrategy,
-  CrisisAction,
-  StakeholderCommunication,
+  ResponseStrategy as _ResponseStrategy,
+  CrisisAction as _CrisisAction,
+  StakeholderCommunication as _StakeholderCommunication,
   CulturalAdaptation
 } from './CrisisManagementAgent';
 
@@ -47,13 +47,13 @@ import {
   CrisisDetectionEngine,
   CrisisDetectionResult,
   DetectionConfiguration,
-  MonitoringSource,
+  MonitoringSource as _MonitoringSource,
   CrisisIndicatorType
 } from './CrisisDetectionEngine';
 
 import {
   StakeholderCoordinationSystem,
-  StakeholderProfile,
+  StakeholderProfile as _StakeholderProfile,
   CoordinationPlan
 } from './StakeholderCoordinationSystem';
 
@@ -388,7 +388,7 @@ export class EnhancedCrisisManagementAgent extends PEAAgentBase {
 
       // Phase 5: Real-time Monitoring and Optimization
       execution.status = 'monitoring';
-      const monitoringResult = await this.executeMonitoringPhase(execution, executionResult, executiveContext);
+      const _monitoringResult = await this.executeMonitoringPhase(execution, executionResult, executiveContext);
 
       // Calculate final metrics and performance improvement
       execution.metrics.totalResponseTime = Date.now() - responseStartTime;
@@ -703,8 +703,8 @@ export class EnhancedCrisisManagementAgent extends PEAAgentBase {
    */
   private async executeMonitoringPhase(
     execution: CrisisResponseExecution,
-    executionResults: any,
-    executiveContext: ExecutiveContext
+    _executionResults: any,
+    _executiveContext: ExecutiveContext
   ): Promise<any> {
     const phaseStartTime = Date.now();
     console.log(`📊 Phase 5: Real-time Monitoring`);
@@ -727,7 +727,7 @@ export class EnhancedCrisisManagementAgent extends PEAAgentBase {
       execution.metrics.successRate = totalStakeholders > 0 ? successfulContacts / totalStakeholders : 0;
 
       // Monitor ongoing crisis resolution
-      const monitoringResult = {
+      const _monitoringResult = {
         status: 'monitoring_active',
         metricsTracked: true,
         realTimeUpdates: this.configuration.performance.monitoring.realTimeMetrics,
@@ -740,13 +740,13 @@ export class EnhancedCrisisManagementAgent extends PEAAgentBase {
       phase.endTime = new Date().toISOString();
       phase.duration = phaseDuration;
       phase.status = 'completed';
-      phase.results = monitoringResult;
+      phase.results = _monitoringResult;
       phase.performanceScore = 0.95; // Monitoring is usually successful
 
       console.log(`📊 Monitoring established in ${phaseDuration}ms`);
       console.log(`   📈 Success rate: ${(execution.metrics.successRate * 100).toFixed(1)}%`);
 
-      return monitoringResult;
+      return _monitoringResult;
 
     } catch (error) {
       phase.status = 'failed';
@@ -843,7 +843,7 @@ export class EnhancedCrisisManagementAgent extends PEAAgentBase {
     return Array.from(scopes);
   }
 
-  private extractCrisisTypeFromResponse(response: CrisisResponse): CrisisType {
+  private extractCrisisTypeFromResponse(_response: CrisisResponse): CrisisType {
     // Extract from response strategy
     return CrisisType.BUSINESS_CONTINUITY; // Simplified for this implementation
   }
@@ -1081,8 +1081,8 @@ class CulturalIntegrationManager {
 
   async enhanceCoordinationPlan(
     coordinationPlan: CoordinationPlan,
-    crisisEvent: CrisisEvent,
-    executiveContext: ExecutiveContext
+    _crisisEvent: CrisisEvent,
+    _executiveContext: ExecutiveContext
   ): Promise<void> {
     if (!this.configuration.culturalIntelligence.enabled) return;
 

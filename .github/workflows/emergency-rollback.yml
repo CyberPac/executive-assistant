@@ -1,0 +1,162 @@
+name: Emergency Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      rollback_reason:
+        description: 'Reason for emergency rollback'
+        required: true
+        type: string
+      target_commit:
+        description: 'Target commit to rollback to (optional - defaults to last known good)'
+        required: false
+        type: string
+
+jobs:
+  emergency-rollback:
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "Emergency Rollback Bot"
+          git config --global user.email "rollback@emergency.system"
+
+      - name: Identify rollback target
+        id: rollback-target
+        run: |
+          if [ -n "${{ github.event.inputs.target_commit }}" ]; then
+            echo "target=${{ github.event.inputs.target_commit }}" >> $GITHUB_OUTPUT
+          else
+            # Find last commit where all quality gates passed
+            LAST_GOOD=$(git log --oneline --grep="✅" --max-count=1 --pretty=format:"%H" || git log --oneline --max-count=5 --pretty=format:"%H" | tail -1)
+            echo "target=$LAST_GOOD" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create rollback branch
+        run: |
+          TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+          BRANCH_NAME="emergency-rollback-$TIMESTAMP"
+          git checkout -b $BRANCH_NAME
+          echo "ROLLBACK_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+
+      - name: Perform rollback
+        run: |
+          git reset --hard ${{ steps.rollback-target.outputs.target }}
+          git push -f origin ${{ env.ROLLBACK_BRANCH }}
+
+      - name: Create rollback PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 EMERGENCY ROLLBACK: ${{ github.event.inputs.rollback_reason }}`,
+              head: process.env.ROLLBACK_BRANCH,
+              base: 'main',
+              body: `## 🚨 EMERGENCY ROLLBACK
+              
+              **Reason:** ${{ github.event.inputs.rollback_reason }}
+              **Rollback Target:** ${{ steps.rollback-target.outputs.target }}
+              **Initiated by:** @${{ github.actor }}
+              **Timestamp:** ${new Date().toISOString()}
+              
+              ### Actions Taken
+              - [x] Created emergency rollback branch
+              - [x] Reset to stable commit
+              - [x] Force pushed rollback branch
+              
+              ### Next Steps
+              1. **IMMEDIATE**: Review and approve this PR
+              2. **URGENT**: Merge to restore system stability  
+              3. **FOLLOW-UP**: Investigate root cause of regression
+              4. **POST-MORTEM**: Document incident and prevention measures
+              
+              ⚠️ **This is an automated emergency rollback. Review carefully before merging.**
+              `
+            });
+            
+            // Add emergency labels
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              labels: ['emergency', 'rollback', 'critical', 'needs-immediate-review']
+            });
+
+      - name: Notify team
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // Create an issue for tracking the incident
+            const { data: issue } = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 INCIDENT: Emergency rollback executed - ${{ github.event.inputs.rollback_reason }}`,
+              body: `## Incident Report
+              
+              **Emergency rollback was executed at ${new Date().toISOString()}**
+              
+              ### Details
+              - **Reason:** ${{ github.event.inputs.rollback_reason }}
+              - **Initiated by:** @${{ github.actor }}
+              - **Rollback Target:** ${{ steps.rollback-target.outputs.target }}
+              - **Status:** Rollback PR created and awaiting review
+              
+              ### Immediate Actions Required
+              - [ ] Review rollback PR
+              - [ ] Merge rollback to restore stability
+              - [ ] Verify system functionality post-rollback
+              - [ ] Identify root cause of regression
+              
+              ### Post-Incident Actions
+              - [ ] Conduct post-mortem analysis
+              - [ ] Update quality gates if needed
+              - [ ] Document lessons learned
+              - [ ] Implement additional preventive measures
+              
+              **This issue will remain open until the incident is fully resolved and post-mortem is complete.**
+              `,
+              labels: ['incident', 'emergency', 'post-mortem-required']
+            });
+            
+            console.log('Emergency rollback completed. Review PR and incident issue created.');
+
+  notify-failure:
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify rollback failure
+        uses: actions/github-script@v6
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔥 CRITICAL: Emergency rollback FAILED`,
+              body: `## CRITICAL ALERT
+              
+              **Emergency rollback procedure has FAILED**
+              
+              - **Rollback Reason:** ${{ github.event.inputs.rollback_reason }}
+              - **Initiated by:** @${{ github.actor }}
+              - **Failure Time:** ${new Date().toISOString()}
+              
+              ### IMMEDIATE ACTIONS REQUIRED
+              1. **Manual intervention needed**
+              2. **Contact system administrators**
+              3. **Check system logs for failure cause**
+              4. **Consider alternative recovery procedures**
+              
+              ⚠️ **System may be in unstable state. Immediate attention required.**
+              `,
+              labels: ['critical', 'rollback-failed', 'needs-immediate-attention']
+            });

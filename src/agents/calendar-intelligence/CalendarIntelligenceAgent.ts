@@ -11,10 +11,7 @@ import {
   PEAAgentType,
   AgentStatus,
   ExecutiveContext,
-  PEATask,
-  TaskStatus,
-  ClaudeFlowMCPIntegration,
-  PerformanceMetrics
+  ClaudeFlowMCPIntegration
 } from '../../types/pea-agent-types';
 
 export interface SchedulingOptimization {
@@ -57,10 +54,43 @@ export interface PredictiveSchedulingResult {
   executionTime: number;
 }
 
+export interface CulturalProtocol {
+  country: string;
+  protocol: string;
+  businessHours: string;
+  timezone: string;
+}
+
+export interface CulturalGuidance {
+  country: string;
+  protocol: string;
+  sensitivity: string;
+  guidance: CulturalProtocol[];
+}
+
+export interface TravelRequirements {
+  departure: string;
+  arrival: string;
+  transportation: string;
+}
+
+export interface TimeRange {
+  start: string;
+  end: string;
+}
+
+export interface MeetingAnalysis {
+  totalMeetings: number;
+  averageDuration: number;
+  efficiencyScore: number;
+  recommendations: string[];
+  culturalAdaptations: string[];
+}
+
 export class CalendarIntelligenceAgent extends PEAAgentBase {
   private scheduleCache: Map<string, CalendarEvent[]> = new Map();
   private optimizationHistory: Map<string, SchedulingOptimization[]> = new Map();
-  private culturalProtocols: Map<string, any> = new Map();
+  private culturalProtocols: Map<string, CulturalProtocol> = new Map();
   private predictiveEngine: PredictiveSchedulingEngine;
 
   constructor(mcpIntegration: ClaudeFlowMCPIntegration) {
@@ -176,7 +206,7 @@ export class CalendarIntelligenceAgent extends PEAAgentBase {
           originalScheduleLength: currentSchedule.length,
           efficiencyGain: culturalOptimization.efficiencyGain,
           conflictsResolved: culturalOptimization.conflictsResolved,
-          culturalConsiderations: (culturalOptimization as any).culturalConsiderations?.length || 0,
+          culturalConsiderations: culturalOptimization.culturalConsiderations?.length || 0,
           executionTime: Date.now() - startTime,
           timestamp: new Date().toISOString()
         }),
@@ -196,7 +226,7 @@ export class CalendarIntelligenceAgent extends PEAAgentBase {
         success: true,
         optimization: culturalOptimization,
         predictiveInsights,
-        culturalConsiderations: (culturalOptimization as any).culturalConsiderations || [],
+        culturalConsiderations: culturalOptimization.culturalConsiderations || [],
         executionTime: Date.now() - startTime
       };
 
@@ -248,7 +278,7 @@ export class CalendarIntelligenceAgent extends PEAAgentBase {
   async analyzeMeetingEffectiveness(
     executiveId: string,
     timeRange: { start: string; end: string }
-  ): Promise<any> {
+  ): Promise<MeetingAnalysis> {
     console.log(`📊 Analyzing meeting effectiveness for period: ${timeRange.start} to ${timeRange.end}`);
 
     const meetings = await this.getMeetingsInRange(executiveId, timeRange);
@@ -293,7 +323,7 @@ export class CalendarIntelligenceAgent extends PEAAgentBase {
     console.log('🚀 Calendar caches initialized');
   }
 
-  private async getCurrentSchedule(executiveId: string, timeHorizon: number): Promise<CalendarEvent[]> {
+  private async getCurrentSchedule(_executiveId: string, _timeHorizon: number): Promise<CalendarEvent[]> {
     // Retrieve current schedule (mock implementation)
     return [
       {
@@ -319,7 +349,7 @@ export class CalendarIntelligenceAgent extends PEAAgentBase {
 
   private async applyCulturalIntelligence(
     optimization: SchedulingOptimization,
-    context: ExecutiveContext
+    _context: ExecutiveContext
   ): Promise<SchedulingOptimization> {
     // Apply cultural intelligence to optimization
     const culturalConsiderations = [
@@ -336,9 +366,9 @@ export class CalendarIntelligenceAgent extends PEAAgentBase {
   }
 
   private async generatePredictiveInsights(
-    currentSchedule: CalendarEvent[],
+    _currentSchedule: CalendarEvent[],
     optimization: SchedulingOptimization,
-    context: ExecutiveContext
+    _context: ExecutiveContext
   ): Promise<string[]> {
     return [
       `Predicted 25% improvement in calendar efficiency`,
@@ -350,7 +380,7 @@ export class CalendarIntelligenceAgent extends PEAAgentBase {
 
   private async findOptimalMeetingTime(
     event: CalendarEvent,
-    attendees: Array<{ name: string; timezone: string; country: string }>
+    _attendees: Array<{ name: string; timezone: string; country: string }>
   ): Promise<{ startTime: string; endTime: string; timezone: string }> {
     // Find optimal meeting time across multiple timezones
     return {
@@ -362,8 +392,8 @@ export class CalendarIntelligenceAgent extends PEAAgentBase {
 
   private async getCulturalGuidance(
     attendees: Array<{ name: string; timezone: string; country: string }>,
-    context: ExecutiveContext
-  ): Promise<any> {
+    _context: ExecutiveContext
+  ): Promise<CulturalGuidance> {
     // Generate cultural guidance for international meetings
     const countries = attendees.map(a => a.country);
     const protocols = countries.map(country => this.culturalProtocols.get(country)).filter(Boolean);
@@ -377,9 +407,9 @@ export class CalendarIntelligenceAgent extends PEAAgentBase {
   }
 
   private async calculateTravelRequirements(
-    event: CalendarEvent,
-    context: ExecutiveContext
-  ): Promise<any> {
+    _event: CalendarEvent,
+    _context: ExecutiveContext
+  ): Promise<TravelRequirements> {
     return {
       departure: 'TBD',
       arrival: 'TBD',
@@ -387,7 +417,7 @@ export class CalendarIntelligenceAgent extends PEAAgentBase {
     };
   }
 
-  private async getMeetingsInRange(executiveId: string, timeRange: any): Promise<CalendarEvent[]> {
+  private async getMeetingsInRange(executiveId: string, _timeRange: TimeRange): Promise<CalendarEvent[]> {
     return this.scheduleCache.get(executiveId) || [];
   }
 
@@ -403,12 +433,12 @@ export class CalendarIntelligenceAgent extends PEAAgentBase {
     return totalDuration / meetings.length / (1000 * 60); // minutes
   }
 
-  private calculateEfficiencyScore(meetings: CalendarEvent[]): number {
+  private calculateEfficiencyScore(_meetings: CalendarEvent[]): number {
     // Calculate meeting efficiency score based on various factors
     return 0.85; // Mock efficiency score
   }
 
-  private generateEfficiencyRecommendations(meetings: CalendarEvent[]): string[] {
+  private generateEfficiencyRecommendations(_meetings: CalendarEvent[]): string[] {
     return [
       'Consider consolidating similar meetings',
       'Implement time buffers between meetings',
@@ -416,7 +446,7 @@ export class CalendarIntelligenceAgent extends PEAAgentBase {
     ];
   }
 
-  private analyzeCulturalAdaptations(meetings: CalendarEvent[]): string[] {
+  private analyzeCulturalAdaptations(_meetings: CalendarEvent[]): string[] {
     return [
       'Cultural protocols successfully applied',
       'International meeting times optimized',
@@ -437,8 +467,8 @@ class PredictiveSchedulingEngine {
 
   async optimizeSchedule(
     currentSchedule: CalendarEvent[],
-    context: ExecutiveContext,
-    timeHorizon: number
+    _context: ExecutiveContext,
+    _timeHorizon: number
   ): Promise<SchedulingOptimization> {
     // AI-powered schedule optimization
     const optimizationId = `opt-${Date.now()}`;

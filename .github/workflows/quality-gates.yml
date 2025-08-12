@@ -1,0 +1,77 @@
+name: Emergency Quality Gates
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: TypeScript Build Check (BLOCKING)
+        run: npm run build
+
+      - name: ESLint Check (BLOCKING)
+        run: npm run lint
+
+      - name: Type Check (BLOCKING)
+        run: npm run typecheck
+
+      - name: Test Execution (BLOCKING)
+        run: npm run test
+
+      - name: Test Coverage Check
+        run: npm run test:coverage
+        continue-on-error: true
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Audit Dependencies
+        run: npm audit --audit-level high
+
+  dependency-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Check for outdated dependencies
+        run: npm outdated || true
+
+      - name: Check package-lock integrity
+        run: npm ci --dry-run

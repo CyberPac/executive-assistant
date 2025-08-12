@@ -14,11 +14,11 @@ declare global {
 
 // Deno compatibility shims (when running in Node)
 declare global {
-  var Deno: any | undefined;
+  let Deno: any | undefined;
 }
 
 // Commander.js types extension
-import type { Command as CommanderCommand } from 'commander';
+// import type { Command as CommanderCommand } from 'commander';
 
 declare module 'commander' {
   interface Command {

@@ -14,7 +14,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "exactOptionalPropertyTypes": false,
-    "forceConsistentCasingInFileNames": false,
+    "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "declaration": false,
     "outDir": "dist",
@@ -30,9 +30,7 @@
   ],
   "exclude": [
     "node_modules",
-    "dist",
-    "tests",
-    "**/*.test.ts"
+    "dist"
   ],
   "ts-node": {
     "esm": true

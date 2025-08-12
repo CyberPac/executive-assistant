@@ -17,19 +17,12 @@
 import {
   PEAAgentBase,
   PEAAgentType,
-  ExecutiveContext,
-  PEATask,
-  TaskStatus,
-  ConsensusRequest,
-  ConsensusResult,
   ClaudeFlowMCPIntegration,
-  PerformanceMetrics,
-  SecurityLevel,
   AgentStatus
 } from '../../types/pea-agent-types';
 
 import { CulturalContext, CulturalAnalysis, culturalAnalyzer } from '../../cultural-intelligence/models/cultural-analyzer';
-import { CultureData, culturalDatabase } from '../../cultural-intelligence/database/cultural-database';
+import { culturalDatabase } from '../../cultural-intelligence/database/cultural-database';
 
 // Travel Logistics Types
 export interface TravelRequest {
@@ -720,7 +713,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
       console.log(`🐝 Travel coordination swarm initialized: ${swarmResult.swarmId}`);
 
       // Orchestrate travel planning across all coordinators
-      const orchestrationResult = await this.mcpIntegration.taskOrchestrate(
+      await this.mcpIntegration.taskOrchestrate(
         `Executive travel coordination: ${request.destination.city}, ${request.destination.country}`,
         'adaptive',
         request.priority === 'critical' ? 'critical' : 'high'
@@ -901,7 +894,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
   private async generateComprehensiveTravelPlan(
     request: TravelRequest,
     culturalAnalysis: CulturalAnalysis,
-    coordinationId: string
+    _coordinationId: string
   ): Promise<TravelPlan> {
     // Implementation would coordinate all travel components
     // This is a placeholder for the comprehensive implementation
@@ -949,31 +942,31 @@ export class TravelLogisticsAgent extends PEAAgentBase {
   }
 
   // Placeholder methods for comprehensive implementation
-  private async executeMultiModalCoordination(plan: TravelPlan, request: TravelRequest, culturalAnalysis: CulturalAnalysis): Promise<any> {
+  private async executeMultiModalCoordination(_plan: TravelPlan, _request: TravelRequest, _culturalAnalysis: CulturalAnalysis): Promise<any> {
     return { recommendations: [], nextSteps: [] };
   }
 
-  private async validateThroughConsensus(plan: TravelPlan, culturalAnalysis: CulturalAnalysis, coordinationId: string): Promise<ConsensusResult | undefined> {
+  private async validateThroughConsensus(_plan: TravelPlan, _culturalAnalysis: CulturalAnalysis, _coordinationId: string): Promise<ConsensusResult | undefined> {
     return undefined;
   }
 
-  private async generateAlternativeArrangements(plan: TravelPlan, disruptionType: string, severity: string, contingencies: any[]): Promise<any[]> {
+  private async generateAlternativeArrangements(_plan: TravelPlan, _disruptionType: string, _severity: string, _contingencies: any[]): Promise<any[]> {
     return [];
   }
 
-  private async coordinateEmergencyResponse(plan: TravelPlan, disruptionType: string, alternatives: any[]): Promise<void> {
+  private async coordinateEmergencyResponse(_plan: TravelPlan, _disruptionType: string, _alternatives: any[]): Promise<void> {
     // Implementation for emergency response coordination
   }
 
-  private async updateTravelPlanWithDisruptionResponse(plan: TravelPlan, alternatives: any[], contingencies: any[]): Promise<TravelPlan> {
+  private async updateTravelPlanWithDisruptionResponse(plan: TravelPlan, _alternatives: any[], _contingencies: any[]): Promise<TravelPlan> {
     return { ...plan, status: 'in_progress' };
   }
 
-  private async generateAccommodationItinerary(request: TravelRequest): Promise<AccommodationItinerary> {
+  private async generateAccommodationItinerary(_request: TravelRequest): Promise<AccommodationItinerary> {
     return { stays: [], totalCost: 0, securityLevel: request.securityLevel };
   }
 
-  private async generateCommunicationPlan(request: TravelRequest): Promise<CommunicationPlan> {
+  private async generateCommunicationPlan(_request: TravelRequest): Promise<CommunicationPlan> {
     return { stakeholders: [], schedules: [], methods: [], protocols: [] };
   }
 }
@@ -982,7 +975,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
 class PrivateAviationCoordinator {
   constructor(private mcpIntegration: ClaudeFlowMCPIntegration) {}
   async initialize(): Promise<void> {}
-  async generateAviationItinerary(request: TravelRequest): Promise<AviationItinerary> {
+  async generateAviationItinerary(_request: TravelRequest): Promise<AviationItinerary> {
     return { segments: [], totalFlightTime: 0, totalCost: 0, carbonEmissions: 0, alternativeOptions: [] };
   }
 }
@@ -998,13 +991,13 @@ class GroundTransportCoordinator {
 class TravelCulturalIntelligence {
   constructor(private mcpIntegration: ClaudeFlowMCPIntegration) {}
   async initialize(): Promise<void> {}
-  async analyzeTravelContext(destination: TravelDestination, context?: CulturalContext, requirements?: TravelRequirements): Promise<CulturalAnalysis> {
+  async analyzeTravelContext(destination: TravelDestination, _context?: CulturalContext, _requirements?: TravelRequirements): Promise<CulturalAnalysis> {
     const cultureData = culturalDatabase.getCultureByCountry(destination.country);
     if (!cultureData) {
       throw new Error(`Cultural data not found for country: ${destination.country}`);
     }
     
-    const defaultContext: CulturalContext = {
+    const _defaultContext: CulturalContext = {
       country: destination.country,
       region: destination.culturalRegion,
       businessProtocols: cultureData.businessCulture?.hierarchyStyle ? [cultureData.businessCulture.hierarchyStyle] : ['standard'],
@@ -1025,7 +1018,7 @@ class TravelCulturalIntelligence {
       destination.culturalRegion
     );
   }
-  async generateCulturalGuidancePlan(request: TravelRequest, analysis: CulturalAnalysis): Promise<CulturalGuidancePlan> {
+  async generateCulturalGuidancePlan(_request: TravelRequest, _analysis: CulturalAnalysis): Promise<CulturalGuidancePlan> {
     return { briefings: [], protocols: [], languageSupport: [], etiquetteGuidance: [] };
   }
 }
@@ -1033,7 +1026,7 @@ class TravelCulturalIntelligence {
 class TravelSecurityCoordinator {
   constructor(private mcpIntegration: ClaudeFlowMCPIntegration) {}
   async initialize(): Promise<void> {}
-  async generateSecurityPlan(request: TravelRequest): Promise<SecurityPlan> {
+  async generateSecurityPlan(_request: TravelRequest): Promise<SecurityPlan> {
     return { assessments: [], protocols: [], personnel: [], communications: [], contingencies: [] };
   }
 }
@@ -1041,7 +1034,7 @@ class TravelSecurityCoordinator {
 class TravelDocumentationManager {
   constructor(private mcpIntegration: ClaudeFlowMCPIntegration) {}
   async initialize(): Promise<void> {}
-  async generateDocumentationPlan(request: TravelRequest): Promise<DocumentationPlan> {
+  async generateDocumentationPlan(_request: TravelRequest): Promise<DocumentationPlan> {
     return { requirements: [], timeline: [], status: 'planning', risksAndMitigation: [] };
   }
 }
@@ -1049,10 +1042,10 @@ class TravelDocumentationManager {
 class TravelContingencyManager {
   constructor(private mcpIntegration: ClaudeFlowMCPIntegration) {}
   async initialize(): Promise<void> {}
-  async generateContingencyPlans(request: TravelRequest): Promise<ContingencyPlan[]> {
+  async generateContingencyPlans(_request: TravelRequest): Promise<ContingencyPlan[]> {
     return [];
   }
-  async activateContingencies(plan: TravelPlan, disruptionType: string, severity: string, details: any): Promise<any[]> {
+  async activateContingencies(_plan: TravelPlan, _disruptionType: string, _severity: string, _details: any): Promise<any[]> {
     return [];
   }
 }

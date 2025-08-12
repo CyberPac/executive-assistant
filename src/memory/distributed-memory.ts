@@ -49,7 +49,7 @@ export interface DistributedMemoryConfig {
 export class DistributedMemorySystem {
   private memory: Map<string, MemoryEntry> = new Map();
   private config: DistributedMemoryConfig;
-  private cleanupTimer?: NodeJS.Timeout;
+  private cleanupTimer?: ReturnType<typeof setTimeout>;
 
   constructor(config: Partial<DistributedMemoryConfig> = {}) {
     this.config = {
@@ -320,7 +320,7 @@ export class DistributedMemorySystem {
     return value;
   }
 
-  private async persistEntry(entry: MemoryEntry): Promise<void> {
+  private async persistEntry(_entry: MemoryEntry): Promise<void> {
     // Persistence implementation would go here
   }
 

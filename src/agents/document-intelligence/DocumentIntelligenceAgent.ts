@@ -11,10 +11,7 @@ import {
   PEAAgentType,
   AgentStatus,
   ExecutiveContext,
-  PEATask,
-  TaskStatus,
-  ClaudeFlowMCPIntegration,
-  PerformanceMetrics
+  ClaudeFlowMCPIntegration
 } from '../../types/pea-agent-types';
 
 export interface DocumentAnalysisRequest {
@@ -37,7 +34,7 @@ export interface DocumentInput {
   size: number;
   source: string;
   confidentialityLevel: 'public' | 'internal' | 'confidential' | 'restricted';
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface DocumentAnalysisResult {
@@ -59,11 +56,11 @@ export interface MultiModalFinding {
   content: string;
   significance: 'low' | 'medium' | 'high' | 'critical';
   context: string;
-  extractedData: any;
+  extractedData: Record<string, unknown>;
 }
 
 export class DocumentIntelligenceAgent extends PEAAgentBase {
-  private documentCache: Map<string, any> = new Map();
+  private documentCache: Map<string, DocumentInput> = new Map();
   private analysisHistory: Map<string, DocumentAnalysisResult[]> = new Map();
   private knowledgeGraph: DocumentKnowledgeGraph;
   private multiModalProcessor: MultiModalProcessor;
@@ -230,7 +227,7 @@ export class DocumentIntelligenceAgent extends PEAAgentBase {
     comparisonCriteria: string[],
     executiveId: string,
     context: ExecutiveContext
-  ): Promise<any> {
+  ): Promise<Record<string, unknown>> {
     console.log(`🔍 Performing comparative analysis across ${documentSets.length} document sets`);
 
     const comparisons = await Promise.all(
@@ -308,7 +305,7 @@ export class DocumentIntelligenceAgent extends PEAAgentBase {
   async extractActionableIntelligence(
     analysisResults: DocumentAnalysisResult[],
     executiveContext: ExecutiveContext
-  ): Promise<any> {
+  ): Promise<Record<string, unknown>> {
     console.log(`🎯 Extracting actionable intelligence from ${analysisResults.length} analyses`);
 
     const intelligence = {
@@ -347,8 +344,8 @@ export class DocumentIntelligenceAgent extends PEAAgentBase {
   }
 
   private async generateRiskAssessment(
-    semanticAnalysis: any,
-    executiveSynthesis: any
+    _semanticAnalysis: Record<string, unknown>,
+    _executiveSynthesis: Record<string, unknown>
   ): Promise<string[]> {
     return [
       'Financial impact analysis indicates moderate risk exposure',
@@ -369,7 +366,7 @@ export class DocumentIntelligenceAgent extends PEAAgentBase {
   private createDecisionMatrix(
     comparisons: DocumentAnalysisResult[],
     criteria: string[]
-  ): any {
+  ): Record<string, unknown> {
     return {
       criteria,
       options: comparisons.map((comp, index) => ({
@@ -412,7 +409,7 @@ export class DocumentIntelligenceAgent extends PEAAgentBase {
   private assessStakeholderImpact(
     results: DocumentAnalysisResult[],
     context: ExecutiveContext
-  ): any {
+  ): Record<string, unknown> {
     return {
       high_impact_stakeholders: context.stakeholders.slice(0, 3),
       positive_impact_areas: ['operational efficiency', 'strategic positioning'],
@@ -421,7 +418,7 @@ export class DocumentIntelligenceAgent extends PEAAgentBase {
     };
   }
 
-  private assessDecisionReadiness(results: DocumentAnalysisResult[]): any {
+  private assessDecisionReadiness(results: DocumentAnalysisResult[]): Record<string, unknown> {
     const avgConfidence = results.reduce((sum, result) => sum + result.confidenceScore, 0) / results.length;
     
     return {
@@ -440,7 +437,7 @@ class MultiModalProcessor {
     console.log('🔄 Multi-Modal Processor initialized');
   }
 
-  async processDocuments(documents: DocumentInput[]): Promise<any[]> {
+  async processDocuments(documents: DocumentInput[]): Promise<Record<string, unknown>[]> {
     return documents.map(doc => ({
       id: doc.id,
       name: doc.name,
@@ -467,7 +464,7 @@ class SemanticAnalysisEngine {
     console.log('🧠 Semantic Analysis Engine initialized');
   }
 
-  async analyzeSemantics(processedDocuments: any[], executiveContext: any): Promise<any> {
+  async analyzeSemantics(_processedDocuments: Record<string, unknown>[], _executiveContext: ExecutiveContext): Promise<Record<string, unknown>> {
     return {
       semantic_relationships: ['concept_mapping', 'entity_extraction'],
       key_themes: ['business strategy', 'operational efficiency'],
@@ -486,11 +483,11 @@ class ExecutiveSynthesisEngine {
   }
 
   async synthesizeForExecutive(
-    semanticAnalysis: any,
+    _semanticAnalysis: Record<string, unknown>,
     analysisType: string,
-    outputFormat: string,
-    context: ExecutiveContext
-  ): Promise<any> {
+    _outputFormat: string,
+    _context: ExecutiveContext
+  ): Promise<Record<string, unknown>> {
     return {
       executiveSummary: `Comprehensive ${analysisType} analysis reveals key strategic opportunities and operational considerations requiring executive attention.`,
       keyInsights: [
@@ -524,7 +521,7 @@ class DocumentKnowledgeGraph {
     console.log('🕸️ Document Knowledge Graph initialized');
   }
 
-  async updateWithFindings(findings: any, executiveContext: any): Promise<void> {
+  async updateWithFindings(findings: Record<string, unknown>, executiveContext: ExecutiveContext): Promise<void> {
     await this.mcpIntegration.memoryUsage(
       'store',
       `knowledge_graph/${Date.now()}`,

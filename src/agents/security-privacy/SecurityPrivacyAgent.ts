@@ -10,11 +10,7 @@ import {
   PEAAgentBase,
   PEAAgentType,
   ExecutiveContext,
-  PEATask,
-  TaskStatus,
   ClaudeFlowMCPIntegration,
-  PerformanceMetrics,
-  SecurityLevel,
   AgentStatus,
   SecurityThreat
 } from '../../types/pea-agent-types';
@@ -217,7 +213,7 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
    */
   async classifyAndProtectData(
     dataId: string,
-    dataContent: any,
+    dataContent: Record<string, unknown>,
     executiveId: string,
     context: ExecutiveContext
   ): Promise<PrivacyClassification> {
@@ -273,7 +269,7 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
     incident: SecurityThreat,
     executiveId: string,
     context: ExecutiveContext
-  ): Promise<any> {
+  ): Promise<Record<string, unknown>> {
     console.log(`🚨 Handling security incident: ${incident.type} [${incident.severity}]`);
 
     try {
@@ -358,9 +354,9 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
   }
 
   private async detectAndAnalyzeThreats(
-    zeroTrustResults: any,
-    executiveId: string
-  ): Promise<any> {
+    _zeroTrustResults: Record<string, unknown>,
+    _executiveId: string
+  ): Promise<Record<string, unknown>> {
     // Mock threat detection
     const threats = [
       {
@@ -385,9 +381,9 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
   }
 
   private async generateSecurityRecommendations(
-    threatAnalysis: any,
-    privacyValidation: any,
-    complianceCheck: any
+    _threatAnalysis: any,
+    _privacyValidation: any,
+    _complianceCheck: any
   ): Promise<string[]> {
     const recommendations = [
       'Maintain current zero-trust security posture',
@@ -407,8 +403,8 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
   }
 
   private async generateNextActions(
-    threatAnalysis: any,
-    privacyValidation: any
+    _threatAnalysis: any,
+    _privacyValidation: any
   ): Promise<string[]> {
     return [
       'Continue continuous security monitoring',
@@ -430,8 +426,8 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
   }
 
   private async determineClassificationLevel(
-    sensitivityAnalysis: any,
-    executiveId: string
+    _sensitivityAnalysis: any,
+    _executiveId: string
   ): Promise<PrivacyClassification> {
     // Determine appropriate classification based on sensitivity
     return {
@@ -446,8 +442,8 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
 
   private async escalateCriticalIncident(
     incident: SecurityThreat,
-    executiveId: string,
-    context: ExecutiveContext
+    _executiveId: string,
+    _context: ExecutiveContext
   ): Promise<void> {
     console.log(`🚨 CRITICAL SECURITY INCIDENT ESCALATION: ${incident.id}`);
     
@@ -458,7 +454,7 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
   private async assessIncidentImpact(
     incident: SecurityThreat,
     context: ExecutiveContext
-  ): Promise<any> {
+  ): Promise<Record<string, unknown>> {
     return {
       dataAtRisk: incident.affectedSystems,
       stakeholdersAffected: context.stakeholders.length,
@@ -470,8 +466,8 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
   private async generateIncidentResponse(
     incident: SecurityThreat,
     containmentResult: any,
-    impactAssessment: any
-  ): Promise<any> {
+    _impactAssessment: any
+  ): Promise<Record<string, unknown>> {
     return {
       responseId: `response-${incident.id}`,
       containmentSuccess: containmentResult.success,
@@ -507,7 +503,7 @@ class ZeroTrustSecurityEngine {
     console.log('🔒 Zero-Trust Security Engine initialized');
   }
 
-  async performSecurityScan(executiveId: string, context: ExecutiveContext): Promise<any> {
+  async performSecurityScan(_executiveId: string, _context: ExecutiveContext): Promise<any> {
     return {
       systemsMonitored: 15,
       accessPointsChecked: 45,
@@ -534,7 +530,7 @@ class PrivacyEnforcementEngine {
     console.log('🔐 Privacy Enforcement Engine initialized');
   }
 
-  async validatePrivacyCompliance(executiveId: string, context: ExecutiveContext): Promise<any> {
+  async validatePrivacyCompliance(_executiveId: string, _context: ExecutiveContext): Promise<any> {
     return {
       violationsDetected: 0,
       complianceScore: 0.98,
@@ -543,7 +539,7 @@ class PrivacyEnforcementEngine {
     };
   }
 
-  async analyzeSensitivity(dataContent: any, context: ExecutiveContext): Promise<any> {
+  async analyzeSensitivity(_dataContent: any, _context: ExecutiveContext): Promise<any> {
     return {
       sensitivityLevel: 'high',
       personalDataDetected: true,
@@ -575,8 +571,8 @@ class ComplianceMonitoringEngine {
 
   async validateCompliance(
     regulations: string[],
-    executiveId: string,
-    context: ExecutiveContext
+    _executiveId: string,
+    _context: ExecutiveContext
   ): Promise<ComplianceValidation> {
     return {
       validationId: `compliance-${Date.now()}`,

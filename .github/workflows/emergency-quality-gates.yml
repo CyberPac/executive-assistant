@@ -1,0 +1,56 @@
+name: Emergency Quality Gates
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  quality-gates:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: ESLint Check (Zero Tolerance)
+      run: npm run lint
+      
+    - name: TypeScript Compilation Check
+      run: npm run typecheck
+      
+    - name: Basic Test Infrastructure Check
+      run: npm run test -- --passWithNoTests
+      
+    - name: Build Verification
+      run: npm run build
+      
+    - name: Emergency Rollback Check
+      if: failure()
+      run: |
+        echo "❌ CRITICAL: Quality gates failed!"
+        echo "🚨 Emergency rollback required"
+        exit 1
+
+  security-scan:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Security Audit
+      run: npm audit --audit-level=high
+      continue-on-error: true
+      
+    - name: Dependency Check
+      run: npm ls --depth=0

@@ -19,7 +19,6 @@ import {
   ConsensusResult,
   ClaudeFlowMCPIntegration,
   ByzantineFaultTolerance,
-  PerformanceMetrics
 } from '../../types/pea-agent-types';
 
 export interface ExecutiveDecisionContext {
@@ -140,7 +139,7 @@ export class ExecutiveOrchestratorAgent extends PEAAgentBase {
       const decisionContext: ExecutiveDecisionContext = {
         decisionId: coordinationId,
         executiveId: task.context.executiveId,
-        priority: task.priority as any,
+        priority: task.priority,
         stakeholders: task.context.stakeholders.map(s => typeof s === 'string' ? s : s.toString()),
         timeConstraints: {
           immediate: task.priority === 'critical',
@@ -167,7 +166,7 @@ export class ExecutiveOrchestratorAgent extends PEAAgentBase {
       console.log(`🐝 Swarm initialized for coordination: ${swarmResult.swarmId}`);
 
       // Orchestrate across specialized agents
-      const taskResult = await this.mcpIntegration.taskOrchestrate(
+      await this.mcpIntegration.taskOrchestrate(
         `Executive coordination: ${task.description}`,
         'adaptive',
         'high'
@@ -312,20 +311,23 @@ export class ExecutiveOrchestratorAgent extends PEAAgentBase {
 
     // Determine agents based on task type and priority
     switch (task.type) {
-      case 'scheduling':
+      case 'scheduling': {
         const calendarAgent = this.registeredAgents.get(PEAAgentType.CALENDAR_INTELLIGENCE);
         if (calendarAgent) agents.push(calendarAgent);
         break;
+      }
 
-      case 'communication':
+      case 'communication': {
         const commAgent = this.registeredAgents.get(PEAAgentType.COMMUNICATION_MANAGER);
         if (commAgent) agents.push(commAgent);
         break;
+      }
 
-      case 'document-analysis':
+      case 'document-analysis': {
         const docAgent = this.registeredAgents.get(PEAAgentType.DOCUMENT_INTELLIGENCE);
         if (docAgent) agents.push(docAgent);
         break;
+      }
 
       case 'crisis-management':
         // Include all agents for crisis management
@@ -354,7 +356,7 @@ export class ExecutiveOrchestratorAgent extends PEAAgentBase {
     task: PEATask,
     agents: PEAAgentBase[],
     context: ExecutiveDecisionContext
-  ): Promise<any> {
+  ): Promise<Record<string, unknown>> {
     // Execute coordination across participating agents
     const coordinationPromises = agents.map(agent => 
       this.coordinateAgentExecution(agent, task, context)
@@ -364,9 +366,18 @@ export class ExecutiveOrchestratorAgent extends PEAAgentBase {
 
     return {
       agentResults: results,
-      recommendations: results.flatMap(r => r.recommendations || []),
-      nextSteps: results.flatMap(r => r.nextSteps || []),
-      success: results.every(r => r.success)
+      recommendations: results.flatMap(r => {
+        const result = r as Record<string, unknown>;
+        return Array.isArray(result?.recommendations) ? result.recommendations as string[] : [];
+      }),
+      nextSteps: results.flatMap(r => {
+        const result = r as Record<string, unknown>;
+        return Array.isArray(result?.nextSteps) ? result.nextSteps as string[] : [];
+      }),
+      success: results.every(r => {
+        const result = r as Record<string, unknown>;
+        return Boolean(result?.success);
+      })
     };
   }
 
@@ -437,7 +448,7 @@ export class ExecutiveOrchestratorAgent extends PEAAgentBase {
     return this.consensusValidator.validateConsensus(request);
   }
 
-  private calculateCoordinationEfficiency(results: any): number {
+  private calculateCoordinationEfficiency(results: Record<string, unknown>): number {
     if (!results.agentResults || results.agentResults.length === 0) return 0.0;
     
     const successRate = results.agentResults.filter(r => r.success).length / results.agentResults.length;
@@ -500,7 +511,7 @@ class ExecutiveContextEngine {
 
   async updateExecutivePreferences(
     executiveId: string,
-    preferences: Record<string, any>
+    preferences: Record<string, unknown>
   ): Promise<void> {
     await this.mcpIntegration.memoryUsage(
       'store',

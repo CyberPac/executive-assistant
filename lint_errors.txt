@@ -1,0 +1,439 @@
+
+/workspaces/executive-assistant/src/agents/communication-manager/CommunicationManagerAgent.ts
+   14:3   error    'PEATask' is defined but never used                                                    @typescript-eslint/no-unused-vars
+   15:3   error    'TaskStatus' is defined but never used                                                 @typescript-eslint/no-unused-vars
+   17:3   error    'PerformanceMetrics' is defined but never used                                         @typescript-eslint/no-unused-vars
+   34:39  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+   53:33  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+   69:44  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  276:14  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  325:5   error    'culturalAdaptations' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  325:26  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  333:25  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  383:82  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  391:84  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  407:88  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  414:5   error    'timeRange' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  430:49  error    'context' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  453:5   error    'stakeholderContext' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  453:25  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  454:5   error    'culturalAdaptations' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  454:26  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  477:47  error    'context' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  477:57  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  477:71  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  488:52  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  488:68  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  504:42  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  524:25  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  525:23  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  526:14  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/agents/document-intelligence/DocumentIntelligenceAgent.ts
+   14:3   error    'PEATask' is defined but never used                                                   @typescript-eslint/no-unused-vars
+   15:3   error    'TaskStatus' is defined but never used                                                @typescript-eslint/no-unused-vars
+   17:3   error    'PerformanceMetrics' is defined but never used                                        @typescript-eslint/no-unused-vars
+   40:28  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+   62:18  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+   66:38  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  233:14  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  311:14  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  350:5   error    'semanticAnalysis' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+  350:23  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  351:5   error    'executiveSynthesis' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  351:25  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  372:6   warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  415:6   warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  424:71  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  443:63  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  470:26  error    'processedDocuments' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  470:46  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  470:53  error    'executiveContext' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+  470:71  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  470:85  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  489:23  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  491:5   error    'outputFormat' is defined but never used. Allowed unused args must match /^_/u        @typescript-eslint/no-unused-vars
+  492:5   error    'context' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  493:14  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  527:38  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  527:61  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/agents/examples/PEAFoundationExample.ts
+   10:3   error    'PEAFoundationIntegration' is defined but never used                        @typescript-eslint/no-unused-vars
+   20:3   error    'ExecutivePreferences' is defined but never used                            @typescript-eslint/no-unused-vars
+   21:3   error    'PEAAgentType' is defined but never used                                    @typescript-eslint/no-unused-vars
+   22:3   error    'StakeholderContext' is defined but never used                              @typescript-eslint/no-unused-vars
+   31:31  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   33:83  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   44:81  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   55:84  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   66:94  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   88:90  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   98:59  error    'metadata' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   98:69  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   98:83  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  399:74  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  425:74  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  426:66  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  428:80  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  429:78  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  430:65  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  434:35  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  434:58  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/agents/executive-orchestrator/ExecutiveOrchestratorAgent.ts
+   22:3   error    'PerformanceMetrics' is defined but never used                             @typescript-eslint/no-unused-vars
+  143:36  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  170:13  error    'taskResult' is assigned a value but never used                            @typescript-eslint/no-unused-vars
+  316:9   error    Unexpected lexical declaration in case block                               no-case-declarations
+  321:9   error    Unexpected lexical declaration in case block                               no-case-declarations
+  326:9   error    Unexpected lexical declaration in case block                               no-case-declarations
+  357:14  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  375:5   error    'task' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  376:5   error    'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  377:14  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  440:52  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  503:33  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/agents/financial-intelligence/FinancialIntelligenceAgent.ts
+   17:3   error    'ExecutiveContext' is defined but never used                                  @typescript-eslint/no-unused-vars
+   20:3   error    'PEATask' is defined but never used                                           @typescript-eslint/no-unused-vars
+   21:3   error    'TaskType' is defined but never used                                          @typescript-eslint/no-unused-vars
+   22:3   error    'TaskStatus' is defined but never used                                        @typescript-eslint/no-unused-vars
+  121:40  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  414:5   error    'marketData' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  435:35  error    'holdings' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+  435:56  error    'marketData' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  440:30  error    'holdings' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+  440:51  error    'marketData' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  445:35  error    'holdings' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+  445:56  error    'marketData' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspaces/executive-assistant/src/agents/phase2/crisis-management/CrisisDetectionEngine.ts
+   20:3   error    'PEAAgentBase' is defined but never used                                            @typescript-eslint/no-unused-vars
+   23:3   error    'SecurityLevel' is defined but never used                                           @typescript-eslint/no-unused-vars
+   46:12  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  324:28  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  406:5   error    'executiveContext' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  455:5   error    'executiveContext' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  460:22  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  487:11  error    Unexpected lexical declaration in case block                                        no-case-declarations
+  491:11  error    Unexpected lexical declaration in case block                                        no-case-declarations
+  495:11  error    Unexpected lexical declaration in case block                                        no-case-declarations
+  504:11  error    Unexpected lexical declaration in case block                                        no-case-declarations
+  519:11  error    Unexpected lexical declaration in case block                                        no-case-declarations
+  520:11  error    Unexpected lexical declaration in case block                                        no-case-declarations
+  570:20  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  759:17  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/agents/phase2/crisis-management/CrisisManagementAgent.ts
+   25:3   error    'PEATask' is defined but never used                                                 @typescript-eslint/no-unused-vars
+   26:3   error    'TaskType' is defined but never used                                                @typescript-eslint/no-unused-vars
+   27:3   error    'TaskStatus' is defined but never used                                              @typescript-eslint/no-unused-vars
+  120:44  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  212:38  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  280:13  error    'coordinationTask' is assigned a value but never used                               @typescript-eslint/no-unused-vars
+  290:74  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  499:47  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  508:48  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  552:65  error    'strategy' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  625:5   error    'executiveContext' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspaces/executive-assistant/src/agents/phase2/crisis-management/CrisisManagementConfig.ts
+  15:3  error  'ResponseConfiguration' is defined but never used      @typescript-eslint/no-unused-vars
+  16:3  error  'CoordinationConfiguration' is defined but never used  @typescript-eslint/no-unused-vars
+  17:3  error  'PerformanceConfiguration' is defined but never used   @typescript-eslint/no-unused-vars
+  18:3  error  'IntegrationConfiguration' is defined but never used   @typescript-eslint/no-unused-vars
+  22:3  error  'DetectionConfiguration' is defined but never used     @typescript-eslint/no-unused-vars
+  23:3  error  'MonitoringSource' is defined but never used           @typescript-eslint/no-unused-vars
+  24:3  error  'FusionRule' is defined but never used                 @typescript-eslint/no-unused-vars
+  25:3  error  'CorrelationRule' is defined but never used            @typescript-eslint/no-unused-vars
+
+/workspaces/executive-assistant/src/agents/phase2/crisis-management/EnhancedCrisisManagementAgent.ts
+    28:3   error    'PEATask' is defined but never used                                                 @typescript-eslint/no-unused-vars
+    29:3   error    'TaskType' is defined but never used                                                @typescript-eslint/no-unused-vars
+    30:3   error    'TaskStatus' is defined but never used                                              @typescript-eslint/no-unused-vars
+    31:3   error    'ConsensusRequest' is defined but never used                                        @typescript-eslint/no-unused-vars
+    32:3   error    'ConsensusResult' is defined but never used                                         @typescript-eslint/no-unused-vars
+    40:3   error    'ResponseStrategy' is defined but never used                                        @typescript-eslint/no-unused-vars
+    41:3   error    'CrisisAction' is defined but never used                                            @typescript-eslint/no-unused-vars
+    42:3   error    'StakeholderCommunication' is defined but never used                                @typescript-eslint/no-unused-vars
+    50:3   error    'MonitoringSource' is defined but never used                                        @typescript-eslint/no-unused-vars
+    56:3   error    'StakeholderProfile' is defined but never used                                      @typescript-eslint/no-unused-vars
+   170:12  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   329:21  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   391:13  error    'monitoringResult' is assigned a value but never used                               @typescript-eslint/no-unused-vars
+   431:21  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   649:14  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   706:5   error    'executionResults' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   706:23  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   707:5   error    'executiveContext' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   708:14  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   762:36  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   846:41  error    'response' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+   873:82  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   913:17  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   954:32  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   977:74  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1024:17  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1084:5   error    'crisisEvent' is defined but never used. Allowed unused args must match /^_/u       @typescript-eslint/no-unused-vars
+  1085:5   error    'executiveContext' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspaces/executive-assistant/src/agents/phase2/crisis-management/StakeholderCoordinationSystem.ts
+    21:3   error    'StakeholderContext' is defined but never used                                         @typescript-eslint/no-unused-vars
+    22:3   error    'CommunicationEvent' is defined but never used                                         @typescript-eslint/no-unused-vars
+   136:30  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+   142:30  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+   515:28  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+   647:5   error    'executiveContext' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+   901:5   error    'crisisEvent' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  1065:39  error    'escalationPath' is defined but never used. Allowed unused args must match /^_/u       @typescript-eslint/no-unused-vars
+  1065:71  error    'planId' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  1107:5   error    'executiveContext' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  1146:52  error    'crisisEvent' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  1185:5   error    'executiveContext' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  1215:5   error    'culturalAdaptations' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  1252:44  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  1269:17  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/agents/phase2/crisis-management/index.ts
+   68:41  error    'PRODUCTION_CRISIS_MANAGEMENT_CONFIG' is defined but never used  @typescript-eslint/no-unused-vars
+   87:20  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  146:21  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  148:14  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  213:23  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  232:46  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  294:20  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/agents/security-privacy/SecurityPrivacyAgent.ts
+   13:3   error    'PEATask' is defined but never used                                                    @typescript-eslint/no-unused-vars
+   14:3   error    'TaskStatus' is defined but never used                                                 @typescript-eslint/no-unused-vars
+   16:3   error    'PerformanceMetrics' is defined but never used                                         @typescript-eslint/no-unused-vars
+   17:3   error    'SecurityLevel' is defined but never used                                              @typescript-eslint/no-unused-vars
+  220:18  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  276:14  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  361:5   error    'zeroTrustResults' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  361:23  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  362:5   error    'executiveId' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  363:14  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  388:21  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  389:24  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  390:5   error    'complianceCheck' is defined but never used. Allowed unused args must match /^_/u      @typescript-eslint/no-unused-vars
+  390:22  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  410:5   error    'threatAnalysis' is defined but never used. Allowed unused args must match /^_/u       @typescript-eslint/no-unused-vars
+  410:21  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  411:5   error    'privacyValidation' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+  411:24  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  422:14  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  433:5   error    'sensitivityAnalysis' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  433:26  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  434:5   error    'executiveId' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  449:5   error    'executiveId' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  450:5   error    'context' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  461:14  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  472:24  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  473:5   error    'impactAssessment' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  473:23  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  474:14  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  493:21  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  510:29  error    'executiveId' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  510:50  error    'context' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  510:86  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  519:58  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  537:35  error    'executiveId' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  537:56  error    'context' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  537:92  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  546:28  error    'dataContent' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  546:41  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  546:46  error    'context' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  546:82  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  564:85  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  578:5   error    'executiveId' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  579:5   error    'context' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  600:38  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  600:77  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/agents/travel-logistics/TravelLogisticsAgent.ts
+    20:3    error    'ExecutiveContext' is defined but never used                                        @typescript-eslint/no-unused-vars
+    21:3    error    'PEATask' is defined but never used                                                 @typescript-eslint/no-unused-vars
+    22:3    error    'TaskStatus' is defined but never used                                              @typescript-eslint/no-unused-vars
+    23:3    error    'ConsensusRequest' is defined but never used                                        @typescript-eslint/no-unused-vars
+    26:3    error    'PerformanceMetrics' is defined but never used                                      @typescript-eslint/no-unused-vars
+    27:3    error    'SecurityLevel' is defined but never used                                           @typescript-eslint/no-unused-vars
+    32:10   error    'CultureData' is defined but never used                                             @typescript-eslint/no-unused-vars
+   723:13   error    'orchestrationResult' is assigned a value but never used                            @typescript-eslint/no-unused-vars
+   821:14   warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   904:5    error    'coordinationId' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+   952:47   error    'plan' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+   952:65   error    'request' is defined but never used. Allowed unused args must match /^_/u           @typescript-eslint/no-unused-vars
+   952:89   error    'culturalAnalysis' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   952:134  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   956:42   error    'plan' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+   956:60   error    'culturalAnalysis' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   956:96   error    'coordinationId' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+   960:49   error    'plan' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+   960:67   error    'disruptionType' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+   960:91   error    'severity' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+   960:109  error    'contingencies' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+   960:124  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   960:140  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   964:45   error    'plan' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+   964:63   error    'disruptionType' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+   964:87   error    'alternatives' is defined but never used. Allowed unused args must match /^_/u      @typescript-eslint/no-unused-vars
+   964:101  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   968:74   error    'alternatives' is defined but never used. Allowed unused args must match /^_/u      @typescript-eslint/no-unused-vars
+   968:88   warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   968:95   error    'contingencies' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+   968:110  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   976:43   error    'request' is defined but never used. Allowed unused args must match /^_/u           @typescript-eslint/no-unused-vars
+   985:35   error    'request' is defined but never used. Allowed unused args must match /^_/u           @typescript-eslint/no-unused-vars
+  1001:62   error    'context' is defined but never used. Allowed unused args must match /^_/u           @typescript-eslint/no-unused-vars
+  1001:89   error    'requirements' is defined but never used. Allowed unused args must match /^_/u      @typescript-eslint/no-unused-vars
+  1007:11   error    'defaultContext' is assigned a value but never used                                 @typescript-eslint/no-unused-vars
+  1028:38   error    'request' is defined but never used. Allowed unused args must match /^_/u           @typescript-eslint/no-unused-vars
+  1028:62   error    'analysis' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  1036:30   error    'request' is defined but never used. Allowed unused args must match /^_/u           @typescript-eslint/no-unused-vars
+  1044:35   error    'request' is defined but never used. Allowed unused args must match /^_/u           @typescript-eslint/no-unused-vars
+  1052:34   error    'request' is defined but never used. Allowed unused args must match /^_/u           @typescript-eslint/no-unused-vars
+  1055:31   error    'plan' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  1055:49   error    'disruptionType' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+  1055:73   error    'severity' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  1055:91   error    'details' is defined but never used. Allowed unused args must match /^_/u           @typescript-eslint/no-unused-vars
+  1055:100  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1055:114  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/core/event-bus.ts
+   12:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   17:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   22:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   27:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   45:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   78:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  136:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/core/logger.ts
+   19:28  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+   30:51  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+   35:51  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+   40:50  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+   45:50  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+   50:66  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+   55:66  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+   60:33  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+   90:35  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+   94:75  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  107:51  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  111:51  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  115:50  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  119:50  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  123:66  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  127:66  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  131:33  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  189:74  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  260:24  error    'entry' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  288:54  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/index.ts
+   47:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   50:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  289:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  347:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  348:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  389:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  457:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/memory/distributed-memory.ts
+    9:10  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+   14:29  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+   52:26  error    'NodeJS' is not defined                                                  no-undef
+   70:35  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+   74:31  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+   97:60  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  313:27  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  313:33  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  318:29  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  318:35  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  323:30  error    'entry' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspaces/executive-assistant/src/swarm/types.ts
+   78:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   90:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  109:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  128:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  166:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  185:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/types/cliffy.d.ts
+  72:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  74:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/types/global.d.ts
+  17:3   error    Unexpected var, use let or const instead      no-var
+  17:13  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  21:26  error    'CommanderCommand' is defined but never used  @typescript-eslint/no-unused-vars
+  32:19  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/types/index.ts
+  31:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  33:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/types/mcp.d.ts
+   8:35  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  17:34  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  36:5   error    'Tool' is defined but never used             @typescript-eslint/no-unused-vars
+  37:5   error    'CallToolRequest' is defined but never used  @typescript-eslint/no-unused-vars
+  38:5   error    'CallToolResult' is defined but never used   @typescript-eslint/no-unused-vars
+  39:5   error    'ListToolsResult' is defined but never used  @typescript-eslint/no-unused-vars
+  44:75  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  45:24  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  59:24  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  60:38  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  60:52  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/types/pea-agent-types.ts
+  121:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  144:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  164:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  168:21  error    Unreachable code                          no-unreachable
+  189:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  324:81  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  325:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  326:82  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  327:92  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  328:88  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  329:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  329:81  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/types/vscode.d.ts
+   6:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   7:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   8:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  23:16  error    'Thenable' is not defined                 no-undef
+  38:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  62:8   error    'Thenable' is not defined                 no-undef
+  66:8   error    'Thenable' is not defined                 no-undef
+  70:8   error    'Thenable' is not defined                 no-undef
+  72:75  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:81  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspaces/executive-assistant/src/utils/helpers.ts
+   65:46  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   65:56  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   69:16  error    'NodeJS' is not defined                                                    no-undef
+   80:46  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   80:56  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  104:39  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  108:48  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  112:29  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  114:15  error    Do not access Object.prototype method 'hasOwnProperty' from target object  no-prototype-builtins
+  127:52  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  151:32  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+✖ 386 problems (168 errors, 218 warnings)
+
