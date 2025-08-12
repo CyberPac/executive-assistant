@@ -162,15 +162,7 @@ export class DocumentIntelligenceAgent extends PEAAgentBase {
       // Extract semantic meaning and relationships
       const semanticAnalysis = await this.semanticAnalyzer.analyzeSemantics(
         processedDocuments,
-        {
-          executiveId: request.executiveContext?.executiveId || 'default',
-          sessionId: request.executiveContext?.sessionId || 'session-default',
-          preferences: request.executiveContext?.preferences || {},
-          currentPriority: request.executiveContext?.currentPriority || 'medium',
-          timeConstraints: request.executiveContext?.timeConstraints || {},
-          contextualFocus: request.executiveContext?.contextualFocus || {},
-          ...request.executiveContext
-        }
+        context
       );
 
       // Perform executive-focused synthesis
@@ -183,8 +175,8 @@ export class DocumentIntelligenceAgent extends PEAAgentBase {
 
       // Update knowledge graph with findings
       await this.knowledgeGraph.updateWithFindings(
-        executiveSynthesis.findings,
-        request.executiveContext
+        (executiveSynthesis as Record<string, unknown>).findings as Record<string, unknown>,
+        context
       );
 
       // Generate risk assessment
@@ -197,15 +189,15 @@ export class DocumentIntelligenceAgent extends PEAAgentBase {
       const analysisResult: DocumentAnalysisResult = {
         success: true,
         analysisId: request.id,
-        executiveSummary: executiveSynthesis.executiveSummary,
-        keyInsights: executiveSynthesis.keyInsights,
-        actionItems: executiveSynthesis.actionItems,
+        executiveSummary: (executiveSynthesis as Record<string, unknown>).executiveSummary as string,
+        keyInsights: (executiveSynthesis as Record<string, unknown>).keyInsights as string[],
+        actionItems: (executiveSynthesis as Record<string, unknown>).actionItems as string[],
         riskAssessment,
-        recommendations: executiveSynthesis.recommendations,
-        confidenceScore: executiveSynthesis.confidenceScore,
+        recommendations: (executiveSynthesis as Record<string, unknown>).recommendations as string[],
+        confidenceScore: (executiveSynthesis as Record<string, unknown>).confidenceScore as number,
         processedDocuments: processedDocuments.length,
         executionTime: Date.now() - startTime,
-        multiModalFindings: processedDocuments.flatMap(doc => doc.findings)
+        multiModalFindings: processedDocuments.flatMap(doc => (doc as Record<string, unknown>).findings) as MultiModalFinding[]
       };
 
       // Store analysis results

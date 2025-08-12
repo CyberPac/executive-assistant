@@ -222,23 +222,23 @@ export class CrisisManagementAgent extends PEAAgentBase {
       );
 
       // If crisis probability > 70%, create crisis event
-      if (crisisAnalysis && crisisAnalysis.crisis_probability > 0.7) {
+      if (crisisAnalysis && crisisAnalysis.success && (crisisAnalysis as any).crisis_probability > 0.7) {
         const crisisEvent: CrisisEvent = {
           id: `crisis-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
           type: this.determineCrisisType(monitoringData),
           severity: this.assessCrisisSeverity(crisisAnalysis),
-          description: crisisAnalysis.description || 'Crisis detected through monitoring',
+          description: (crisisAnalysis as any).description || 'Crisis detected through monitoring',
           detectedAt: new Date().toISOString(),
-          affectedStakeholders: crisisAnalysis.affected_stakeholders || [],
-          riskLevel: crisisAnalysis.risk_level || 'medium',
-          estimatedImpact: crisisAnalysis.estimated_impact || {
+          affectedStakeholders: (crisisAnalysis as any).affected_stakeholders || [],
+          riskLevel: (crisisAnalysis as any).risk_level || 'medium',
+          estimatedImpact: (crisisAnalysis as any).estimated_impact || {
             financial: 0.3,
             reputational: 0.5,
             operational: 0.4,
             strategic: 0.2
           },
-          geographicScope: crisisAnalysis.geographic_scope || [_executiveContext.timeZone],
-          culturalConsiderations: crisisAnalysis.cultural_considerations || []
+          geographicScope: (crisisAnalysis as any).geographic_scope || [_executiveContext.timeZone],
+          culturalConsiderations: (crisisAnalysis as any).cultural_considerations || []
         };
 
         // Store crisis event
@@ -247,7 +247,7 @@ export class CrisisManagementAgent extends PEAAgentBase {
         // Log detection performance
         this.updatePerformanceMetrics({
           responseTimeMs: Date.now() - startTime,
-          accuracyScore: crisisAnalysis.confidence || 0.85
+          accuracyScore: (crisisAnalysis as any).confidence || 0.85
         });
 
         console.log(`🚨 Crisis detected: ${crisisEvent.type} [${crisisEvent.severity}] - ${crisisEvent.id}`);
@@ -361,7 +361,7 @@ export class CrisisManagementAgent extends PEAAgentBase {
 
       // Send stakeholder communications
       const communicationPromises = crisisResponse.stakeholderCommunications.map(async (comm) => {
-        return await this.sendStakeholderCommunication(comm, _executiveContext);
+        return await this.sendStakeholderCommunication(comm, __executiveContext);
       });
 
       // Wait for all actions and communications to complete
@@ -535,12 +535,12 @@ export class CrisisManagementAgent extends PEAAgentBase {
       urgency: crisisEvent.severity === CrisisSeverity.CRITICAL ? 'immediate' : 'within_hour',
       communicationMethod: 'email',
       messageTemplate: `Crisis communication template for ${crisisEvent.type}`,
-      culturalAdaptation: this.culturalProtocols.get(_executiveContext.preferences.languages[0]) || {
+      culturalAdaptation: this.culturalProtocols.get(__executiveContext.preferences.languages[0]) || {
         country: 'US',
         communicationStyle: 'direct',
         protocolRequirements: [],
         appropriatenessScore: 0.8,
-        timeZoneConsiderations: _executiveContext.timeZone
+        timeZoneConsiderations: __executiveContext.timeZone
       },
       approvalRequired: crisisEvent.severity >= CrisisSeverity.HIGH
     }));

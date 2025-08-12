@@ -787,7 +787,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
       // Update performance metrics
       this.performanceMetrics.responseTimeMs = result.executionTime;
       this.performanceMetrics.throughputPerHour += 1;
-      this.performanceMetrics.consensusSuccessRate = consensusValidation?.confidence || 0.9;
+      this.performanceMetrics.consensusSuccessRate = (consensusValidation as Record<string, unknown>)?.confidence as number || 0.9;
 
       console.log(`✅ Travel coordination completed: ${coordinationId} (${result.executionTime}ms)`);
       console.log(`🌍 Cultural appropriateness score: ${result.culturalScore}%`);
@@ -946,7 +946,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
     return { recommendations: [], nextSteps: [] };
   }
 
-  private async validateThroughConsensus(_plan: TravelPlan, _culturalAnalysis: CulturalAnalysis, _coordinationId: string): Promise<ConsensusResult | undefined> {
+  private async validateThroughConsensus(_plan: TravelPlan, _culturalAnalysis: CulturalAnalysis, _coordinationId: string): Promise<Record<string, unknown> | undefined> {
     return undefined;
   }
 
@@ -963,7 +963,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
   }
 
   private async generateAccommodationItinerary(__request: TravelRequest): Promise<AccommodationItinerary> {
-    return { stays: [], totalCost: 0, securityLevel: _request.securityLevel };
+    return { stays: [], totalCost: 0, securityLevel: __request.securityLevel };
   }
 
   private async generateCommunicationPlan(__request: TravelRequest): Promise<CommunicationPlan> {
@@ -983,8 +983,8 @@ class PrivateAviationCoordinator {
 class GroundTransportCoordinator {
   constructor(private mcpIntegration: ClaudeFlowMCPIntegration) {}
   async initialize(): Promise<void> {}
-  async generateTransportItinerary(_request: TravelRequest): Promise<TransportItinerary> {
-    return { segments: [], totalCost: 0, securityLevel: _request.securityLevel };
+  async generateTransportItinerary(__request: TravelRequest): Promise<TransportItinerary> {
+    return { segments: [], totalCost: 0, securityLevel: __request.securityLevel };
   }
 }
 

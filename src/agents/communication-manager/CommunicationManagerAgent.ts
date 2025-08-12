@@ -22,6 +22,7 @@ export interface StakeholderProfile {
   communicationStyle: string;
   preferences: Record<string, unknown>;
   culturalContext?: CulturalContext;
+  history?: string[];
 }
 
 export interface ExecutiveVoiceProfile {

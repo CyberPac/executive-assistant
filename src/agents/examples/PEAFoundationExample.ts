@@ -91,7 +91,7 @@ class MockMCPIntegration implements ClaudeFlowMCPIntegration {
     };
   }
 
-  async neuralPatterns(action: string, operation: string, _metadata: unknown): Promise<unknown> {
+  async neuralPatterns(action: string, operation: string, _metadata: Record<string, unknown>): Promise<{ success: boolean; action: string; operation: string; patterns: string[] }> {
     console.log(`🔬 Mock Neural Patterns: ${action} - ${operation}`);
     return {
       success: true,

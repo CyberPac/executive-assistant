@@ -189,8 +189,8 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
 
       const result: SecurityMonitoringResult = {
         success: true,
-        monitored_systems: zeroTrustResults.systemsMonitored,
-        threats_detected: _threatAnalysis.threatsDetected,
+        monitored_systems: (zeroTrustResults as Record<string, unknown>).systemsMonitored as number,
+        threats_detected: (_threatAnalysis as Record<string, unknown>).threatsDetected as number,
         privacy_violations: _privacyValidation.violationsDetected,
         compliance_status: complianceCheck.overallStatus,
         recommendations,
@@ -391,11 +391,11 @@ export class SecurityPrivacyAgent extends PEAAgentBase {
       'Review access control policies quarterly'
     ];
 
-    if (_threatAnalysis.threatsDetected > 0) {
+    if ((__threatAnalysis as Record<string, unknown>).threatsDetected as number > 0) {
       recommendations.push('Investigate detected security threats immediately');
     }
 
-    if (_privacyValidation.violationsDetected > 0) {
+    if ((__privacyValidation as Record<string, unknown>).violationsDetected as number > 0) {
       recommendations.push('Address privacy compliance violations');
     }
 

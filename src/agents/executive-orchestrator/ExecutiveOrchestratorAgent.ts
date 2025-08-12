@@ -227,8 +227,8 @@ export class ExecutiveOrchestratorAgent extends PEAAgentBase {
         agentsCoordinated: participatingAgents.length,
         consensusApplied: !!consensusResult,
         efficiency: this.calculateCoordinationEfficiency(coordinationResults),
-        recommendations: coordinationResults.recommendations || [],
-        nextSteps: coordinationResults.nextSteps || []
+        recommendations: (coordinationResults as Record<string, unknown>).recommendations as string[] || [],
+        nextSteps: (coordinationResults as Record<string, unknown>).nextSteps as string[] || []
       };
 
       // Update performance metrics
@@ -449,9 +449,10 @@ export class ExecutiveOrchestratorAgent extends PEAAgentBase {
   }
 
   private calculateCoordinationEfficiency(results: Record<string, unknown>): number {
-    if (!results.agentResults || results.agentResults.length === 0) return 0.0;
+    if (!results.agentResults || !Array.isArray(results.agentResults) || (results.agentResults as unknown[]).length === 0) return 0.0;
     
-    const successRate = results.agentResults.filter(r => r.success).length / results.agentResults.length;
+    const agentResults = results.agentResults as Record<string, unknown>[];
+    const successRate = agentResults.filter(r => r.success).length / agentResults.length;
     return Math.min(successRate * 0.9, 0.95); // Cap at 95% efficiency
   }
 
