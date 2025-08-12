@@ -15,9 +15,7 @@ describe('CommunicationManagerAgent', () => {
 
   beforeEach(() => {
     agent = new CommunicationManagerAgent(
-      'test-comm-1',
-      mockMcpIntegration,
-      SecurityLevel.OPERATIONAL
+      mockMcpIntegration
     );
   });
 

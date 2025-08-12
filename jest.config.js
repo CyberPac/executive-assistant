@@ -18,6 +18,12 @@ module.exports = {
   // Test setup (disabled for debugging)
   // setupFilesAfterEnv: ['<rootDir>/tests/setup-simple.js'],
   
+  // Module name mapping
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^tests/(.*)$': '<rootDir>/tests/$1'
+  },
+  
   // Coverage configuration
   collectCoverage: false,
   collectCoverageFrom: [
@@ -58,5 +64,18 @@ module.exports = {
   // Add roots
   roots: [
     '<rootDir>/tests'
-  ]
+  ],
+  
+  // Setup files after environment
+  setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js'],
+  
+  // TypeScript configuration
+  globals: {
+    'ts-jest': {
+      tsconfig: {
+        types: ['jest', 'node'],
+        typeRoots: ['./node_modules/@types', './tests']
+      }
+    }
+  }
 };

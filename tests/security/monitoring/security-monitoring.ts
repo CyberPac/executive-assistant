@@ -55,7 +55,7 @@ export interface MonitoringDashboard {
  */
 export class SecurityMonitoringSystem extends SecurityTest {
   private alerts: Map<string, SecurityAlert> = new Map();
-  private metrics: Map<string, SecurityMetric[]> = new Map();
+  private securityMetrics: Map<string, SecurityMetric[]> = new Map();
   private thresholds: Map<string, number> = new Map();
 
   constructor() {
@@ -585,7 +585,7 @@ export class SecurityMonitoringSystem extends SecurityTest {
       status
     };
 
-    const history = this.metrics.get(name) || [];
+    const history = this.securityMetrics.get(name) || [];
     history.push(metric);
     
     // Keep only last 100 entries
@@ -593,7 +593,7 @@ export class SecurityMonitoringSystem extends SecurityTest {
       history.shift();
     }
     
-    this.metrics.set(name, history);
+    this.securityMetrics.set(name, history);
 
     // Generate alert if metric exceeds threshold
     if (status === 'critical') {
@@ -625,7 +625,7 @@ export class SecurityMonitoringSystem extends SecurityTest {
     const activeAlerts = Array.from(this.alerts.values()).filter(a => a.status === 'open');
     const resolvedAlerts = Array.from(this.alerts.values()).filter(a => a.status === 'resolved');
     
-    const currentMetrics = Array.from(this.metrics.entries()).map(([_name, history]) => 
+    const currentMetrics = Array.from(this.securityMetrics.entries()).map(([_name, history]) => 
       history[history.length - 1]
     ).filter(Boolean);
 
@@ -653,7 +653,7 @@ export class SecurityMonitoringSystem extends SecurityTest {
   } {
     return {
       alerts: Array.from(this.alerts.values()),
-      metrics: Object.fromEntries(this.metrics),
+      metrics: Object.fromEntries(this.securityMetrics),
       dashboard: this.getDashboard()
     };
   }
@@ -768,12 +768,15 @@ export class SecurityMonitoringSystem extends SecurityTest {
 
   private calculateSecurityPostureScore(): number {
     // Simplified calculation based on various factors
-    const metrics = this.getDashboard();
+    // Calculate without recursion - avoid calling getDashboard()
     const baseScore = 100;
     
+    const activeAlerts = Array.from(this.alerts.values()).filter(a => a.status === 'open');
+    const criticalAlerts = activeAlerts.filter(a => a.severity === 'critical');
+    
     let deductions = 0;
-    deductions += metrics.active_threats * 5;
-    deductions += Array.from(this.alerts.values()).filter(a => a.severity === 'critical').length * 10;
+    deductions += activeAlerts.filter(a => a.severity === 'high' || a.severity === 'critical').length * 5;
+    deductions += criticalAlerts.length * 10;
     
     return Math.max(0, Math.min(100, baseScore - deductions));
   }

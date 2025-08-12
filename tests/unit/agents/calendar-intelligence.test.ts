@@ -15,9 +15,7 @@ describe('CalendarIntelligenceAgent', () => {
 
   beforeEach(() => {
     agent = new CalendarIntelligenceAgent(
-      'test-calendar-1',
-      mockMcpIntegration,
-      SecurityLevel.OPERATIONAL
+      mockMcpIntegration
     );
   });
 

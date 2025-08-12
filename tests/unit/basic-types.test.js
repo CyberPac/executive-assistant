@@ -124,7 +124,7 @@ describe('File Content Validation', () => {
     
     // Verify test scripts
     expect(packageJson.scripts).toHaveProperty('test', 'jest');
-    expect(packageJson.scripts).toHaveProperty('build', 'tsc');
+    expect(packageJson.scripts).toHaveProperty('build', 'tsc --noEmit false --outDir dist');
   });
 });
 
