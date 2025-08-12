@@ -1,5 +1,4 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
 
 # Emergency Quality Gates - Pre-commit hooks
 echo "🚨 Running Emergency Quality Gates..."
