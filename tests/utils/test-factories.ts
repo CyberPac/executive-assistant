@@ -63,69 +63,21 @@ export const mockCalendarEvents = [
   }
 ];
 
+// Import new type-safe mock factories
+import {
+  mcpIntegrationMockFactory,
+  financialContextMockFactory,
+  portfolioProfileMockFactory,
+  executiveContextMockFactory
+} from './mock-factories';
+
 /**
+ * @deprecated Use mcpIntegrationMockFactory.create() instead
  * Creates a mock MCP integration for testing agent communication
  */
 export const createMockMCPIntegration = (overrides: MockOverrides<ClaudeFlowMCPIntegration> = {}): jest.Mocked<ClaudeFlowMCPIntegration> => {
-  const mockIntegration = {
-    swarmInit: jest.fn<Promise<SwarmResponse>, [string, number, string]>().mockResolvedValue({
-      swarmId: 'test-swarm-123',
-      topology: 'hierarchical',
-      maxAgents: 5,
-      status: 'active'
-    }),
-    
-    agentSpawn: jest.fn<Promise<AgentSpawnResponse>, [string, string, string[]]>().mockResolvedValue({
-      agentId: 'test-agent-456',
-      type: 'researcher',
-      name: 'Test Researcher Agent',
-      status: 'active'
-    }),
-    
-    taskOrchestrate: jest.fn<Promise<TaskResponse>, [string, string, string]>().mockResolvedValue({
-      taskId: 'test-task-789',
-      status: 'assigned',
-      assignedAgents: ['test-agent-456']
-    }),
-    
-    memoryUsage: jest.fn<Promise<MemoryResponse>, [string, string, string, string?]>().mockResolvedValue({
-      success: true,
-      key: 'test-key',
-      value: 'test-value'
-    }),
-    
-    neuralTrain: jest.fn<Promise<NeuralResponse>, [string, string, number?]>().mockResolvedValue({
-      success: true,
-      patternId: 'test-pattern-101',
-      accuracy: 0.95
-    }),
-    
-    neuralPatterns: jest.fn<Promise<NeuralResponse>, [string, string, Record<string, unknown>]>().mockResolvedValue({
-      success: true,
-      patternId: 'test-pattern-202',
-      accuracy: 0.92
-    }),
-    
-    // Additional mock methods
-    swarmStatus: jest.fn().mockResolvedValue({
-      swarmId: 'test-swarm-123',
-      agentCount: 5,
-      activeAgents: 4,
-      status: 'operational'
-    }),
-    
-    agentMetrics: jest.fn().mockResolvedValue({
-      agentId: 'test-agent-456',
-      responseTime: 150,
-      successRate: 0.97,
-      taskCount: 25
-    }),
-    
-    // Override any provided methods
-    ...overrides
-  };
-  
-  return mockIntegration as jest.Mocked<ClaudeFlowMCPIntegration>;
+  console.warn('createMockMCPIntegration is deprecated. Use mcpIntegrationMockFactory.create() instead.');
+  return mcpIntegrationMockFactory.create(overrides);
 };
 
 /**
@@ -357,29 +309,10 @@ export const assertPerformanceMetrics = (metrics: any, expectations: any = {}) =
 };
 
 /**
+ * @deprecated Use executiveContextMockFactory.create() instead
  * Creates a complete mock ExecutiveContext with proper preferences
  */
-export const createMockExecutiveContext = (overrides: MockOverrides<ExecutiveContext> = {}) => ({
-  executiveId: 'exec-001',
-  sessionId: 'session-123',
-  currentPriority: 'high' as const,
-  stakeholders: ['stakeholder1', 'stakeholder2'],
-  timeZone: 'UTC',
-  confidentialityLevel: SecurityLevel.OPERATIONAL,
-  preferences: {
-    communicationStyle: 'formal' as const,
-    decisionThreshold: 0.8,
-    privacyLevel: SecurityLevel.OPERATIONAL,
-    timeZone: 'UTC',
-    languages: ['en'],
-    culturalAdaptation: true,
-    riskTolerance: 'moderate',
-    decisionSpeed: 'balanced'
-  },
-  currentContext: {
-    meetingStatus: 'available',
-    priority: 'high',
-    workload: 'normal'
-  },
-  ...overrides
-});
+export const createMockExecutiveContext = (overrides: MockOverrides<ExecutiveContext> = {}) => {
+  console.warn('createMockExecutiveContext is deprecated. Use executiveContextMockFactory.create() instead.');
+  return executiveContextMockFactory.create(overrides);
+};
