@@ -1,6 +1,18 @@
-import { ClaudeFlowMCPIntegration } from '../../src/types/pea-agent-types';
-// Unused imports for future expansion:
-// SwarmResponse, AgentSpawnResponse, TaskResponse, MemoryResponse, NeuralResponse
+// Import all required types from central test types file
+import {
+  ClaudeFlowMCPIntegration,
+  SwarmResponse,
+  AgentSpawnResponse,
+  TaskResponse,
+  MemoryResponse,
+  NeuralResponse,
+  SecurityLevel,
+  FinancialContext,
+  ExecutiveContext,
+  PortfolioProfile,
+  Holding,
+  MockOverrides
+} from '../../src/types/test-types';
 
 /**
  * Test data factories for creating mock objects used in tests.
@@ -54,47 +66,44 @@ export const mockCalendarEvents = [
 /**
  * Creates a mock MCP integration for testing agent communication
  */
-export const createMockMCPIntegration = (overrides: Partial<ClaudeFlowMCPIntegration> = {}): jest.Mocked<ClaudeFlowMCPIntegration> => {
+export const createMockMCPIntegration = (overrides: MockOverrides<ClaudeFlowMCPIntegration> = {}): jest.Mocked<ClaudeFlowMCPIntegration> => {
   const mockIntegration = {
     swarmInit: jest.fn<Promise<SwarmResponse>, [string, number, string]>().mockResolvedValue({
       swarmId: 'test-swarm-123',
       topology: 'hierarchical',
-      agentCount: 5,
-      success: true
+      maxAgents: 5,
+      status: 'active'
     }),
     
     agentSpawn: jest.fn<Promise<AgentSpawnResponse>, [string, string, string[]]>().mockResolvedValue({
       agentId: 'test-agent-456',
-      agentType: 'researcher',
-      capabilities: ['analysis', 'research'],
+      type: 'researcher',
+      name: 'Test Researcher Agent',
       status: 'active'
     }),
     
     taskOrchestrate: jest.fn<Promise<TaskResponse>, [string, string, string]>().mockResolvedValue({
       taskId: 'test-task-789',
       status: 'assigned',
-      assignedAgents: ['test-agent-456'],
-      estimatedCompletion: new Date()
+      assignedAgents: ['test-agent-456']
     }),
     
     memoryUsage: jest.fn<Promise<MemoryResponse>, [string, string, string, string?]>().mockResolvedValue({
-      stored: true,
+      success: true,
       key: 'test-key',
-      timestamp: new Date(),
-      namespace: 'test'
+      value: 'test-value'
     }),
     
     neuralTrain: jest.fn<Promise<NeuralResponse>, [string, string, number?]>().mockResolvedValue({
-      modelId: 'test-model-101',
-      trainingComplete: true,
-      accuracy: 0.95,
-      epochs: 50
+      success: true,
+      patternId: 'test-pattern-101',
+      accuracy: 0.95
     }),
     
     neuralPatterns: jest.fn<Promise<NeuralResponse>, [string, string, Record<string, unknown>]>().mockResolvedValue({
+      success: true,
       patternId: 'test-pattern-202',
-      patterns: ['coordination', 'optimization'],
-      confidence: 0.92
+      accuracy: 0.92
     }),
     
     // Additional mock methods
@@ -134,7 +143,7 @@ export const createMockPerformanceMetrics = () => ({
 /**
  * Creates mock agent configuration for testing
  */
-export const createMockAgentConfig = (overrides = {}) => ({
+export const createMockAgentConfig = (overrides: Record<string, any> = {}) => ({
   id: 'test-agent-001',
   type: 'generic-agent',
   name: 'Test Agent',
@@ -207,49 +216,61 @@ export const createMockFinancialData = () => ({
 /**
  * Creates a mock financial context for testing
  */
-export const createMockFinancialContext = () => ({
-  portfolioId: 'portfolio-123',
+export const createMockFinancialContext = (overrides: MockOverrides<FinancialContext> = {}): FinancialContext => ({
+  executiveId: 'exec-001',
+  portfolioProfile: {
+    totalValue: 500000,
+    assetAllocation: { stocks: 60, bonds: 30, cash: 10 },
+    holdings: [],
+    performanceTargets: { annualReturn: 0.08, maxDrawdown: 0.15 },
+    rebalancingRules: []
+  },
+  taxProfile: {
+    jurisdiction: 'US',
+    taxBracket: 0.37,
+    taxOptimizationGoals: ['minimize_current_tax', 'defer_gains'],
+    harvestingRules: [],
+    retirementAccounts: []
+  },
   riskTolerance: 'moderate',
-  investmentHorizon: 'long-term',
-  totalValue: 500000,
-  currency: 'USD'
+  investmentHorizon: 5,
+  liquidityNeeds: 100000,
+  regulatoryJurisdictions: ['US'],
+  currencies: ['USD'],
+  complianceRequirements: ['SOX', 'FINRA'],
+  ...overrides
 });
 
 /**
  * Creates a mock portfolio profile for testing
  */
-export const createMockPortfolioProfile = () => ({
-  id: 'profile-456',
-  name: 'Executive Portfolio',
-  strategy: 'balanced',
-  allocation: {
-    stocks: 60,
-    bonds: 30,
-    cash: 10
-  },
-  performance: {
-    ytd: 0.08,
-    oneYear: 0.12
-  }
+export const createMockPortfolioProfile = (overrides: MockOverrides<PortfolioProfile> = {}): PortfolioProfile => ({
+  totalValue: 500000,
+  assetAllocation: { stocks: 60, bonds: 30, cash: 10 },
+  holdings: [],
+  performanceTargets: { annualReturn: 0.08, maxDrawdown: 0.15, sharpeRatio: 1.2, volatility: 0.12 },
+  rebalancingRules: [],
+  ...overrides
 });
 
 /**
  * Creates a mock holdings batch for testing
  */
-export const createMockHoldingsBatch = () => ([
-  {
-    symbol: 'AAPL',
-    quantity: 100,
-    currentPrice: 150.00,
-    marketValue: 15000
-  },
-  {
-    symbol: 'GOOGL',
-    quantity: 50,
-    currentPrice: 2800.00,
-    marketValue: 140000
+export const createMockHoldingsBatch = (count: number = 2): Holding[] => {
+  const holdings: Holding[] = [];
+  const baseHoldings = [
+    { symbol: 'AAPL', quantity: 100, currentPrice: 150.00, costBasis: 120.00, sector: 'Technology', currency: 'USD', lastUpdated: '2024-01-01' },
+    { symbol: 'GOOGL', quantity: 50, currentPrice: 2800.00, costBasis: 2500.00, sector: 'Technology', currency: 'USD', lastUpdated: '2024-01-01' },
+    { symbol: 'MSFT', quantity: 75, currentPrice: 400.00, costBasis: 350.00, sector: 'Technology', currency: 'USD', lastUpdated: '2024-01-01' },
+    { symbol: 'TSLA', quantity: 25, currentPrice: 800.00, costBasis: 700.00, sector: 'Automotive', currency: 'USD', lastUpdated: '2024-01-01' }
+  ];
+  
+  for (let i = 0; i < count && i < baseHoldings.length; i++) {
+    holdings.push(baseHoldings[i]);
   }
-]);
+  
+  return holdings;
+};
 
 /**
  * Creates mock market data for testing
@@ -270,8 +291,8 @@ export const createMockMarketData = () => ({
  */
 export const createMockSecurityThreat = (overrides = {}) => ({
   id: 'threat-789',
-  type: 'unauthorized_access',
-  severity: 'high',
+  type: 'unauthorized_access' as const,
+  severity: 'high' as const,
   source: 'external',
   target: 'api_endpoint',
   description: 'Suspicious login attempts',
@@ -338,17 +359,17 @@ export const assertPerformanceMetrics = (metrics: any, expectations: any = {}) =
 /**
  * Creates a complete mock ExecutiveContext with proper preferences
  */
-export const createMockExecutiveContext = (overrides = {}) => ({
+export const createMockExecutiveContext = (overrides: MockOverrides<ExecutiveContext> = {}) => ({
   executiveId: 'exec-001',
   sessionId: 'session-123',
   currentPriority: 'high' as const,
   stakeholders: ['stakeholder1', 'stakeholder2'],
   timeZone: 'UTC',
-  confidentialityLevel: 'OPERATIONAL' as const,
+  confidentialityLevel: SecurityLevel.OPERATIONAL,
   preferences: {
-    communicationStyle: 'professional' as const,
+    communicationStyle: 'formal' as const,
     decisionThreshold: 0.8,
-    privacyLevel: 'OPERATIONAL' as const,
+    privacyLevel: SecurityLevel.OPERATIONAL,
     timeZone: 'UTC',
     languages: ['en'],
     culturalAdaptation: true,

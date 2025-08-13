@@ -1,81 +1,174 @@
-module.exports = {
-  // TypeScript preset
+/**
+ * Modern Jest Configuration for Executive Assistant
+ * Unified configuration with TypeScript support and multi-environment testing
+ */
+
+const config = {
+  // Use TypeScript preset for ts-jest
   preset: 'ts-jest',
-  // Use Node.js environment
+  
+  // Test environment
   testEnvironment: 'node',
   
-  // Run both JavaScript and TypeScript tests
+  // Project root directory
+  rootDir: '.',
+  
+  // Test discovery patterns
   testMatch: [
-    '**/*.test.js',
-    '**/*.test.ts'
+    '<rootDir>/tests/**/*.test.{js,ts}',
+    '<rootDir>/tests/**/*.spec.{js,ts}'
   ],
   
-  // TypeScript transformation
+  // TypeScript transformation - Modern syntax
   transform: {
-    '^.+\\.ts$': 'ts-jest'
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        useESM: false,
+        tsconfig: {
+          module: 'commonjs',
+          target: 'es2020',
+          strict: true,
+          esModuleInterop: true,
+          skipLibCheck: true,
+          forceConsistentCasingInFileNames: true,
+          types: ['jest', 'node']
+        }
+      }
+    ],
+    '^.+\\.jsx?$': 'babel-jest'
   },
   
-  // Test setup (disabled for debugging)
-  // setupFilesAfterEnv: ['<rootDir>/tests/setup-simple.js'],
-  
-  // Module name mapping
+  // Module name mapping for path aliases
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^tests/(.*)$': '<rootDir>/tests/$1'
+    '^@tests/(.*)$': '<rootDir>/tests/$1',
+    '^@security/(.*)$': '<rootDir>/tests/security/$1'
   },
   
+  // Setup files
+  setupFilesAfterEnv: [
+    '<rootDir>/tests/jest.setup.js'
+  ],
+  
   // Coverage configuration
-  collectCoverage: false,
+  collectCoverage: false, // Enable on demand
   collectCoverageFrom: [
     'src/**/*.{ts,js}',
     '!src/**/*.d.ts',
-    '!src/**/index.ts'
+    '!src/**/index.ts',
+    '!**/node_modules/**',
+    '!**/coverage/**',
+    '!**/dist/**'
   ],
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html'],
+  coverageReporters: ['text', 'lcov', 'html', 'json'],
+  
+  // Coverage thresholds
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80
+    }
+  },
   
   // Test configuration
   testTimeout: 30000,
   verbose: true,
   passWithNoTests: true,
   
-  // File extensions
-  moduleFileExtensions: ['js', 'json', 'ts'],
+  // File extensions Jest recognizes
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   
-  // Paths to ignore
+  // Paths to ignore during testing
   testPathIgnorePatterns: [
     '/node_modules/',
     '/dist/',
-    '/coverage/'
+    '/coverage/',
+    '/reports/'
   ],
   
-  // Worker configuration
+  // Transform ignore patterns
+  transformIgnorePatterns: [
+    'node_modules/(?!(.*\\.mjs$))'
+  ],
+  
+  // Worker configuration for parallel testing
   maxWorkers: '50%',
   
-  // Clear mocks
+  // Mock configuration
   clearMocks: true,
   restoreMocks: true,
   
-  // Fix haste collision
+  // Haste configuration
   haste: {
     forceNodeFilesystemAPI: true
   },
   
-  // Add roots
-  roots: [
-    '<rootDir>/tests'
+  // Error handling
+  errorOnDeprecated: true,
+  
+  // Projects for environment-specific testing
+  projects: [
+    {
+      displayName: 'Unit Tests',
+      testMatch: [
+        '<rootDir>/tests/unit/**/*.test.{js,ts}',
+        '<rootDir>/tests/basic-*.test.{js,ts}',
+        '<rootDir>/tests/compilation-*.test.{js,ts}'
+      ],
+      testEnvironment: 'node',
+      setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js']
+    },
+    {
+      displayName: 'Security Tests', 
+      testMatch: [
+        '<rootDir>/tests/security/**/*.test.{js,ts}',
+        '<rootDir>/tests/security/**/*.spec.{js,ts}'
+      ],
+      testEnvironment: 'node',
+      timeout: 600000, // 10 minutes for security scans
+      maxWorkers: 1, // Sequential execution for security tests
+      setupFilesAfterEnv: [
+        '<rootDir>/tests/jest.setup.js'
+      ],
+      // Security-specific coverage requirements
+      coverageThreshold: {
+        global: {
+          branches: 90,
+          functions: 95,
+          lines: 95,
+          statements: 95
+        }
+      },
+      // Security test reporting
+      coverageDirectory: '<rootDir>/reports/security/coverage'
+    }
   ],
   
-  // Setup files after environment
-  setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js'],
+  // Global test reporting
+  reporters: [
+    'default'
+    // Note: Additional reporters disabled due to missing dependencies
+    // Enable after installing: jest-html-reporters, jest-junit
+  ],
   
-  // TypeScript configuration
+  // Cache configuration
+  cacheDirectory: '<rootDir>/.jest-cache',
+  
+  // Watch mode configuration
+  watchman: false, // Disabled for better performance in containers
+  
+  // Notification configuration
+  notify: false, // Disabled for CI environments
+  
+  // Global variables available in tests
   globals: {
-    'ts-jest': {
-      tsconfig: {
-        types: ['jest', 'node'],
-        typeRoots: ['./node_modules/@types', './tests']
-      }
-    }
+    TEST_MODE: true,
+    NODE_ENV: 'test'
   }
 };
+
+module.exports = config;
