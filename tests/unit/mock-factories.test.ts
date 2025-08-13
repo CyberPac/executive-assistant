@@ -157,11 +157,12 @@ describe('Type-Safe Mock Factory System', () => {
     });
 
     it('should detect invalid mocks', () => {
-      const invalidMock = {} as any;
+      const invalidMock: any = {};
       const validation = mcpIntegrationMockFactory.validate(invalidMock);
       
       expect(validation.isValid).toBe(false);
-      expect(validation.errors.length).toBeGreaterThan(0);
+      // Check for missing properties instead of errors
+      expect(validation.missingProperties.length).toBeGreaterThan(0);
     });
 
     it('should not throw on valid mock assertion', () => {

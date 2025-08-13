@@ -22,39 +22,39 @@ export class MCPIntegrationMockFactory extends BaseMockFactory<ClaudeFlowMCPInte
   
   create(overrides?: DeepPartial<ClaudeFlowMCPIntegration>): jest.Mocked<ClaudeFlowMCPIntegration> {
     const defaults: ClaudeFlowMCPIntegration = {
-      swarmInit: async (topology: string, maxAgents: number, strategy: string) => ({
+      swarmInit: async (topology: string, maxAgents: number, _strategy: string) => ({
         swarmId: `swarm-${Date.now()}`,
         topology,
         maxAgents,
         status: 'active'
       }),
       
-      agentSpawn: async (type: string, name: string, capabilities: string[]) => ({
+      agentSpawn: async (type: string, name: string, _capabilities: string[]) => ({
         agentId: `agent-${Date.now()}`,
         type,
         name,
         status: 'active'
       }),
       
-      taskOrchestrate: async (task: string, strategy: string, priority: string) => ({
+      taskOrchestrate: async (_task: string, _strategy: string, _priority: string) => ({
         taskId: `task-${Date.now()}`,
         status: 'assigned',
         assignedAgents: [`agent-${Date.now()}`]
       }),
       
-      memoryUsage: async (action: string, key: string, value?: string, namespace?: string) => ({
+      memoryUsage: async (_action: string, key: string, value?: string, _namespace?: string) => ({
         success: true,
         key,
         value: value || 'test-value'
       }),
       
-      neuralTrain: async (pattern: string, data: string, epochs?: number) => ({
+      neuralTrain: async (_pattern: string, _data: string, _epochs?: number) => ({
         success: true,
         patternId: `pattern-${Date.now()}`,
         accuracy: 0.95
       }),
       
-      neuralPatterns: async (action: string, pattern: string, metadata: Record<string, unknown>) => ({
+      neuralPatterns: async (_action: string, _pattern: string, _metadata: Record<string, unknown>) => ({
         success: true,
         patternId: `pattern-${Date.now()}`,
         accuracy: 0.92
@@ -114,7 +114,7 @@ export class MCPIntegrationMockFactory extends BaseMockFactory<ClaudeFlowMCPInte
     let swarmTasks: { id: string; status: string; agents: string[] }[] = [];
     
     const behaviorOverrides: DeepPartial<ClaudeFlowMCPIntegration> = {
-      swarmInit: async (topology: string, maxAgents: number, strategy: string) => {
+      swarmInit: async (topology: string, maxAgents: number, _strategy: string) => {
         swarmAgents = [];
         swarmTasks = [];
         return {
@@ -125,7 +125,7 @@ export class MCPIntegrationMockFactory extends BaseMockFactory<ClaudeFlowMCPInte
         };
       },
       
-      agentSpawn: async (type: string, name: string, capabilities: string[]) => {
+      agentSpawn: async (type: string, name: string, _capabilities: string[]) => {
         const agentId = `agent-${type}-${Date.now()}`;
         swarmAgents.push(agentId);
         return {
@@ -136,7 +136,7 @@ export class MCPIntegrationMockFactory extends BaseMockFactory<ClaudeFlowMCPInte
         };
       },
       
-      taskOrchestrate: async (task: string, strategy: string, priority: string) => {
+      taskOrchestrate: async (_task: string, _strategy: string, _priority: string) => {
         const taskId = `task-${Date.now()}`;
         const assignedAgents = swarmAgents.slice(0, Math.min(2, swarmAgents.length));
         
@@ -174,21 +174,21 @@ export class MCPIntegrationMockFactory extends BaseMockFactory<ClaudeFlowMCPInte
     };
     
     const latencyOverrides: DeepPartial<ClaudeFlowMCPIntegration> = {
-      swarmInit: addLatency(async (topology: string, maxAgents: number, strategy: string) => ({
+      swarmInit: addLatency(async (topology: string, maxAgents: number, _strategy: string) => ({
         swarmId: `swarm-${Date.now()}`,
         topology,
         maxAgents,
         status: 'active'
       })),
       
-      agentSpawn: addLatency(async (type: string, name: string, capabilities: string[]) => ({
+      agentSpawn: addLatency(async (type: string, name: string, _capabilities: string[]) => ({
         agentId: `agent-${Date.now()}`,
         type,
         name,
         status: 'active'
       })),
       
-      taskOrchestrate: addLatency(async (task: string, strategy: string, priority: string) => ({
+      taskOrchestrate: addLatency(async (_task: string, _strategy: string, _priority: string) => ({
         taskId: `task-${Date.now()}`,
         status: 'assigned',
         assignedAgents: [`agent-${Date.now()}`]
@@ -216,14 +216,14 @@ export class MCPIntegrationMockFactory extends BaseMockFactory<ClaudeFlowMCPInte
     };
     
     const failureOverrides: DeepPartial<ClaudeFlowMCPIntegration> = {
-      swarmInit: addFailureChance(async (topology: string, maxAgents: number, strategy: string) => ({
+      swarmInit: addFailureChance(async (topology: string, maxAgents: number, _strategy: string) => ({
         swarmId: `swarm-${Date.now()}`,
         topology,
         maxAgents,
         status: 'active'
       })),
       
-      agentSpawn: addFailureChance(async (type: string, name: string, capabilities: string[]) => ({
+      agentSpawn: addFailureChance(async (type: string, name: string, _capabilities: string[]) => ({
         agentId: `agent-${Date.now()}`,
         type,
         name,

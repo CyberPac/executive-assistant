@@ -47,6 +47,11 @@ export type {
  * Useful for test cleanup and ensuring clean state
  */
 export function resetAllMockFactories(): void {
+  // Import the factory instances dynamically to avoid circular dependencies
+  const { mcpIntegrationMockFactory } = require('./mcp/MCPIntegrationMockFactory');
+  const { financialContextMockFactory, portfolioProfileMockFactory } = require('./financial/FinancialMockFactory');
+  const { executiveContextMockFactory } = require('./executive/ExecutiveMockFactory');
+  
   mcpIntegrationMockFactory.reset();
   financialContextMockFactory.reset();
   portfolioProfileMockFactory.reset();
@@ -63,6 +68,11 @@ export function validateAllMocks(mocks: {
   portfolioProfile?: any;
   executiveContext?: any;
 }): void {
+  // Import factory instances dynamically to avoid circular dependencies
+  const { mcpIntegrationMockFactory } = require('./mcp/MCPIntegrationMockFactory');
+  const { financialContextMockFactory, portfolioProfileMockFactory } = require('./financial/FinancialMockFactory');
+  const { executiveContextMockFactory } = require('./executive/ExecutiveMockFactory');
+  
   if (mocks.mcpIntegration) {
     MockValidationHelpers.assertMockValid(mocks.mcpIntegration, mcpIntegrationMockFactory);
   }
@@ -97,6 +107,11 @@ export function createTestEnvironment(overrides?: {
   executiveContext?: DeepPartial<ExecutiveContext>;
   portfolioProfile?: DeepPartial<PortfolioProfile>;
 }): TestEnvironment {
+  // Import factory instances dynamically to avoid circular dependencies
+  const { mcpIntegrationMockFactory } = require('./mcp/MCPIntegrationMockFactory');
+  const { financialContextMockFactory, portfolioProfileMockFactory } = require('./financial/FinancialMockFactory');
+  const { executiveContextMockFactory } = require('./executive/ExecutiveMockFactory');
+  
   return {
     mcpIntegration: mcpIntegrationMockFactory.create(overrides?.mcpIntegration),
     financialContext: financialContextMockFactory.create(overrides?.financialContext),
@@ -113,6 +128,10 @@ export function createSecureTestEnvironment(overrides?: {
   financialContext?: DeepPartial<FinancialContext>;
   executiveContext?: DeepPartial<ExecutiveContext>;
 }): TestEnvironment {
+  // Import factory instances dynamically to avoid circular dependencies
+  const { financialContextMockFactory } = require('./financial/FinancialMockFactory');
+  const { executiveContextMockFactory } = require('./executive/ExecutiveMockFactory');
+  
   return createTestEnvironment({
     executiveContext: executiveContextMockFactory.createCEO(),
     financialContext: financialContextMockFactory.createHighNetWorth(),

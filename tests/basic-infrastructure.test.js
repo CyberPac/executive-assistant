@@ -120,7 +120,7 @@ describe('Mock Configuration Tests', () => {
     expect(typeof stmt.run).toBe('function');
   });
 
-  test('WebSocket mock is working', () => {
+  test('WebSocket mock is working', (done) => {
     const { WebSocket } = require('ws');
     const ws = new WebSocket();
     
@@ -128,14 +128,20 @@ describe('Mock Configuration Tests', () => {
     expect(typeof ws.on).toBe('function');
     expect(typeof ws.send).toBe('function');
     expect(typeof ws.close).toBe('function');
-    expect(ws.readyState).toBe(1);
+    expect(ws.readyState).toBe(0); // CONNECTING initially
+    
+    // Wait for connection to open
+    ws.on('open', () => {
+      expect(ws.readyState).toBe(1); // OPEN
+      done();
+    });
   });
 
   test('nanoid mock is working', () => {
     const { nanoid } = require('nanoid');
     const id = nanoid();
     
-    expect(id).toBe('test-id-123');
+    expect(id).toBe('mock-nanoid-id-12345'); // Updated to match mock return value
     expect(typeof nanoid).toBe('function');
   });
 });

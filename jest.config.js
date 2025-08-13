@@ -4,9 +4,6 @@
  */
 
 const config = {
-  // Use TypeScript preset for ts-jest
-  preset: 'ts-jest',
-  
   // Test environment
   testEnvironment: 'node',
   
@@ -19,31 +16,46 @@ const config = {
     '<rootDir>/tests/**/*.spec.{js,ts}'
   ],
   
-  // TypeScript transformation - Modern syntax
+  // TypeScript transformation - Fixed to override Jest defaults
   transform: {
-    '^.+\\.tsx?$': [
+    '^.+\\.(ts|tsx)$': [
       'ts-jest',
       {
         useESM: false,
         tsconfig: {
-          module: 'commonjs',
-          target: 'es2020',
-          strict: true,
+          target: 'ES2022',
+          module: 'CommonJS',
+          moduleResolution: 'node',
+          allowSyntheticDefaultImports: true,
           esModuleInterop: true,
+          allowJs: true,
+          strict: false,
+          noImplicitAny: false,
           skipLibCheck: true,
           forceConsistentCasingInFileNames: true,
-          types: ['jest', 'node']
-        }
+          resolveJsonModule: true,
+          declaration: false,
+          baseUrl: '.',
+          paths: {
+            '@/*': ['./src/*'],
+            '@tests/*': ['./tests/*']
+          }
+        },
+        isolatedModules: true
       }
     ],
-    '^.+\\.jsx?$': 'babel-jest'
+    '^.+\\.(js|jsx)$': 'babel-jest'
   },
   
-  // Module name mapping for path aliases
+  // Module name mapping for path aliases and dependency fixes
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@tests/(.*)$': '<rootDir>/tests/$1',
-    '^@security/(.*)$': '<rootDir>/tests/security/$1'
+    '^@security/(.*)$': '<rootDir>/tests/security/$1',
+    // Fix ESM dependencies
+    '^nanoid$': '<rootDir>/tests/__mocks__/nanoid.js',
+    '^better-sqlite3$': '<rootDir>/tests/__mocks__/better-sqlite3.js',
+    '^ws$': '<rootDir>/tests/__mocks__/ws.js'
   },
   
   // Setup files
@@ -90,9 +102,9 @@ const config = {
     '/reports/'
   ],
   
-  // Transform ignore patterns
+  // Transform ignore patterns - Fix ESM issues
   transformIgnorePatterns: [
-    'node_modules/(?!(.*\\.mjs$))'
+    'node_modules/(?!(nanoid)/)'
   ],
   
   // Worker configuration for parallel testing
@@ -120,7 +132,45 @@ const config = {
         '<rootDir>/tests/compilation-*.test.{js,ts}'
       ],
       testEnvironment: 'node',
-      setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js']
+      setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js'],
+      // Inherit TypeScript transform from root config
+      transform: {
+        '^.+\\.(ts|tsx)$': [
+          'ts-jest',
+          {
+            useESM: false,
+            tsconfig: {
+              target: 'ES2022',
+              module: 'CommonJS',
+              moduleResolution: 'node',
+              allowSyntheticDefaultImports: true,
+              esModuleInterop: true,
+              allowJs: true,
+              strict: false,
+              noImplicitAny: false,
+              skipLibCheck: true,
+              forceConsistentCasingInFileNames: true,
+              resolveJsonModule: true,
+              declaration: false,
+              baseUrl: '.',
+              paths: {
+                '@/*': ['./src/*'],
+                '@tests/*': ['./tests/*']
+              }
+            },
+            isolatedModules: true
+          }
+        ],
+        '^.+\\.(js|jsx)$': 'babel-jest'
+      },
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+        '^@tests/(.*)$': '<rootDir>/tests/$1',
+        '^@security/(.*)$': '<rootDir>/tests/security/$1',
+        '^nanoid$': '<rootDir>/tests/__mocks__/nanoid.js',
+        '^better-sqlite3$': '<rootDir>/tests/__mocks__/better-sqlite3.js',
+        '^ws$': '<rootDir>/tests/__mocks__/ws.js'
+      }
     },
     {
       displayName: 'Security Tests', 
@@ -129,11 +179,49 @@ const config = {
         '<rootDir>/tests/security/**/*.spec.{js,ts}'
       ],
       testEnvironment: 'node',
-      timeout: 600000, // 10 minutes for security scans
+      // Note: testTimeout is configured at project level differently
       maxWorkers: 1, // Sequential execution for security tests
       setupFilesAfterEnv: [
         '<rootDir>/tests/jest.setup.js'
       ],
+      // Inherit TypeScript transform from root config
+      transform: {
+        '^.+\\.(ts|tsx)$': [
+          'ts-jest',
+          {
+            useESM: false,
+            tsconfig: {
+              target: 'ES2022',
+              module: 'CommonJS',
+              moduleResolution: 'node',
+              allowSyntheticDefaultImports: true,
+              esModuleInterop: true,
+              allowJs: true,
+              strict: false,
+              noImplicitAny: false,
+              skipLibCheck: true,
+              forceConsistentCasingInFileNames: true,
+              resolveJsonModule: true,
+              declaration: false,
+              baseUrl: '.',
+              paths: {
+                '@/*': ['./src/*'],
+                '@tests/*': ['./tests/*']
+              }
+            },
+            isolatedModules: true
+          }
+        ],
+        '^.+\\.(js|jsx)$': 'babel-jest'
+      },
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+        '^@tests/(.*)$': '<rootDir>/tests/$1',
+        '^@security/(.*)$': '<rootDir>/tests/security/$1',
+        '^nanoid$': '<rootDir>/tests/__mocks__/nanoid.js',
+        '^better-sqlite3$': '<rootDir>/tests/__mocks__/better-sqlite3.js',
+        '^ws$': '<rootDir>/tests/__mocks__/ws.js'
+      },
       // Security-specific coverage requirements
       coverageThreshold: {
         global: {

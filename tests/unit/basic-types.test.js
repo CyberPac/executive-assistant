@@ -90,7 +90,11 @@ describe('File Content Validation', () => {
   test('Jest config contains required settings', () => {
     const jestConfig = require('../../jest.config.js');
     
-    expect(jestConfig).toHaveProperty('preset', 'ts-jest');
+    // Verify TypeScript transform configuration (we use explicit transform instead of preset)
+    const transformKeys = Object.keys(jestConfig.transform);
+    const tsTransformKey = transformKeys.find(key => key.includes('(ts|tsx)'));
+    expect(tsTransformKey).toBeDefined();
+    expect(jestConfig.transform[tsTransformKey][0]).toBe('ts-jest');
     expect(jestConfig).toHaveProperty('testEnvironment', 'node');
     expect(jestConfig).toHaveProperty('testMatch');
     expect(jestConfig).toHaveProperty('moduleNameMapper');
@@ -99,9 +103,11 @@ describe('File Content Validation', () => {
     expect(Array.isArray(jestConfig.testMatch)).toBe(true);
     expect(jestConfig.testMatch.length).toBeGreaterThan(0);
     
-    // Verify module name mapping for aliases
-    expect(jestConfig.moduleNameMapper).toHaveProperty('^@/(.*)$');
-    expect(jestConfig.moduleNameMapper['^@/(.*)$']).toBe('<rootDir>/src/$1');
+    // Verify module name mapping for aliases  
+    const mapperKeys = Object.keys(jestConfig.moduleNameMapper);
+    const aliasKey = mapperKeys.find(key => key.includes('@/'));
+    expect(aliasKey).toBeDefined();
+    expect(jestConfig.moduleNameMapper[aliasKey]).toBe('<rootDir>/src/$1');
   });
 
   test('Package.json has required dependencies', () => {

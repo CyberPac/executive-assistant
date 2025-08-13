@@ -1,12 +1,6 @@
 // Import all required types from central test types file
 import {
   ClaudeFlowMCPIntegration,
-  SwarmResponse,
-  AgentSpawnResponse,
-  TaskResponse,
-  MemoryResponse,
-  NeuralResponse,
-  SecurityLevel,
   FinancialContext,
   ExecutiveContext,
   PortfolioProfile,
@@ -66,8 +60,6 @@ export const mockCalendarEvents = [
 // Import new type-safe mock factories
 import {
   mcpIntegrationMockFactory,
-  financialContextMockFactory,
-  portfolioProfileMockFactory,
   executiveContextMockFactory
 } from './mock-factories';
 
