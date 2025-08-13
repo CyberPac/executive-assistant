@@ -7,43 +7,68 @@ import { DocumentIntelligenceAgent, DocumentAnalysisRequest, DocumentAnalysisRes
 import { PEAAgentType, AgentStatus, SecurityLevel } from '../../../src/types/enums';
 import {
   createMockMCPIntegration,
-  mockExecutiveContext
+  MockPerformanceTimer
 } from '../../utils/test-factories';
+import { executiveContextMockFactory } from '../../utils/mock-factories';
 
 // Local mock functions for document intelligence tests
-const createMockDocumentAnalysisRequest = () => ({
+const createMockDocumentAnalysisRequest = (overrides = {}) => ({
+  id: 'doc-req-001',
   requestId: 'doc-req-001',
-  documents: ['doc1.pdf', 'doc2.pdf'],
-  analysisType: 'comprehensive' as const,
-  priority: 'high' as const
+  documents: [
+    { 
+      id: 'doc1', 
+      name: 'doc1.pdf', 
+      type: 'pdf' as const, 
+      size: 1024, 
+      metadata: {},
+      source: 'upload',
+      confidentialityLevel: 'public' as const
+    },
+    { 
+      id: 'doc2', 
+      name: 'doc2.pdf', 
+      type: 'pdf' as const, 
+      size: 2048, 
+      metadata: {},
+      source: 'upload',
+      confidentialityLevel: 'public' as const
+    }
+  ],
+  analysisType: 'detailed' as const,
+  priority: 'high' as const,
+  executiveContext: {
+    focus: ['strategic planning', 'risk assessment'],
+    decisionPoints: ['approval required', 'budget allocation'],
+    stakeholders: ['CEO', 'CFO', 'Board']
+  },
+  outputFormat: 'executive_brief' as const,
+  ...overrides
 });
 
-const createMockDocumentInput = () => ({
-  documentId: 'doc-001',
-  content: 'Sample document content for analysis',
-  metadata: { type: 'pdf', size: 1024, pages: 5 }
+const createMockDocumentInput = (overrides = {}) => ({
+  id: 'doc-001',
+  name: 'sample.pdf',
+  type: 'pdf' as const,
+  size: 1024,
+  metadata: { pages: 5, author: 'Test' },
+  source: 'upload',
+  confidentialityLevel: 'public' as const,
+  ...overrides
 });
 
-const createMockDocumentInputBatch = () => ([
-  createMockDocumentInput(),
-  { ...createMockDocumentInput(), documentId: 'doc-002' }
-]);
+const createMockDocumentInputBatch = (count = 5) => Array(count).fill(null).map((_, i) => 
+  createMockDocumentInput({ id: `doc-${i + 1}`, name: `doc-${i + 1}.pdf` }));
 
 const assertAgentInitialization = (agent: any) => {
   expect(agent).toBeDefined();
-  expect(agent.agentType).toBe('document-intelligence');
+  expect(agent.type).toBe(PEAAgentType.DOCUMENT_INTELLIGENCE);
 };
 
 const assertPerformanceMetrics = (metrics: any) => {
   expect(metrics).toBeDefined();
   expect(typeof metrics.responseTime).toBe('number');
 };
-
-class MockPerformanceTimer {
-  start = jest.fn();
-  end = jest.fn().mockReturnValue(100);
-  reset = jest.fn();
-}
 
 describe('DocumentIntelligenceAgent', () => {
   let agent: DocumentIntelligenceAgent;
@@ -96,7 +121,7 @@ describe('DocumentIntelligenceAgent', () => {
       
       const initTime = performanceTimer.measure();
       
-      assertAgentInitialization(agent, PEAAgentType.DOCUMENT_INTELLIGENCE);
+      assertAgentInitialization(agent);
       expect(initTime).toBeLessThan(5000); // Should initialize within 5 seconds
       expect(mockMcpIntegration.memoryUsage).toHaveBeenCalledWith(
         'store',
@@ -135,7 +160,7 @@ describe('DocumentIntelligenceAgent', () => {
       const result = await agent.analyzeDocuments(
         mockRequest,
         'exec-001',
-        mockExecutiveContext
+        executiveContextMockFactory.create()
       );
       
       const analysisTime = performanceTimer.measure();
@@ -168,7 +193,7 @@ describe('DocumentIntelligenceAgent', () => {
       const result = await agent.analyzeDocuments(
         batchRequest,
         'exec-001',
-        mockExecutiveContext
+        executiveContextMockFactory.create()
       );
       
       const batchAnalysisTime = performanceTimer.measure();
@@ -185,17 +210,17 @@ describe('DocumentIntelligenceAgent', () => {
     it('should process different document types correctly', async () => {
       const mixedTypeRequest = createMockDocumentAnalysisRequest({
         documents: [
-          createMockDocumentInput({ type: 'pdf', name: 'report.pdf' }),
-          createMockDocumentInput({ type: 'docx', name: 'proposal.docx' }),
-          createMockDocumentInput({ type: 'xlsx', name: 'data.xlsx' }),
-          createMockDocumentInput({ type: 'pptx', name: 'presentation.pptx' })
+          createMockDocumentInput({ type: 'pdf' as const, name: 'report.pdf' }),
+          createMockDocumentInput({ type: 'docx' as const, name: 'proposal.docx' }),
+          createMockDocumentInput({ type: 'xlsx' as const, name: 'data.xlsx' }),
+          createMockDocumentInput({ type: 'pptx' as const, name: 'presentation.pptx' })
         ]
       });
       
       const result = await agent.analyzeDocuments(
         mixedTypeRequest,
         'exec-001',
-        mockExecutiveContext
+        executiveContextMockFactory.create()
       );
       
       expect(result.success).toBe(true);
@@ -217,7 +242,7 @@ describe('DocumentIntelligenceAgent', () => {
         const result = await agent.analyzeDocuments(
           request,
           'exec-001',
-          mockExecutiveContext
+          executiveContextMockFactory.create()
         );
         
         expect(result.success).toBe(true);
@@ -235,7 +260,7 @@ describe('DocumentIntelligenceAgent', () => {
       const result = await agent.analyzeDocuments(
         confidentialRequest,
         'exec-001',
-        mockExecutiveContext
+        executiveContextMockFactory.create()
       );
       
       expect(result.success).toBe(true);
@@ -253,14 +278,10 @@ describe('DocumentIntelligenceAgent', () => {
       await agent.analyzeDocuments(
         mockRequest,
         'exec-001',
-        mockExecutiveContext
+        executiveContextMockFactory.create()
       );
       
-      assertPerformanceMetrics(agent.performanceMetrics, {
-        responseTimeMs: 5000,
-        accuracyScore: 0.8,
-        errorRate: 0.1
-      });
+      assertPerformanceMetrics(agent.performanceMetrics);
       
       expect(agent.performanceMetrics.throughputPerHour).toBeGreaterThan(initialMetrics.throughputPerHour);
     });
@@ -293,7 +314,7 @@ describe('DocumentIntelligenceAgent', () => {
       ];
       
       const comparisonCriteria = ['cost', 'risk', 'timeline', 'strategic_value'];
-      const mockExecutiveContext = mockExecutiveContext;
+      const mockExecContext = executiveContextMockFactory.create();
       
       performanceTimer.start();
       
@@ -301,7 +322,7 @@ describe('DocumentIntelligenceAgent', () => {
         documentSets,
         comparisonCriteria,
         'exec-001',
-        mockExecutiveContext
+        mockExecContext
       );
       
       const comparisonTime = performanceTimer.measure();
@@ -329,7 +350,7 @@ describe('DocumentIntelligenceAgent', () => {
         documentSets,
         ['cost', 'risk'],
         'exec-001',
-        mockExecutiveContext
+        executiveContextMockFactory.create()
       );
       
       const decisionMatrix = result.decision_matrix;
@@ -398,7 +419,7 @@ describe('DocumentIntelligenceAgent', () => {
     it('should extract comprehensive actionable intelligence', async () => {
       const intelligence = await agent.extractActionableIntelligence(
         mockAnalysisResults,
-        mockExecutiveContext
+        executiveContextMockFactory.create()
       );
       
       expect(intelligence).toHaveProperty('immediate_actions');
@@ -416,7 +437,7 @@ describe('DocumentIntelligenceAgent', () => {
     it('should categorize actions by urgency', async () => {
       const intelligence = await agent.extractActionableIntelligence(
         mockAnalysisResults,
-        mockExecutiveContext
+        executiveContextMockFactory.create()
       );
       
       // Should identify immediate actions containing urgent keywords
@@ -431,7 +452,7 @@ describe('DocumentIntelligenceAgent', () => {
     it('should assess decision readiness accurately', async () => {
       const intelligence = await agent.extractActionableIntelligence(
         mockAnalysisResults,
-        mockExecutiveContext
+        executiveContextMockFactory.create()
       );
       
       expect(intelligence.decision_readiness).toHaveProperty('readiness_score');
@@ -459,7 +480,7 @@ describe('DocumentIntelligenceAgent', () => {
       const result = await agent.analyzeDocuments(
         largeRequest,
         'exec-001',
-        mockExecutiveContext
+        executiveContextMockFactory.create()
       );
       
       const processingTime = performanceTimer.measure();
@@ -489,7 +510,7 @@ describe('DocumentIntelligenceAgent', () => {
         const result = await agent.analyzeDocuments(
           request,
           'exec-001',
-          mockExecutiveContext
+          executiveContextMockFactory.create()
         );
         
         const time = performanceTimer.measure();
@@ -522,7 +543,7 @@ describe('DocumentIntelligenceAgent', () => {
         await agent.analyzeDocuments(
           request,
           'exec-001',
-          mockExecutiveContext
+          executiveContextMockFactory.create()
         );
         
         // Force garbage collection if available
@@ -547,7 +568,7 @@ describe('DocumentIntelligenceAgent', () => {
     it('should handle invalid document formats gracefully', async () => {
       const invalidRequest = createMockDocumentAnalysisRequest({
         documents: [createMockDocumentInput({
-          type: 'invalid_type' as any,
+          type: 'txt' as const,
           name: 'invalid.unknown'
         })]
       });
@@ -555,7 +576,7 @@ describe('DocumentIntelligenceAgent', () => {
       const result = await agent.analyzeDocuments(
         invalidRequest,
         'exec-001',
-        mockExecutiveContext
+        executiveContextMockFactory.create()
       );
       
       // Should still succeed but with appropriate warnings or reduced confidence
@@ -572,7 +593,7 @@ describe('DocumentIntelligenceAgent', () => {
       const result = await agent.analyzeDocuments(
         request,
         'exec-001',
-        mockExecutiveContext
+        executiveContextMockFactory.create()
       );
       
       expect(result.success).toBe(true);
@@ -587,7 +608,7 @@ describe('DocumentIntelligenceAgent', () => {
         await agent.analyzeDocuments(
           createMockDocumentAnalysisRequest(),
           'exec-001',
-          mockExecutiveContext
+          executiveContextMockFactory.create()
         );
       } catch (_error) {
         // Expected to fail
@@ -608,7 +629,7 @@ describe('DocumentIntelligenceAgent', () => {
       await agent.analyzeDocuments(
         request,
         'exec-001',
-        mockExecutiveContext
+        executiveContextMockFactory.create()
       );
       
       // Should store analysis results in memory
@@ -629,7 +650,7 @@ describe('DocumentIntelligenceAgent', () => {
         [[createMockDocumentInput()]],
         ['strategic_value'],
         'exec-001',
-        mockExecutiveContext
+        executiveContextMockFactory.create()
       );
       
       // Should store comparative analysis results for other agents
