@@ -288,11 +288,13 @@ export const assertAgentInitialization = (agent: any, expectedType: string) => {
  */
 export const assertPerformanceMetrics = (metrics: any, expectations: any = {}) => {
   expect(metrics).toBeDefined();
-  expect(typeof metrics.responseTime).toBe('number');
-  expect(metrics.responseTime).toBeGreaterThanOrEqual(0);
+  expect(typeof (metrics.responseTime || metrics.responseTimeMs)).toBe('number');
+  expect(metrics.responseTime || metrics.responseTimeMs).toBeGreaterThanOrEqual(0);
   
-  if (expectations.maxResponseTime) {
-    expect(metrics.responseTime).toBeLessThanOrEqual(expectations.maxResponseTime);
+  if (expectations.maxResponseTime || expectations.responseTimeMs) {
+    const responseTime = metrics.responseTime || metrics.responseTimeMs;
+    const maxTime = expectations.maxResponseTime || expectations.responseTimeMs;
+    expect(responseTime).toBeLessThanOrEqual(maxTime);
   }
   
   if (expectations.minSuccessRate) {

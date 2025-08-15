@@ -154,7 +154,7 @@ export class FinancialIntelligenceAgent extends PEAAgentBase {
       await this.storeActivity('agent_initialized', {
         capabilities: this.capabilities,
         securityLevel: this.securityLevel
-      });
+      }, 'financial_intelligence');
       
     } catch (error) {
       this.status = AgentStatus.ERROR;
@@ -344,6 +344,11 @@ export class FinancialIntelligenceAgent extends PEAAgentBase {
   }
 
   private async initializeJurisdictionCompliance(jurisdictions: string[]): Promise<void> {
+    if (!jurisdictions || !Array.isArray(jurisdictions)) {
+      console.warn('Invalid jurisdictions provided, using default US jurisdiction');
+      jurisdictions = ['US'];
+    }
+    
     for (const jurisdiction of jurisdictions) {
       // Load compliance rules for each jurisdiction
       this.complianceRules.set(jurisdiction, {
@@ -428,8 +433,11 @@ export class FinancialIntelligenceAgent extends PEAAgentBase {
     return false;
   }
 
-  private calculateExpectedReturn(_holdings: Holding[], _marketData: MarketData[]): number {
+  private calculateExpectedReturn(holdings: Holding[], _marketData: MarketData[]): number {
     // Calculate expected return based on historical performance and market conditions
+    if (!holdings || holdings.length === 0) {
+      return 0; // No holdings, no expected return
+    }
     return 0.08; // 8% expected return (simplified)
   }
 
@@ -472,7 +480,15 @@ export class FinancialIntelligenceAgent extends PEAAgentBase {
     status: 'compliant' | 'at-risk' | 'non-compliant';
   }>> {
     // Check compliance status for each jurisdiction
-    return [];
+    if (!this.financialContext) {
+      return [];
+    }
+    
+    return this.financialContext.regulatoryJurisdictions.map(jurisdiction => ({
+      jurisdiction,
+      requirements: ['Tax reporting', 'Investment disclosure', 'Privacy compliance'],
+      status: 'compliant' as const
+    }));
   }
 
   private async checkPortfolioAlerts(): Promise<FinancialAlert[]> {

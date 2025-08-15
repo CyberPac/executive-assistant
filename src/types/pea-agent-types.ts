@@ -86,6 +86,27 @@ export abstract class PEAAgentBase implements PEAAgentInterface {
   }
 
   /**
+   * Get agent type as agentType for compatibility
+   */
+  get agentType(): PEAAgentType {
+    return this.type;
+  }
+
+  /**
+   * Get agent ID as agentId for compatibility
+   */
+  get agentId(): string {
+    return this.id;
+  }
+
+  /**
+   * Get response time for compatibility
+   */
+  get responseTime(): number {
+    return this.performanceMetrics.responseTimeMs;
+  }
+
+  /**
    * Abstract method that must be implemented by all agents
    */
   abstract initialize(): Promise<void>;
