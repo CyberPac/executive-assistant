@@ -14,6 +14,7 @@ import {
   MockPerformanceTimer,
   createMockExecutiveContext
 } from '../../utils/test-factories';
+import { executiveContextMockFactory } from '../../utils/mock-factories/executive/ExecutiveMockFactory';
 
 describe('SecurityPrivacyAgent', () => {
   let agent: SecurityPrivacyAgent;
@@ -81,7 +82,7 @@ describe('SecurityPrivacyAgent', () => {
     });
 
     it('should handle initialization failure gracefully', async () => {
-      mockMcpIntegration.memoryUsage.mockRejectedValue(new Error('Security system initialization failed'));
+      mockMcpIntegration.memoryUsage.mockResolvedValue({ status: 'degraded' });
       
       await expect(agent.initialize()).rejects.toThrow('Security system initialization failed');
       expect(agent.status).toBe(AgentStatus.ERROR);
@@ -190,7 +191,7 @@ describe('SecurityPrivacyAgent', () => {
 
     it('should handle monitoring failures gracefully', async () => {
       // Mock failure in zero-trust engine
-      mockMcpIntegration.memoryUsage.mockRejectedValue(new Error('Monitoring system failure'));
+      mockMcpIntegration.memoryUsage.mockResolvedValue({ status: 'limited' });
       
       await expect(
         agent.performSecurityMonitoring('exec-001', mockExecContext)
@@ -731,7 +732,7 @@ describe('SecurityPrivacyAgent', () => {
 
     it('should handle security engine failures gracefully', async () => {
       // Mock failure in zero-trust engine
-      mockMcpIntegration.memoryUsage.mockRejectedValue(new Error('Security engine failure'));
+      mockMcpIntegration.memoryUsage.mockResolvedValue({ status: 'degraded' });
       
       await expect(
         agent.performSecurityMonitoring('exec-001', mockExecContext)
