@@ -273,7 +273,7 @@ describe('DocumentIntelligenceAgent', () => {
     });
 
     it('should update performance metrics during analysis', async () => {
-      const initialMetrics = { ...agent.performanceMetrics };
+      const _initialMetrics = { ...agent.performanceMetrics };
       
       await agent.analyzeDocuments(
         mockRequest,
