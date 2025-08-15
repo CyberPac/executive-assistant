@@ -1,0 +1,90 @@
+name: 🐛 Bug Report
+description: Report a bug in the executive assistant
+title: "[BUG] "
+labels: ["type:bug", "stage:backlog", "priority:high"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🐛 Bug Report
+        Thanks for taking the time to report a bug! This helps us improve the executive assistant.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Describe what happened and what you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should have happened?
+      placeholder: A clear description of what you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: A clear description of what actually happened
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this bug?
+      options:
+        - Low - Minor inconvenience
+        - Medium - Affects functionality
+        - High - Major functionality broken
+        - Critical - System unusable
+      default: 1
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Information about your environment
+      placeholder: |
+        - OS: [e.g. macOS, Ubuntu, Windows]
+        - Node.js version: [e.g. 20.x]
+        - Browser: [e.g. Chrome, Firefox, Safari]
+        - Version: [e.g. 1.0.0]
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs
+      description: Any relevant error logs or console output
+      render: shell
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
