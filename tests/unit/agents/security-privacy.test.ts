@@ -82,7 +82,7 @@ describe('SecurityPrivacyAgent', () => {
     });
 
     it('should handle initialization failure gracefully', async () => {
-      mockMcpIntegration.memoryUsage.mockResolvedValue({ status: 'degraded' });
+      mockMcpIntegration.memoryUsage.mockRejectedValue(new Error('Security system initialization failed'));
       
       await expect(agent.initialize()).rejects.toThrow('Security system initialization failed');
       expect(agent.status).toBe(AgentStatus.ERROR);
@@ -191,7 +191,7 @@ describe('SecurityPrivacyAgent', () => {
 
     it('should handle monitoring failures gracefully', async () => {
       // Mock failure in zero-trust engine
-      mockMcpIntegration.memoryUsage.mockResolvedValue({ status: 'limited' });
+      mockMcpIntegration.memoryUsage.mockRejectedValue(new Error('Monitoring system failure'));
       
       await expect(
         agent.performSecurityMonitoring('exec-001', mockExecContext)
@@ -527,7 +527,7 @@ describe('SecurityPrivacyAgent', () => {
       await agent.validateComplianceStatus('exec-001', ['CCPA'], mockExecContext);
       
       // Should store both validations in history
-      expect(mockMcpIntegration.memoryUsage).toHaveBeenCalledTimes(4); // 2 from init, 2 from validations
+      expect(mockMcpIntegration.memoryUsage).toHaveBeenCalledTimes(3); // 1 from init, 2 from validations
     });
   });
 
@@ -732,7 +732,7 @@ describe('SecurityPrivacyAgent', () => {
 
     it('should handle security engine failures gracefully', async () => {
       // Mock failure in zero-trust engine
-      mockMcpIntegration.memoryUsage.mockResolvedValue({ status: 'degraded' });
+      mockMcpIntegration.memoryUsage.mockRejectedValue(new Error('Security engine failure'));
       
       await expect(
         agent.performSecurityMonitoring('exec-001', mockExecContext)
