@@ -165,7 +165,11 @@ export const createMockFinancialContext = (overrides: MockOverrides<FinancialCon
   portfolioProfile: {
     totalValue: 500000,
     assetAllocation: { stocks: 60, bonds: 30, cash: 10 },
-    holdings: [],
+    holdings: [
+      { symbol: 'AAPL', quantity: 100, currentPrice: 150 },
+      { symbol: 'GOOGL', quantity: 50, currentPrice: 2500 },
+      { symbol: 'TSLA', quantity: 25, currentPrice: 800 }
+    ],
     performanceTargets: { annualReturn: 0.08, maxDrawdown: 0.15 },
     rebalancingRules: []
   },

@@ -41,15 +41,21 @@ describe('Executive Assistant Security Test Suite', () => {
   });
 
   afterAll(async () => {
-    // Generate final security report
-    const results = testRunner.getResults();
-    const metrics = testRunner.getMetrics();
-    
-    const report = testRunner.generateSecurityReport ? testRunner.generateSecurityReport(results, metrics) : '';
-    const reportPath = path.join(__dirname, '../../../reports/security/security-test-report.md');
-    
-    fs.writeFileSync(reportPath, report);
-    console.log(`Security test report generated: ${reportPath}`);
+    // Generate final security report only if tests were run
+    try {
+      const results = testRunner.getResults ? testRunner.getResults() : [];
+      const metrics = testRunner.getMetrics ? testRunner.getMetrics() : { testsRun: 0, testsPassed: 0, testsFailed: 0 };
+      
+      if (testRunner.generateSecurityReport && results.length > 0) {
+        const report = testRunner.generateSecurityReport(results, metrics);
+        const reportPath = path.join(__dirname, '../../../reports/security/security-test-report.md');
+        
+        fs.writeFileSync(reportPath, report);
+        console.log(`Security test report generated: ${reportPath}`);
+      }
+    } catch (error) {
+      console.warn('Security report generation skipped:', error.message);
+    }
 
     // Export monitoring data
     const monitoringData = securityMonitoring.exportMonitoringData();
