@@ -13,6 +13,15 @@ describe('Compilation Process Validation', () => {
   const srcPath = path.join(__dirname, '..', 'src');
 
   test('dist directory should exist and contain compiled files', () => {
+    // Build the project first if dist doesn't exist
+    if (!fs.existsSync(distPath)) {
+      const { execSync } = require('child_process');
+      try {
+        execSync('npm run build', { cwd: path.join(__dirname, '..'), stdio: 'inherit' });
+      } catch (error) {
+        console.log('Build failed, but test will check compilation capability');
+      }
+    }
     expect(fs.existsSync(distPath)).toBe(true);
     
     const distFiles = fs.readdirSync(distPath, { recursive: true });
