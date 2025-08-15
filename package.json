@@ -20,7 +20,7 @@
     "typecheck:watch": "tsc --noEmit --watch",
     "quality:check": "npm run build && npm run lint:check && npm run typecheck && npm run test",
     "quality:fix": "npm run lint:fix && npm run test:coverage",
-    "prepare": "husky",
+    "prepare": "command -v husky >/dev/null && husky || echo 'Husky not available - skipping'",
     "start:cultural": "tsx agents/cultural-intelligence/index.ts",
     "start:travel": "tsx agents/travel-logistics/index.ts",
     "start:financial": "tsx agents/financial-management/index.ts",
