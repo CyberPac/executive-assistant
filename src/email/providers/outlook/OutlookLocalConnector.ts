@@ -127,10 +127,10 @@ export class OutlookLocalConnector {
    */
   async sendMessage(
     accountId: string,
-    to: string[],
-    subject: string,
-    body: string,
-    attachments?: { filename: string; content: Buffer; mimeType: string }[]
+    _to: string[],
+    _subject: string,
+    _body: string,
+    _attachments?: { filename: string; content: Buffer; mimeType: string }[]
   ): Promise<{ id: string; status: string }> {
     this.validateLocalAccess();
     
@@ -142,17 +142,17 @@ export class OutlookLocalConnector {
     }
 
     console.log(`🔒 SECURITY: Sending email via LOCAL SMTP for ${account.email}`);
-    console.log(`📧 Recipients: ${to.join(', ')}`);
-    console.log(`📋 Subject: ${subject}`);
+    console.log(`📧 Recipients: ${_to.join(', ')}`);
+    console.log(`📋 Subject: ${_subject}`);
     
     // Use LOCAL SMTP - NOT Microsoft Graph API
     const messageId = await this.sendViaLocalSMTP(
       account.email,
       accessToken,
-      to,
-      subject,
-      body,
-      attachments
+      _to,
+      _subject,
+      _body,
+      _attachments
     );
     
     return {
@@ -185,7 +185,7 @@ export class OutlookLocalConnector {
   async getFolders(accountId: string): Promise<{ id: string; displayName: string; childFolderCount: number }[]> {
     this.validateLocalAccess();
     
-    const accessToken = await this.authManager.getValidToken(accountId);
+    const _accessToken = await this.authManager.getValidToken(accountId);
     const account = this.authManager.getAccount(accountId);
     
     if (!account) {
@@ -242,8 +242,8 @@ export class OutlookLocalConnector {
    */
   private async fetchLocalMessages(
     email: string,
-    accessToken: string,
-    options: OutlookLocalSearchOptions
+    _accessToken: string,
+    _options: OutlookLocalSearchOptions
   ): Promise<OutlookLocalMessage[]> {
     // In production, this would use an IMAP client like 'imap' or 'node-imap'
     // to connect to outlook.office365.com:993 with OAuth2 token
@@ -285,7 +285,7 @@ export class OutlookLocalConnector {
   private async fetchLocalMessage(
     email: string,
     messageId: string,
-    accessToken: string
+    _accessToken: string
   ): Promise<OutlookLocalMessage> {
     console.log(`🔒 IMAP: Fetching message ${messageId} from LOCAL mailbox ${email}`);
     
@@ -319,11 +319,11 @@ export class OutlookLocalConnector {
    */
   private async sendViaLocalSMTP(
     fromEmail: string,
-    accessToken: string,
-    to: string[],
-    subject: string,
-    body: string,
-    attachments?: { filename: string; content: Buffer; mimeType: string }[]
+    _accessToken: string,
+    _to: string[],
+    _subject: string,
+    _body: string,
+    _attachments?: { filename: string; content: Buffer; mimeType: string }[]
   ): Promise<string> {
     console.log(`🔒 SMTP: Connecting to ${this.smtpConfig.host}:${this.smtpConfig.port} for ${fromEmail}`);
     

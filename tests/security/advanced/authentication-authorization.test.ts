@@ -691,8 +691,8 @@ export class AuthenticationAuthorizationTest extends SecurityTest {
     return { secure: secureScenarios[scenario as keyof typeof secureScenarios] !== false };
   }
 
-  private simulateMFABypass(scenario: string): { bypassed: boolean } {
-    const bypassableScenarios = [
+  private simulateMFABypass(_scenario: string): { bypassed: boolean } {
+    const _bypassableScenarios = [
       'password_reset_skips_mfa',
       'account_recovery_skips_mfa',
       'api_endpoint_skips_mfa',
@@ -743,8 +743,8 @@ export class AuthenticationAuthorizationTest extends SecurityTest {
     return { valid: true }; // Assume proper JWT implementation
   }
 
-  private simulateOAuthVulnerability(scenario: string): { vulnerable: boolean } {
-    const vulnerableScenarios = [
+  private simulateOAuthVulnerability(_scenario: string): { vulnerable: boolean } {
+    const _vulnerableScenarios = [
       'code_injection_attack',
       'missing_state_parameter',
       'open_redirect_via_redirect_uri',

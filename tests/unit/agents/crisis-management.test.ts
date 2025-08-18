@@ -9,22 +9,18 @@ import {
   CrisisSeverity,
   CrisisStatus,
   CrisisIncident,
-  CrisisResponse,
   CrisisEscalationLevel,
   CrisisManagementConfig
 } from '../../../src/agents/phase2/crisis-management/CrisisManagementAgent';
 import {
   CrisisDetectionEngine,
   DetectionRule,
-  DetectionResult,
-  MonitoringTarget
 } from '../../../src/agents/phase2/crisis-management/CrisisDetectionEngine';
 import {
   StakeholderCoordinationSystem,
   StakeholderRole,
   StakeholderNotification,
   CommunicationChannel,
-  EscalationMatrix
 } from '../../../src/agents/phase2/crisis-management/StakeholderCoordinationSystem';
 import {
   EnhancedCrisisManagementAgent,
@@ -289,7 +285,7 @@ describe('Crisis Management System', () => {
       });
 
       it('should execute response steps sequentially', async () => {
-        const response = await agent.initiateResponse(incident.id);
+        const _response = await agent.initiateResponse(incident.id);
         
         // Execute first response step
         const stepResult = await agent.executeResponseStep(incident.id, 0);
@@ -318,7 +314,7 @@ describe('Crisis Management System', () => {
       });
 
       it('should coordinate with multiple stakeholders', async () => {
-        const response = await agent.initiateResponse(incident.id);
+        const _response = await agent.initiateResponse(incident.id);
         
         await agent.coordinateStakeholders(incident.id, [
           StakeholderRole.EXECUTIVE,

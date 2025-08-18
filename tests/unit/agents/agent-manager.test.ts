@@ -5,21 +5,14 @@
 
 import {
   AgentManager,
-  AgentManagerConfig,
-  AgentTemplate,
-  AgentCluster,
-  AgentPool,
-  HealthIssue
+  AgentManagerConfig
 } from '../../../src/agents/agent-manager';
 import { Logger } from '../../../src/core/logger';
 import { EventBus } from '../../../src/core/event-bus';
 import { DistributedMemorySystem } from '../../../src/memory/distributed-memory';
 import {
   AgentType,
-  AgentStatus,
-  AgentState,
-  AgentMetrics,
-  AgentHealth
+  AgentStatus
 } from '../../../src/swarm/types';
 
 // Mock child_process
@@ -546,7 +539,7 @@ describe('AgentManager', () => {
     });
 
     it('should auto-restart unhealthy agents', async () => {
-      const agent = agentManager.getAgent(agentId)!;
+      const _agent = agentManager.getAgent(agentId)!;
       const health = agentManager.getAgentHealth(agentId)!;
       
       // Simulate critical health failure

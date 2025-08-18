@@ -5,7 +5,7 @@
  * Security: Outlook configured for LOCAL mailbox access only
  */
 
-import { SecurityLevel } from '../../types/enums';
+// import { SecurityLevel } from '../../types/enums';
 
 export interface OAuth2Config {
   clientId: string;

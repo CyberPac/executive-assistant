@@ -113,8 +113,8 @@ describe('Knowledge Base Integration Tests', () => {
     it('should process knowledge base operations under 100ms', async () => {
       const startTime = Date.now();
       
-      const knowledgeBase = ingestionEngine.getKnowledgeBase();
-      const progress = ingestionEngine.getProgress();
+      const _knowledgeBase = ingestionEngine.getKnowledgeBase();
+      const _progress = ingestionEngine.getProgress();
       
       const processingTime = Date.now() - startTime;
       expect(processingTime).toBeLessThan(100);
@@ -166,7 +166,7 @@ describe('Knowledge Base Integration Tests', () => {
       
       // Should not throw when accessing corrupted data
       expect(() => {
-        for (const [key, value] of knowledgeBase) {
+        for (const [_key, value] of knowledgeBase) {
           if (value && value.email) {
             // Process valid entries only
           }

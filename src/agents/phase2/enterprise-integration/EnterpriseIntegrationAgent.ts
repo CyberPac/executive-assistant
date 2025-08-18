@@ -4,7 +4,7 @@
  * Date: 2025-08-16 13:53:00 UTC
  */
 
-import { PEAAgentBase, PEAAgent, AgentStatus, PEAAgentType } from '../../../types/pea-agent-types';
+import { PEAAgentBase, AgentStatus, PEAAgentType } from '../../../types/pea-agent-types';
 import { MCPIntegration } from '../../../types/mcp';
 
 export interface EnterpriseIntegrationAgentConfig {
@@ -93,7 +93,7 @@ export class EnterpriseIntegrationAgent extends PEAAgentBase {
   }
   
   async syncWithEnterprise(): Promise<IntegrationStatus[]> {
-    const results: IntegrationStatus[] = [];
+    const _results: IntegrationStatus[] = [];
     
     // Parallel synchronization with all platforms
     const syncPromises = Array.from(this.integrations.entries()).map(async ([platform, integration]) => {

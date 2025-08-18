@@ -377,7 +377,7 @@ export class EmailIntelligenceEngine {
     return 'general';
   }
 
-  private detectLanguage(text: string): string {
+  private detectLanguage(_text: string): string {
     // Simplified language detection
     return 'en'; // Default to English
   }
@@ -461,8 +461,8 @@ export class EmailIntelligenceEngine {
 
   private determineBusinessType(email: EmailContent): 'internal' | 'external' | 'personal' | 'mixed' {
     // Simplified business type detection
-    const domain = email.from.email.split('@')[1];
-    const recipientDomains = email.to.map(addr => addr.email.split('@')[1]);
+    const _domain = email.from.email.split('@')[1];
+    const _recipientDomains = email.to.map(addr => addr.email.split('@')[1]);
     
     // This would be more sophisticated in production
     return 'external';
@@ -508,9 +508,9 @@ export class EmailIntelligenceEngine {
     return avgPriority;
   }
 
-  private extractDeadline(body: string): Date | undefined {
+  private extractDeadline(_body: string): Date | undefined {
     // Simplified deadline extraction
-    const deadlinePatterns = [
+    const _deadlinePatterns = [
       /by (\w+day)/i,
       /deadline (\w+)/i,
       /due (\w+)/i
@@ -520,7 +520,7 @@ export class EmailIntelligenceEngine {
     return undefined;
   }
 
-  private detectSenderCulture(email: string, body: string): string | undefined {
+  private detectSenderCulture(email: string, _body: string): string | undefined {
     // Simplified cultural detection based on domain and language patterns
     const domain = email.split('@')[1];
     if (domain.endsWith('.jp')) return 'japanese';

@@ -146,23 +146,23 @@ export class EmailIntegrationAgent extends PEAAgentBase {
   /**
    * Process incoming email with sub-75ms target response time
    */
-  async processEmail(email: EmailMessage, context: ExecutiveContext): Promise<EmailProcessingResult> {
+  async processEmail(email: EmailMessage, _context: ExecutiveContext): Promise<EmailProcessingResult> {
     const startTime = Date.now();
     
     try {
       this.status = AgentStatus.BUSY;
       
       // Step 1: Security classification (target: <10ms)
-      const classification = await this.classifyEmailSecurity(email, context);
+      const classification = await this.classifyEmailSecurity(email, _context);
       
       // Step 2: Stakeholder analysis (target: <20ms)
-      const stakeholderAnalysis = await this.analyzeStakeholders(email, context);
+      const stakeholderAnalysis = await this.analyzeStakeholders(email, _context);
       
       // Step 3: Priority assessment (target: <15ms)
-      const priority = await this.assessPriority(email, stakeholderAnalysis, context);
+      const priority = await this.assessPriority(email, stakeholderAnalysis, _context);
       
       // Step 4: Generate action recommendations (target: <20ms)
-      const suggestedActions = await this.generateActionRecommendations(email, priority, context);
+      const suggestedActions = await this.generateActionRecommendations(email, priority, _context);
       
       // Step 5: Determine consensus requirements (target: <10ms)
       const requiresConsensus = await this.evaluateConsensusRequirement(email, priority, classification);
@@ -271,9 +271,9 @@ export class EmailIntegrationAgent extends PEAAgentBase {
   /**
    * Classify email security level
    */
-  private async classifyEmailSecurity(email: EmailMessage, context: ExecutiveContext): Promise<SecurityLevel> {
+  private async classifyEmailSecurity(email: EmailMessage, _context: ExecutiveContext): Promise<SecurityLevel> {
     // Executive personal emails get highest classification
-    if (email.from.email.includes(context.executiveId)) {
+    if (email.from.email.includes(_context.executiveId)) {
       return SecurityLevel.EXECUTIVE_PERSONAL;
     }
     
@@ -289,9 +289,9 @@ export class EmailIntegrationAgent extends PEAAgentBase {
   /**
    * Analyze stakeholders mentioned in email
    */
-  private async analyzeStakeholders(email: EmailMessage, context: ExecutiveContext): Promise<StakeholderContext[]> {
+  private async analyzeStakeholders(email: EmailMessage, _context: ExecutiveContext): Promise<StakeholderContext[]> {
     // Implementation would use NLP to identify stakeholders in email content
-    return context.stakeholders.filter(stakeholder => 
+    return _context.stakeholders.filter(stakeholder => 
       email.body.toLowerCase().includes(stakeholder.name.toLowerCase()) ||
       email.to.some(addr => addr.email.includes(stakeholder.name.toLowerCase()))
     );
@@ -303,7 +303,7 @@ export class EmailIntegrationAgent extends PEAAgentBase {
   private async assessPriority(
     email: EmailMessage, 
     stakeholders: StakeholderContext[], 
-    context: ExecutiveContext
+    _context: ExecutiveContext
   ): Promise<'low' | 'normal' | 'high' | 'urgent'> {
     // Critical stakeholders make email urgent
     if (stakeholders.some(s => s.priority === 'critical')) {
@@ -333,7 +333,7 @@ export class EmailIntegrationAgent extends PEAAgentBase {
   private async generateActionRecommendations(
     email: EmailMessage, 
     priority: string, 
-    context: ExecutiveContext
+    _context: ExecutiveContext
   ): Promise<string[]> {
     const actions: string[] = [];
     

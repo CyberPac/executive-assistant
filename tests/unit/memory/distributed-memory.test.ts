@@ -5,9 +5,7 @@
 
 import {
   DistributedMemorySystem,
-  MemoryEntry,
   MemoryQuery,
-  MemoryStats,
   DistributedMemoryConfig,
   defaultDistributedMemory
 } from '../../../src/memory/distributed-memory';
@@ -51,7 +49,7 @@ describe('DistributedMemorySystem', () => {
     });
 
     it('should start cleanup timer on initialization', () => {
-      const system = new DistributedMemorySystem({ cleanupInterval: 5000 });
+      const _system = new DistributedMemorySystem({ cleanupInterval: 5000 });
       expect(setInterval).toHaveBeenCalledWith(expect.any(Function), 5000);
     });
 

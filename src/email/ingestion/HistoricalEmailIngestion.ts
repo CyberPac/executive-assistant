@@ -380,7 +380,7 @@ export class HistoricalEmailIngestion {
   private extractCommunicationPatterns(): CommunicationPattern[] {
     const timeOfDay: { [hour: number]: number } = {};
     const dayOfWeek: { [day: string]: number } = {};
-    const responseTimes: number[] = [];
+    const _responseTimes: number[] = [];
 
     for (const [_, data] of this.knowledgeBase) {
       if (!data.email) continue;
@@ -540,7 +540,7 @@ export class HistoricalEmailIngestion {
     }));
   }
 
-  private extractAttachments(payload: any): { filename: string; size: number; mimeType: string }[] {
+  private extractAttachments(_payload: any): { filename: string; size: number; mimeType: string }[] {
     // Extract attachment information from Gmail payload
     return [];
   }

@@ -126,7 +126,7 @@ export class GmailConnector {
     to: string[], 
     subject: string, 
     body: string,
-    attachments?: { filename: string; content: Buffer; mimeType: string }[]
+    _attachments?: { filename: string; content: Buffer; mimeType: string }[]
   ): Promise<GmailMessage> {
     const accessToken = await this.authManager.getValidToken(accountId);
     

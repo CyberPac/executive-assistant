@@ -7,7 +7,6 @@ import {
   EventBus,
   IEventBus,
   EventPayload,
-  EventSubscription,
   defaultEventBus,
   EVENT_TYPES
 } from '../../../src/core/event-bus';

@@ -7,7 +7,6 @@ import {
   Logger,
   ILogger,
   LogLevel,
-  LogEntry,
   LoggerConfig,
   defaultLogger,
   createLogger
@@ -15,12 +14,12 @@ import {
 
 describe('Logger', () => {
   let logger: Logger;
-  let consoleSpy: jest.SpyInstance;
+  let _consoleSpy: jest.SpyInstance;
 
   beforeEach(() => {
     logger = new Logger();
     // Spy on console methods to verify output
-    consoleSpy = jest.spyOn(console, 'info').mockImplementation();
+    _consoleSpy = jest.spyOn(console, 'info').mockImplementation();
     jest.spyOn(console, 'debug').mockImplementation();
     jest.spyOn(console, 'warn').mockImplementation();
     jest.spyOn(console, 'error').mockImplementation();

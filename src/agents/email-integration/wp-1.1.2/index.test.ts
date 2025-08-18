@@ -3,7 +3,7 @@
  * Comprehensive test suite with 95% coverage target
  */
 
-import WorkPackage112, { EmailIntegrationAgent, EmailMessage, EmailProcessingResult } from './index';
+import WorkPackage112, { EmailIntegrationAgent, EmailMessage } from './index';
 import { PEAAgentType, AgentStatus, SecurityLevel, ExecutiveContext } from '../../../types/pea-agent-types';
 import { MCPIntegration } from '../../../types/mcp';
 

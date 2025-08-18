@@ -380,7 +380,7 @@ export class DataEncryptionProtectionTest extends SecurityTest {
     const threats = [];
 
     for (const test of dataInTransitTests) {
-      const result = this.simulateDataInTransitTest(test);
+      const _result = this.simulateDataInTransitTest(test);
       
       if (!test.acceptable) {
         threats.push(this.createThreat(
@@ -557,7 +557,7 @@ export class DataEncryptionProtectionTest extends SecurityTest {
     const vulnerabilities = [];
 
     for (const test of cryptoTests) {
-      const result = this.simulateCryptographicTest(test);
+      const _result = this.simulateCryptographicTest(test);
       
       if (!test.acceptable) {
         vulnerabilities.push(this.createVulnerability(

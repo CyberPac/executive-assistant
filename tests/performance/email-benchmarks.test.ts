@@ -361,7 +361,7 @@ describe('Email Integration Performance Benchmarks', () => {
       const startTime = Date.now();
 
       // Full pipeline: auth -> retrieve -> analyze -> categorize -> respond
-      const authStatus = authManager.getAuthStatus();
+      const _authStatus = authManager.getAuthStatus();
       const analysis = await intelligenceEngine.analyzeEmail(mockEmail);
       const gmailStatus = gmailConnector.getConnectionStatus();
       const outlookStatus = outlookConnector.getConnectionStatus();

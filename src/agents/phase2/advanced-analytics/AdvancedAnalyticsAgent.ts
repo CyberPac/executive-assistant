@@ -4,7 +4,7 @@
  * Date: 2025-08-16 13:53:00 UTC
  */
 
-import { PEAAgentBase, PEAAgent, AgentStatus, PEAAgentType } from '../../../types/pea-agent-types';
+import { PEAAgentBase, AgentStatus, PEAAgentType } from '../../../types/pea-agent-types';
 import { MCPIntegration } from '../../../types/mcp';
 
 export interface AdvancedAnalyticsAgentConfig {
@@ -84,15 +84,15 @@ export class AdvancedAnalyticsAgent extends PEAAgentBase {
     });
   }
   
-  async analyzeExecutiveMetrics(timeframe: string): Promise<AnalyticsReport> {
+  async analyzeExecutiveMetrics(_timeframe: string): Promise<AnalyticsReport> {
     // Real-time performance analytics with neural pattern analysis
-    const rawMetrics = await this.gatherMetrics(timeframe);
+    const rawMetrics = await this.gatherMetrics(_timeframe);
     
     // Use Claude-Flow neural patterns for advanced analysis
     const patterns = await this.mcpIntegration.request('neural_patterns', {
       action: "analyze",
       operation: "executive_productivity_analysis",
-      metadata: { timeframe, metrics: rawMetrics }
+      metadata: { _timeframe, metrics: rawMetrics }
     });
     
     const insights = await this.generateInsights(rawMetrics, patterns);
@@ -154,7 +154,7 @@ export class AdvancedAnalyticsAgent extends PEAAgentBase {
     return insights;
   }
   
-  private async gatherMetrics(timeframe: string): Promise<any> {
+  private async gatherMetrics(_timeframe: string): Promise<any> {
     // Simulate comprehensive metrics gathering
     return {
       totalTasks: 150,
@@ -187,12 +187,12 @@ export class AdvancedAnalyticsAgent extends PEAAgentBase {
     return onTimeRate * durationEfficiency * 100;
   }
   
-  private calculateDecisionVelocity(metrics: any): number {
+  private calculateDecisionVelocity(_metrics: any): number {
     // Simulate decision velocity calculation
     return 85; // decisions per day
   }
   
-  private async generateInsights(metrics: any, patterns: any): Promise<{insights: string[], recommendations: string[]}> {
+  private async generateInsights(_metrics: any, _patterns: any): Promise<{insights: string[], recommendations: string[]}> {
     return {
       insights: [
         "Executive productivity trending upward this week",

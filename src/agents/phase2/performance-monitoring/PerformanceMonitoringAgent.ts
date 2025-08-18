@@ -4,7 +4,7 @@
  * Date: 2025-08-16 13:55:00 UTC
  */
 
-import { PEAAgentBase, PEAAgent, AgentStatus, PEAAgentType } from '../../../types/pea-agent-types';
+import { PEAAgentBase, AgentStatus, PEAAgentType } from '../../../types/pea-agent-types';
 import { MCPIntegration } from '../../../types/mcp';
 
 export interface PerformanceMonitoringAgentConfig {
@@ -96,7 +96,7 @@ export class PerformanceMonitoringAgent extends PEAAgentBase {
     const metrics = await this.collectPerformanceMetrics();
     
     // Use Claude-Flow performance reporting
-    const detailedReport = await this.mcpIntegration.request('performance_report', {
+    const _detailedReport = await this.mcpIntegration.request('performance_report', {
       format: "detailed",
       timeframe: "1h"
     });
@@ -113,7 +113,7 @@ export class PerformanceMonitoringAgent extends PEAAgentBase {
     const beforeMetrics = await this.collectPerformanceMetrics();
     
     // Auto-optimization for sub-75ms performance using Claude-Flow
-    const optimizationResult = await this.mcpIntegration.request('topology_optimize', {
+    const _optimizationResult = await this.mcpIntegration.request('topology_optimize', {
       swarmId: await this.getCurrentSwarmId()
     });
     
@@ -296,7 +296,7 @@ export class PerformanceMonitoringAgent extends PEAAgentBase {
     return recommendations;
   }
   
-  private generateBenchmarkRecommendations(benchmarkResult: any): string[] {
+  private generateBenchmarkRecommendations(_benchmarkResult: any): string[] {
     return [
       'Regular performance benchmarking recommended',
       'Monitor response time trends',

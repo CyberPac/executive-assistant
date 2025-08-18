@@ -7,16 +7,8 @@ import {
   TravelLogisticsAgent,
   TravelRequest,
   TravelPreferences,
-  TravelItinerary,
-  TravelBooking,
-  TravelAlert,
   TravelPolicy,
-  TravelExpenseReport,
-  TravelRisk,
-  EmergencyContact,
-  TravelInsurance,
-  TravelDocument,
-  TravelCompliance
+  TravelDocument
 } from '../../../src/agents/travel-logistics/TravelLogisticsAgent';
 import { PEAAgentType, AgentStatus, SecurityLevel } from '../../../src/types/enums';
 

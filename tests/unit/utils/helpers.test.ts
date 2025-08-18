@@ -105,12 +105,12 @@ describe('Utility Helper Functions', () => {
   });
 
   describe('retry', () => {
-    let attemptCount: number;
+    let _attemptCount: number;
     let mockFunction: jest.Mock;
 
     beforeEach(() => {
       jest.useRealTimers();
-      attemptCount = 0;
+      _attemptCount = 0;
       mockFunction = jest.fn();
     });
 
