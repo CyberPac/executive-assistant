@@ -63,8 +63,8 @@ const config = {
     '<rootDir>/tests/jest.setup.js'
   ],
   
-  // Coverage configuration
-  collectCoverage: false, // Enable on demand
+  // Coverage configuration - ENFORCED IN CI
+  collectCoverage: true, // Always collect coverage
   collectCoverageFrom: [
     'src/**/*.{ts,js}',
     '!src/**/*.d.ts',
@@ -74,15 +74,44 @@ const config = {
     '!**/dist/**'
   ],
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html', 'json'],
+  coverageReporters: ['text', 'text-summary', 'lcov', 'html', 'json', 'clover'],
   
-  // Coverage thresholds
+  // Fail builds on coverage thresholds
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '/coverage/',
+    '/dist/',
+    '/tests/__mocks__/',
+    '/tests/fixtures/',
+    '\.d\.ts$'
+  ],
+  
+  // Coverage thresholds - STRICTLY ENFORCED
   coverageThreshold: {
     global: {
       branches: 80,
       functions: 80,
       lines: 80,
       statements: 80
+    },
+    // Per-directory thresholds
+    './src/core/': {
+      branches: 85,
+      functions: 85,
+      lines: 85,
+      statements: 85
+    },
+    './src/agents/': {
+      branches: 75,
+      functions: 75,
+      lines: 75,
+      statements: 75
+    },
+    './src/utils/': {
+      branches: 90,
+      functions: 90,
+      lines: 90,
+      statements: 90
     }
   },
   
@@ -222,10 +251,10 @@ const config = {
         '^better-sqlite3$': '<rootDir>/tests/__mocks__/better-sqlite3.js',
         '^ws$': '<rootDir>/tests/__mocks__/ws.js'
       },
-      // Security-specific coverage requirements
+      // Security-specific coverage requirements - CRITICAL ENFORCEMENT
       coverageThreshold: {
         global: {
-          branches: 90,
+          branches: 95,
           functions: 95,
           lines: 95,
           statements: 95

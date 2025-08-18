@@ -1,4 +1,4 @@
-name: Emergency Quality Gates
+name: Strict Quality Gates with Coverage Enforcement
 
 on:
   push:
@@ -9,7 +9,10 @@ on:
 jobs:
   quality-gates:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    outputs:
+      coverage-status: ${{ steps.coverage.outcome }}
+      security-coverage: ${{ steps.security-coverage.outcome }}
 
     steps:
       - name: Checkout code
@@ -36,9 +39,63 @@ jobs:
       - name: Test Execution (BLOCKING)
         run: npm run test
 
-      - name: Test Coverage Check
-        run: npm run test:coverage
-        continue-on-error: true
+      - name: Test Coverage Check (BLOCKING)
+        id: coverage
+        run: |
+          echo "Running comprehensive coverage analysis..."
+          npm run test:coverage
+          
+          # Extract coverage percentages
+          COVERAGE_OUTPUT=$(npm run test:coverage 2>&1 | tail -20)
+          echo "Coverage output: $COVERAGE_OUTPUT"
+          
+          # Check if coverage meets minimum thresholds
+          if echo "$COVERAGE_OUTPUT" | grep -q "Coverage threshold"; then
+            echo "❌ Coverage thresholds not met - BLOCKING MERGE"
+            exit 1
+          fi
+          
+          echo "✅ All coverage thresholds met"
+        
+      - name: Security Test Coverage (CRITICAL)
+        run: |
+          echo "Running security-specific coverage analysis..."
+          npm run test:security -- --coverage
+          
+          # Security tests must have 95% coverage
+          SECURITY_COVERAGE=$(npm run test:security -- --coverage 2>&1 | grep -E "Lines|Functions|Branches|Statements")
+          echo "Security coverage: $SECURITY_COVERAGE"
+          
+          # Fail if any security coverage is below 95%
+          if echo "$SECURITY_COVERAGE" | awk '{print $4}' | sed 's/%//' | awk '$1 < 95 {exit 1}'; then
+            echo "❌ Security test coverage below 95% threshold - CRITICAL FAILURE"
+            exit 1
+          fi
+          
+          echo "✅ Security coverage requirements met"
+          
+      - name: Generate Coverage Report
+        if: always()
+        run: |
+          # Generate comprehensive coverage report
+          npm run test:coverage -- --coverageReporters=json-summary,lcov,html
+          
+          # Store coverage data for artifacts
+          mkdir -p reports/coverage
+          cp coverage/coverage-summary.json reports/coverage/
+          cp -r coverage/ reports/
+          
+          echo "Coverage reports generated and stored"
+          
+      - name: Upload Coverage Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            reports/coverage/
+            coverage/
+          retention-days: 30
 
   security-scan:
     runs-on: ubuntu-latest

@@ -22,6 +22,9 @@ import { SecurityLevel, TaskType, TaskStatus, PEAAgentType, AgentStatus } from '
 // Re-export for consumers
 export { SecurityLevel, TaskType, TaskStatus, PEAAgentType, AgentStatus };
 
+// Export PEAAgent alias for compatibility
+export type PEAAgent = PEAAgentInterface;
+
 export interface PEAAgentInterface {
   id: string;
   name: string;
@@ -381,6 +384,7 @@ export interface ClaudeFlowMCPIntegration {
   memoryUsage: (action: string, key: string, value: string, namespace?: string) => Promise<MemoryResponse>;
   neuralTrain: (patternType: string, trainingData: string, epochs?: number) => Promise<NeuralResponse>;
   neuralPatterns: (action: string, operation: string, metadata: Record<string, unknown>) => Promise<NeuralResponse>;
+  request: (endpoint: string, params: any) => Promise<any>;
 }
 
 export interface ByzantineFaultTolerance {

@@ -24,7 +24,86 @@
     "start:cultural": "tsx agents/cultural-intelligence/index.ts",
     "start:travel": "tsx agents/travel-logistics/index.ts",
     "start:financial": "tsx agents/financial-management/index.ts",
-    "start:crisis": "tsx agents/crisis-management/index.ts"
+    
+    "build:auth": "tsc --build && echo 'Auth components built'",
+    "build:gmail": "tsc --build && echo 'Gmail components built'", 
+    "build:outlook": "tsc --build && echo 'Outlook LOCAL components built'",
+    "build:intelligence": "tsc --build && echo 'Intelligence engine built'",
+    "build:historical-ingestion": "tsc --build && echo 'Historical ingestion built'",
+    "build:advanced-features": "tsc --build && echo 'Advanced features built'",
+    
+    "test:auth": "jest src/email/authentication --testPathPattern=auth",
+    "test:gmail": "jest src/email/providers/gmail --testPathPattern=gmail",
+    "test:outlook": "jest src/email/providers/outlook --testPathPattern=outlook",
+    "test:intelligence": "jest src/email/intelligence --testPathPattern=intelligence",
+    "test:knowledge-base": "jest tests/integration/knowledge-base.test.ts",
+    "test:distributed-memory": "jest tests/integration/distributed-memory.test.ts",
+    "test:pea-integration": "jest tests/integration/pea-system.test.ts",
+    "test:integration:api": "jest tests/integration/api-integration.test.ts",
+    "test:integration:pea-system": "jest tests/integration/pea-system.test.ts",
+    "test:performance:load": "jest tests/performance/load-testing.test.ts",
+    "test:performance:email-processing": "jest tests/performance/email-processing.test.ts",
+    "test:performance:optimization": "jest tests/performance/optimization.test.ts",
+    "test:security:framework": "jest tests/security/framework.test.ts",
+    "test:compliance:gdpr": "jest tests/security/gdpr-compliance.test.ts",
+    "test:compliance:soc2": "jest tests/security/soc2-compliance.test.ts",
+    "test:encryption": "jest tests/security/encryption.test.ts",
+    "test:coverage:email-integration": "jest --coverage src/email tests/email",
+    "test:coverage:email-integration:summary": "jest --coverage --coverageReporters=text-summary src/email tests/email",
+    "benchmark:email-integration": "jest tests/performance/email-benchmarks.test.ts",
+    "benchmark:email-integration:response-time": "jest tests/performance/response-time.test.ts",
+    "lint:email-integration": "eslint src/email tests/email --ext .ts",
+    "typecheck:email-integration": "tsc --noEmit src/email/**/*.ts",
+    "docs:generate": "typedoc src/email --out docs/api/email",
+    "docs:validate": "echo 'Validating documentation completeness'",
+    "start:crisis": "tsx agents/crisis-management/index.ts",
+    
+    "build:auth": "tsc src/agents/email-integration/authentication-framework/**/*.ts --outDir dist/auth",
+    "build:gmail": "tsc src/agents/email-integration/gmail-integration/**/*.ts --outDir dist/gmail",
+    "build:outlook": "tsc src/agents/email-integration/outlook-integration/**/*.ts --outDir dist/outlook",
+    "build:intelligence": "tsc src/agents/email-integration/email-intelligence/**/*.ts --outDir dist/intelligence",
+    "build:historical-ingestion": "tsc src/agents/email-integration/historical-ingestion/**/*.ts --outDir dist/historical",
+    "build:advanced-features": "tsc src/agents/email-integration/advanced-features/**/*.ts --outDir dist/advanced",
+    
+    "test:auth": "jest src/agents/email-integration/authentication-framework/",
+    "test:gmail": "jest src/agents/email-integration/gmail-integration/",
+    "test:outlook": "jest src/agents/email-integration/outlook-integration/",
+    "test:intelligence": "jest src/agents/email-integration/email-intelligence/",
+    "test:knowledge-base": "jest src/agents/email-integration/historical-ingestion/knowledge-base/",
+    "test:distributed-memory": "jest src/agents/email-integration/historical-ingestion/distributed-memory/",
+    "test:pea-integration": "jest src/agents/email-integration/advanced-features/pea-integration/",
+    "test:performance:email-processing": "jest tests/performance/email-processing.test.ts",
+    "test:performance:optimization": "jest tests/performance/optimization.test.ts",
+    "test:security:framework": "jest tests/security/email-security.test.ts",
+    "test:compliance:gdpr": "jest tests/security/gdpr-compliance.test.ts",
+    "test:compliance:soc2": "jest tests/security/soc2-compliance.test.ts",
+    "test:encryption": "jest tests/security/encryption.test.ts",
+    "test:integration:api": "jest tests/integration/api-integration.test.ts",
+    "test:integration:pea-system": "jest tests/integration/pea-system.test.ts",
+    "test:performance:load": "jest tests/performance/load-testing.test.ts",
+    
+    "test:report:api-integration": "jest tests/integration/api-integration.test.ts --reporters=default --reporters=jest-html-reporters",
+    "test:report:pea-system-integration": "jest tests/integration/pea-system.test.ts --reporters=default --reporters=jest-html-reporters",
+    "test:report:performance-testing": "jest tests/performance/ --reporters=default --reporters=jest-html-reporters",
+    
+    "docs:generate": "typedoc src/agents/email-integration/ --out docs/api/email-integration",
+    "docs:validate": "node scripts/validate-documentation.js",
+    
+    "deploy:staging": "echo 'Deploying to staging environment...' && npm run build && echo 'Staging deployment complete'",
+    "build:production": "NODE_ENV=production npm run build && npm run test:coverage",
+    
+    "lint:email-integration": "eslint src/agents/email-integration/ --ext .ts --max-warnings 0",
+    "typecheck:email-integration": "tsc --noEmit src/agents/email-integration/**/*.ts",
+    "test:coverage:email-integration": "jest src/agents/email-integration/ --coverage",
+    "test:coverage:email-integration:summary": "jest src/agents/email-integration/ --coverage --coverageReporters=text-summary",
+    "benchmark:email-integration": "node scripts/benchmark-email-integration.js",
+    "benchmark:email-integration:response-time": "node scripts/benchmark-response-time.js",
+    
+    "email-integration:list": "./scripts/email-integration-work-packages.sh list",
+    "email-integration:start": "./scripts/email-integration-work-packages.sh start",
+    "email-integration:complete": "./scripts/email-integration-work-packages.sh complete",
+    "email-integration:status": "./scripts/email-integration-work-packages.sh status",
+    "email-integration:validate": "./scripts/email-integration-work-packages.sh validate"
   },
   "dependencies": {
     "@types/node": "^20.19.7",
@@ -44,7 +123,9 @@
     "eslint": "^8.57.1",
     "husky": "^9.1.7",
     "jest": "^29.7.0",
-    "ts-jest": "^29.4.1"
+    "jest-html-reporters": "^3.1.7",
+    "ts-jest": "^29.4.1",
+    "typedoc": "^0.25.4"
   },
   "keywords": [
     "executive-assistant",
@@ -52,12 +133,29 @@
     "multi-agent",
     "claude-flow",
     "leasa",
-    "phase2"
+    "phase2",
+    "email-integration"
   ],
   "author": "CyberPac",
   "license": "MIT",
   "engines": {
     "node": "20.x",
     "npm": ">=9.0.0"
+  },
+  "emailIntegration": {
+    "projectId": "issue-36",
+    "totalWorkPackages": 47,
+    "totalEffortHours": 600,
+    "estimatedDurationWeeks": 4.8,
+    "phases": [
+      "Project Initiation & Planning",
+      "Core Email Integration Development", 
+      "Historical Email Ingestion & Knowledge Base",
+      "Advanced Features Development",
+      "Security & Compliance Implementation",
+      "Testing & Quality Assurance",
+      "Documentation & Deployment",
+      "Project Closure"
+    ]
   }
 }

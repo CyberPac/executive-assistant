@@ -48,6 +48,11 @@ class MockMCPIntegration implements ClaudeFlowMCPIntegration {
     };
   }
 
+  async request(endpoint: string, params: any): Promise<any> {
+    console.log(`📡 Mock Request: ${endpoint}`, params);
+    return { success: true, data: params };
+  }
+
   async taskOrchestrate(task: string, strategy: string, priority: string): Promise<any> {
     console.log(`📋 Mock Task Orchestrate: ${task} [${priority}]`);
     return {
