@@ -126,6 +126,17 @@ export abstract class PEAAgentBase implements PEAAgentInterface {
   }
 
   /**
+   * Get agent capabilities as an object for test compatibility
+   */
+  public getCapabilities(): Record<string, boolean> {
+    const capabilityMap: Record<string, boolean> = {};
+    this.capabilities.forEach(cap => {
+      capabilityMap[cap] = true;
+    });
+    return capabilityMap;
+  }
+
+  /**
    * Get current agent health status
    */
   public getHealthStatus(): { status: AgentStatus; metrics: PerformanceMetrics; uptime: number } {
@@ -384,7 +395,19 @@ export interface ClaudeFlowMCPIntegration {
   memoryUsage: (action: string, key: string, value: string, namespace?: string) => Promise<MemoryResponse>;
   neuralTrain: (patternType: string, trainingData: string, epochs?: number) => Promise<NeuralResponse>;
   neuralPatterns: (action: string, operation: string, metadata: Record<string, unknown>) => Promise<NeuralResponse>;
-  request: (endpoint: string, params: any) => Promise<any>;
+  request: (endpoint: string, params: Record<string, unknown>) => Promise<Record<string, unknown>>;
+  
+  // Additional methods used by agents
+  invokeFunction: (functionName: string, params: Record<string, unknown>) => Promise<Record<string, unknown>>;
+  sendNotification: (message: string, priority?: string) => Promise<void>;
+  coordinateWith: (agentId: string, task: string) => Promise<Record<string, unknown>>;
+  retrieveMemory: (key: string, namespace?: string) => Promise<MemoryResponse>;
+  bookTravel: (params: Record<string, unknown>) => Promise<Record<string, unknown>>;
+  cancelBooking: (bookingId: string) => Promise<Record<string, unknown>>;
+  getTravelAlerts: (location: string) => Promise<Record<string, unknown>>;
+  checkVisa: (destination: string, citizenship: string) => Promise<Record<string, unknown>>;
+  calculateExpenses: (data: Record<string, unknown>) => Promise<Record<string, unknown>>;
+  generateReport: (type: string, data: Record<string, unknown>) => Promise<Record<string, unknown>>;
 }
 
 export interface ByzantineFaultTolerance {

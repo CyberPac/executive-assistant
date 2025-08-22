@@ -625,7 +625,7 @@ export class FinancialManagementAgent extends EventEmitter {
       deductible: category.taxDeductible,
       vatApplicable: amount > 1000, // Simplified rule
       country,
-      rate: regulation?.vatRate
+      ...(regulation?.vatRate !== undefined && { rate: regulation.vatRate })
     };
   }
 
@@ -664,7 +664,7 @@ export class FinancialManagementAgent extends EventEmitter {
   private async updateBudgetAllocation(
     executiveId: string,
     country: string,
-    category: string,
+    _category: string,
     amountUSD: number
   ): Promise<void> {
     // Find relevant budget

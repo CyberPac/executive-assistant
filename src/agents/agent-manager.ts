@@ -48,7 +48,7 @@ class AgentErrorImpl extends Error implements AgentError {
     this.type = type;
     this.timestamp = new Date();
     this.severity = severity;
-    this.context = context;
+    this.context = context ?? {};
   }
 }
 
@@ -160,7 +160,7 @@ export class AgentManager extends EventEmitter {
 
   // Scaling and policies
   private scalingPolicies = new Map<string, ScalingPolicy>();
-  private scalingOperations = new Map<string, { timestamp: Date; type: string }>();
+  // Removed unused scalingOperations property
 
   // Resource tracking
   private resourceUsage = new Map<string, { cpu: number; memory: number; disk: number }>();
@@ -480,13 +480,12 @@ export class AgentManager extends EventEmitter {
       name: overrides.name || `${template.name}-${agentId.slice(-8)}`,
       type: template.type,
       status: AgentStatus.INITIALIZING,
+      currentTask: undefined,
       capabilities: {
-        skills: [],
+        ...template.capabilities,
         maxConcurrentTasks: template.capabilities.maxConcurrentTasks,
         supportedTaskTypes: template.capabilities.supportedTaskTypes || template.capabilities.domains || [],
-        specializations: template.capabilities.domains || [],
-        codeGeneration: template.capabilities.codeGeneration,
-        ...template.capabilities
+        specializations: template.capabilities.domains || []
       },
       metrics: this.createDefaultMetrics(),
       performance: this.createDefaultMetrics(),
@@ -523,12 +522,10 @@ export class AgentManager extends EventEmitter {
         id: agentId,
         type: template.type,
         capabilities: {
-          skills: [],
+          ...template.capabilities,
           maxConcurrentTasks: template.capabilities.maxConcurrentTasks,
           supportedTaskTypes: template.capabilities.supportedTaskTypes || template.capabilities.domains || [],
-          specializations: template.capabilities.domains || [],
-          codeGeneration: template.capabilities.codeGeneration,
-          ...template.capabilities
+          specializations: template.capabilities.domains || []
         },
         environment: {
           resourceLimits: {
@@ -686,7 +683,7 @@ export class AgentManager extends EventEmitter {
       this.logger.info('Stopped agent', { agentId, reason });
       this.emit('agent:stopped', { agent, reason });
     } catch (error) {
-      this.logger.error('Failed to stop agent gracefully', error, { agentId });
+      this.logger.error('Failed to stop agent gracefully', error instanceof Error ? error : new Error(String(error)), { agentId });
       // Force cleanup
       this.processes.delete(agentId);
       agent.status = AgentStatus.TERMINATED;
@@ -859,6 +856,11 @@ export class AgentManager extends EventEmitter {
     const now = new Date();
 
     try {
+      // Initialize components if not present
+      if (!health.components) {
+        health.components = {};
+      }
+      
       // Check responsiveness
       const responsiveness = await this.checkResponsiveness(agentId);
       health.components.responsiveness = responsiveness;
@@ -956,10 +958,10 @@ export class AgentManager extends EventEmitter {
     return Math.max(0, (memoryScore + cpuScore + diskScore) / 3);
   }
 
-  private detectHealthIssues(agentId: string, health: AgentHealth): void {
+  private detectHealthIssues(_agentId: string, health: AgentHealth): void {
     const issues: HealthIssue[] = [];
 
-    if (health.components.responsiveness < 0.5) {
+    if (health.components?.responsiveness && health.components.responsiveness < 0.5) {
       issues.push({
         type: 'communication',
         severity: health.components.responsiveness < 0.2 ? 'critical' : 'high',
@@ -970,7 +972,7 @@ export class AgentManager extends EventEmitter {
       });
     }
 
-    if (health.components.performance < 0.6) {
+    if (health.components?.performance && health.components.performance < 0.6) {
       issues.push({
         type: 'performance',
         severity: health.components.performance < 0.3 ? 'high' : 'medium',
@@ -981,7 +983,7 @@ export class AgentManager extends EventEmitter {
       });
     }
 
-    if (health.components.resourceUsage < 0.4) {
+    if (health.components?.resourceUsage && health.components.resourceUsage < 0.4) {
       issues.push({
         type: 'resource',
         severity: health.components.resourceUsage < 0.2 ? 'critical' : 'high',
@@ -1357,9 +1359,9 @@ export class AgentManager extends EventEmitter {
     const agents = Array.from(this.agents.values());
     const healthChecks = Array.from(this.healthChecks.values());
 
-    const healthyAgents = healthChecks.filter((h) => h.overall > 0.7).length;
+    const healthyAgents = healthChecks.filter((h) => (h.overall ?? 0) > 0.7).length;
     const averageHealth =
-      healthChecks.reduce((sum, h) => sum + h.overall, 0) / healthChecks.length || 1;
+      healthChecks.reduce((sum, h) => sum + (h.overall ?? 0), 0) / healthChecks.length || 1;
 
     const resourceUsages = Array.from(this.resourceUsage.values());
     const avgCpu = resourceUsages.reduce((sum, r) => sum + r.cpu, 0) / resourceUsages.length || 0;

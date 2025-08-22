@@ -489,7 +489,7 @@ export class CrisisManagementAgent extends EventEmitter {
 
     action.status = 'completed';
     action.completedAt = new Date();
-    action.notes = notes;
+    action.notes = notes ?? '';
     plan.updatedAt = new Date();
 
     // Check if all actions are completed
@@ -703,7 +703,7 @@ export class CrisisManagementAgent extends EventEmitter {
     return resources;
   }
 
-  private generateMilestones(crisis: CrisisEvent, actions: ResponseAction[]): Milestone[] {
+  private generateMilestones(_crisis: CrisisEvent, actions: ResponseAction[]): Milestone[] {
     const milestones: Milestone[] = [];
 
     milestones.push({
@@ -746,7 +746,7 @@ export class CrisisManagementAgent extends EventEmitter {
     return Math.round(base * multiplier);
   }
 
-  private async analyzeThreatLandscape(location: string): Promise<ThreatAssessment['threats']> {
+  private async analyzeThreatLandscape(_location: string): Promise<ThreatAssessment['threats']> {
     // Mock threat analysis - would integrate with threat intelligence feeds
     const threatTypes = [
       'Natural disasters',
@@ -779,7 +779,7 @@ export class CrisisManagementAgent extends EventEmitter {
     return 'low';
   }
 
-  private generateThreatRecommendations(threats: ThreatAssessment['threats'], location: string): string[] {
+  private generateThreatRecommendations(threats: ThreatAssessment['threats'], _location: string): string[] {
     const recommendations: string[] = [];
 
     const highRiskThreats = threats.filter(t => t.riskScore >= 3.0);

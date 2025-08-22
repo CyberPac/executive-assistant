@@ -1,0 +1,359 @@
+name: Incremental Security Deployment Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/security/**'
+      - 'deployment/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/security/**'
+      - 'deployment/**'
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: 'Deployment Phase (1-5)'
+        required: true
+        default: '1'
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '3'
+          - '4'
+          - '5'
+      force_rollback:
+        description: 'Force rollback to previous version'
+        required: false
+        default: false
+        type: boolean
+      executive_approval:
+        description: 'Executive approval for critical deployment'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/security-suite
+  DEPLOYMENT_NAMESPACE: executive-assistant-security
+  MONITORING_SLACK_WEBHOOK: ${{ secrets.MONITORING_SLACK_WEBHOOK }}
+  EXECUTIVE_NOTIFICATION_WEBHOOK: ${{ secrets.EXECUTIVE_NOTIFICATION_WEBHOOK }}
+
+jobs:
+  pre-deployment-validation:
+    runs-on: ubuntu-latest
+    outputs:
+      deployment-phase: ${{ steps.phase-detection.outputs.phase }}
+      security-validated: ${{ steps.security-scan.outputs.validated }}
+      rollback-required: ${{ steps.health-check.outputs.rollback }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Phase Detection
+        id: phase-detection
+        run: |
+          if [ "${{ github.event.inputs.phase }}" != "" ]; then
+            echo "phase=${{ github.event.inputs.phase }}" >> $GITHUB_OUTPUT
+          else
+            # Auto-detect phase based on changed files
+            if git diff --name-only HEAD~1 | grep -q "src/security/hsm/"; then
+              echo "phase=1" >> $GITHUB_OUTPUT
+            elif git diff --name-only HEAD~1 | grep -q "src/security/zero-trust/"; then
+              echo "phase=2" >> $GITHUB_OUTPUT
+            elif git diff --name-only HEAD~1 | grep -q "src/security/audit/"; then
+              echo "phase=3" >> $GITHUB_OUTPUT
+            elif git diff --name-only HEAD~1 | grep -q "src/security/ai-threat/"; then
+              echo "phase=4" >> $GITHUB_OUTPUT
+            else
+              echo "phase=5" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Security Vulnerability Scan
+        id: security-scan
+        run: |
+          npm audit --audit-level=moderate
+          npm run lint:security
+          echo "validated=true" >> $GITHUB_OUTPUT
+
+      - name: Unit & Integration Tests
+        run: |
+          npm run test:security
+          npm run test:integration:security
+
+      - name: Production Health Check
+        id: health-check
+        run: |
+          ./deployment/scripts/health-check.sh
+          echo "rollback=false" >> $GITHUB_OUTPUT
+
+      - name: Executive Notification - Pre-Deployment
+        if: contains(fromJSON('["3", "4", "5"]'), steps.phase-detection.outputs.phase)
+        run: |
+          curl -X POST ${{ env.EXECUTIVE_NOTIFICATION_WEBHOOK }} \
+            -H "Content-Type: application/json" \
+            -d '{
+              "text": "🚨 Executive Assistant Security Deployment - Phase ${{ steps.phase-detection.outputs.phase }} starting",
+              "phase": "${{ steps.phase-detection.outputs.phase }}",
+              "commit": "${{ github.sha }}",
+              "actor": "${{ github.actor }}",
+              "approval_required": true
+            }'
+
+  force-rollback:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.force_rollback == 'true'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Execute Emergency Rollback
+        run: |
+          ./deployment/rollback/emergency-rollback.sh
+          echo "Emergency rollback completed"
+
+      - name: Executive Notification - Rollback
+        run: |
+          curl -X POST ${{ env.EXECUTIVE_NOTIFICATION_WEBHOOK }} \
+            -H "Content-Type: application/json" \
+            -d '{
+              "text": "⚠️ Emergency rollback executed for Executive Assistant Security",
+              "actor": "${{ github.actor }}",
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            }'
+
+  phase-1-hsm-crypto:
+    runs-on: ubuntu-latest
+    needs: pre-deployment-validation
+    if: needs.pre-deployment-validation.outputs.deployment-phase == '1' && needs.pre-deployment-validation.outputs.security-validated == 'true'
+    environment: 
+      name: production-phase-1
+      url: https://executive-assistant.security/phase1
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Blue-Green Deployment - HSM Services
+        run: |
+          ./deployment/phases/phase1/deploy-hsm.sh blue-green
+          
+      - name: Canary Deployment - Crypto Hardening
+        run: |
+          kubectl apply -f deployment/k8s/phase1/crypto-hardening-canary.yaml
+          ./deployment/scripts/canary-validation.sh crypto-hardening 10
+
+      - name: Health Validation
+        run: |
+          ./deployment/validation/phase1-validation.sh
+          
+      - name: Traffic Switch
+        run: |
+          kubectl patch service hsm-service -p '{"spec":{"selector":{"version":"green"}}}'
+          kubectl patch service crypto-service -p '{"spec":{"selector":{"canary":"false"}}}'
+
+  phase-2-zero-trust:
+    runs-on: ubuntu-latest
+    needs: [pre-deployment-validation, phase-1-hsm-crypto]
+    if: needs.pre-deployment-validation.outputs.deployment-phase == '2' && needs.phase-1-hsm-crypto.result == 'success'
+    environment: 
+      name: production-phase-2
+      url: https://executive-assistant.security/phase2
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Rolling Update - Zero Trust Components
+        run: |
+          ./deployment/phases/phase2/deploy-zero-trust.sh rolling
+          
+      - name: Continuous Verification Setup
+        run: |
+          kubectl apply -f deployment/k8s/phase2/continuous-verification.yaml
+          ./deployment/scripts/verification-health-check.sh
+
+      - name: Policy Validation
+        run: |
+          ./deployment/validation/phase2-validation.sh
+
+  phase-3-audit-siem:
+    runs-on: ubuntu-latest
+    needs: [pre-deployment-validation, phase-2-zero-trust]
+    if: needs.pre-deployment-validation.outputs.deployment-phase == '3' && needs.phase-2-zero-trust.result == 'success'
+    environment: 
+      name: production-phase-3
+      url: https://executive-assistant.security/phase3
+    steps:
+      - name: Executive Approval Check
+        if: github.event.inputs.executive_approval != 'true'
+        run: |
+          echo "Executive approval required for Phase 3 deployment"
+          exit 1
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Blue-Green Deployment - Audit Services
+        run: |
+          ./deployment/phases/phase3/deploy-audit-siem.sh blue-green
+          
+      - name: Database Migration
+        run: |
+          ./deployment/scripts/audit-db-migration.sh
+          
+      - name: SIEM Integration Validation
+        run: |
+          ./deployment/validation/phase3-validation.sh
+
+  phase-4-ai-threat:
+    runs-on: ubuntu-latest
+    needs: [pre-deployment-validation, phase-3-audit-siem]
+    if: needs.pre-deployment-validation.outputs.deployment-phase == '4' && needs.phase-3-audit-siem.result == 'success'
+    environment: 
+      name: production-phase-4
+      url: https://executive-assistant.security/phase4
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Canary Deployment - AI Threat Detection
+        run: |
+          ./deployment/phases/phase4/deploy-ai-threat.sh canary
+          
+      - name: ML Model Validation
+        run: |
+          ./deployment/scripts/ml-model-validation.sh
+          
+      - name: Executive Protection Validation
+        run: |
+          ./deployment/validation/phase4-validation.sh
+
+  phase-5-optimization:
+    runs-on: ubuntu-latest
+    needs: [pre-deployment-validation, phase-4-ai-threat]
+    if: needs.pre-deployment-validation.outputs.deployment-phase == '5' && needs.phase-4-ai-threat.result == 'success'
+    environment: 
+      name: production-phase-5
+      url: https://executive-assistant.security/phase5
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Performance Optimization Deployment
+        run: |
+          ./deployment/phases/phase5/deploy-optimization.sh
+          
+      - name: Monitoring Enhancement
+        run: |
+          kubectl apply -f deployment/k8s/phase5/enhanced-monitoring.yaml
+          
+      - name: Final System Validation
+        run: |
+          ./deployment/validation/phase5-validation.sh
+
+  rollback-on-failure:
+    runs-on: ubuntu-latest
+    needs: [phase-1-hsm-crypto, phase-2-zero-trust, phase-3-audit-siem, phase-4-ai-threat, phase-5-optimization]
+    if: failure()
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Determine Failed Phase
+        id: failed-phase
+        run: |
+          if [ "${{ needs.phase-1-hsm-crypto.result }}" == "failure" ]; then
+            echo "phase=1" >> $GITHUB_OUTPUT
+          elif [ "${{ needs.phase-2-zero-trust.result }}" == "failure" ]; then
+            echo "phase=2" >> $GITHUB_OUTPUT
+          elif [ "${{ needs.phase-3-audit-siem.result }}" == "failure" ]; then
+            echo "phase=3" >> $GITHUB_OUTPUT
+          elif [ "${{ needs.phase-4-ai-threat.result }}" == "failure" ]; then
+            echo "phase=4" >> $GITHUB_OUTPUT
+          elif [ "${{ needs.phase-5-optimization.result }}" == "failure" ]; then
+            echo "phase=5" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Execute Automated Rollback
+        run: |
+          ./deployment/rollback/phase-rollback.sh ${{ steps.failed-phase.outputs.phase }}
+
+      - name: Emergency Executive Notification
+        run: |
+          curl -X POST ${{ env.EXECUTIVE_NOTIFICATION_WEBHOOK }} \
+            -H "Content-Type: application/json" \
+            -d '{
+              "text": "🚨 CRITICAL: Executive Assistant Security Phase ${{ steps.failed-phase.outputs.phase }} deployment failed - automatic rollback executed",
+              "phase": "${{ steps.failed-phase.outputs.phase }}",
+              "commit": "${{ github.sha }}",
+              "actor": "${{ github.actor }}",
+              "urgency": "critical"
+            }'
+
+  post-deployment-monitoring:
+    runs-on: ubuntu-latest
+    needs: [phase-1-hsm-crypto, phase-2-zero-trust, phase-3-audit-siem, phase-4-ai-threat, phase-5-optimization]
+    if: success()
+    steps:
+      - name: Setup Monitoring Dashboard
+        run: |
+          ./deployment/scripts/setup-monitoring.sh
+
+      - name: Performance Baseline Collection
+        run: |
+          ./deployment/scripts/performance-baseline.sh
+
+      - name: Executive Success Notification
+        run: |
+          curl -X POST ${{ env.EXECUTIVE_NOTIFICATION_WEBHOOK }} \
+            -H "Content-Type: application/json" \
+            -d '{
+              "text": "✅ Executive Assistant Security deployment completed successfully",
+              "commit": "${{ github.sha }}",
+              "actor": "${{ github.actor }}",
+              "phase": "completed"
+            }'
