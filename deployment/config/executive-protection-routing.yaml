@@ -1,0 +1,386 @@
+# Executive Protection Priority Routing Configuration
+# Version: 2.1.0
+# Purpose: Ensure executive protection features have priority routing and minimal disruption
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: executive-protection-routing
+  namespace: executive-assistant-security
+  labels:
+    app: executive-assistant
+    tier: security
+    priority: critical
+data:
+  routing-config.yaml: |
+    executive_protection:
+      enabled: true
+      priority_level: "critical"
+      routing_strategy: "priority_first"
+      
+      # Executive user identification and routing
+      executive_users:
+        classification: "C-Suite"
+        routing_priority: 1
+        sla_target_ms: 5000
+        fallback_strategy: "guaranteed_service"
+        
+      # Priority routing rules
+      routing_rules:
+        - name: "executive_authentication"
+          pattern: "/auth/executive/*"
+          priority: 1
+          target_service: "hsm-auth-service"
+          backup_service: "legacy-auth-service"
+          max_latency_ms: 2000
+          
+        - name: "executive_data_access"
+          pattern: "/api/executive/*"
+          priority: 1
+          target_service: "zero-trust-api"
+          backup_service: "secure-api-gateway"
+          max_latency_ms: 3000
+          
+        - name: "crisis_management"
+          pattern: "/crisis/*"
+          priority: 1
+          target_service: "crisis-management-service"
+          backup_service: "emergency-response-service"
+          max_latency_ms: 1000
+          
+        - name: "travel_security"
+          pattern: "/travel/security/*"
+          priority: 1
+          target_service: "travel-security-service"
+          backup_service: "travel-logistics-service"
+          max_latency_ms: 2000
+          
+        - name: "financial_security"
+          pattern: "/financial/secure/*"
+          priority: 1
+          target_service: "financial-security-service"
+          backup_service: "financial-management-service"
+          max_latency_ms: 2500
+
+      # Load balancing for executive protection
+      load_balancing:
+        algorithm: "weighted_priority"
+        executive_weight: 100
+        standard_weight: 10
+        health_check_interval: 5
+        circuit_breaker:
+          enabled: true
+          failure_threshold: 3
+          recovery_timeout: 30
+          
+      # Security-specific routing
+      security_routing:
+        hsm_operations:
+          priority: 1
+          dedicated_instances: 2
+          target_latency_ms: 50
+          
+        post_quantum_crypto:
+          priority: 1
+          dedicated_instances: 1
+          target_latency_ms: 100
+          
+        zero_trust_verification:
+          priority: 1
+          dedicated_instances: 2
+          target_latency_ms: 200
+          
+        ai_threat_detection:
+          priority: 1
+          dedicated_instances: 1
+          target_latency_ms: 500
+          
+      # Monitoring and alerting
+      monitoring:
+        metrics_collection_interval: 10
+        alert_thresholds:
+          latency_ms: 5000
+          error_rate: 0.01
+          availability: 99.9
+          
+        executive_sla_monitoring:
+          enabled: true
+          breach_notification: "immediate"
+          escalation_chain:
+            - "security-team"
+            - "it-leadership" 
+            - "executive-office"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: canary-deployment-config
+  namespace: executive-assistant-security
+  labels:
+    app: executive-assistant
+    tier: security
+    component: canary
+data:
+  canary-config.yaml: |
+    canary_deployment:
+      enabled: true
+      strategy: "executive_safe"
+      
+      # Executive protection during canary
+      executive_protection:
+        isolation: true
+        dedicated_instances: true
+        fallback_routing: "stable_version"
+        monitoring_intensity: "high"
+        
+      # Canary rollout configuration
+      rollout_phases:
+        - name: "internal_testing"
+          percentage: 0
+          duration: "5m"
+          target_audience: "internal_users"
+          
+        - name: "limited_canary"  
+          percentage: 5
+          duration: "15m"
+          target_audience: "non_executive_users"
+          
+        - name: "expanded_canary"
+          percentage: 20
+          duration: "30m"
+          target_audience: "standard_users"
+          
+        - name: "executive_preview"
+          percentage: 100
+          duration: "10m"
+          target_audience: "executive_users_only"
+          approval_required: true
+          
+        - name: "full_rollout"
+          percentage: 100
+          duration: "continuous"
+          target_audience: "all_users"
+          
+      # Validation gates for each phase
+      validation_gates:
+        error_rate_threshold: 0.005
+        latency_threshold_ms: 3000
+        executive_sla_threshold_ms: 5000
+        security_baseline_maintained: true
+        
+      # Rollback triggers
+      rollback_triggers:
+        - condition: "error_rate > 0.01"
+          action: "immediate_rollback"
+          
+        - condition: "executive_latency > 5000ms"
+          action: "executive_traffic_redirect"
+          
+        - condition: "security_breach_detected"
+          action: "emergency_rollback"
+          
+        - condition: "hsm_failure"
+          action: "immediate_rollback"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blue-green-deployment-config
+  namespace: executive-assistant-security
+  labels:
+    app: executive-assistant
+    tier: security
+    component: blue-green
+data:
+  blue-green-config.yaml: |
+    blue_green_deployment:
+      enabled: true
+      strategy: "zero_downtime_executive"
+      
+      # Environment configuration
+      environments:
+        blue:
+          status: "stable"
+          version: "current"
+          executive_traffic: 100
+          
+        green:
+          status: "staging"
+          version: "new"
+          executive_traffic: 0
+          
+      # Deployment phases
+      deployment_phases:
+        - name: "green_deployment"
+          description: "Deploy new version to green environment"
+          duration: "10m"
+          validation_required: true
+          
+        - name: "smoke_testing"
+          description: "Run smoke tests on green environment"
+          duration: "5m"
+          tests: ["health_check", "security_validation", "performance_test"]
+          
+        - name: "executive_preview"
+          description: "Executive-only testing on green environment"
+          duration: "15m"
+          target_audience: "executive_users_only"
+          approval_required: true
+          
+        - name: "traffic_switch"
+          description: "Switch all traffic to green environment"
+          duration: "2m"
+          executive_priority: true
+          
+        - name: "blue_decommission"
+          description: "Decommission blue environment after validation"
+          duration: "5m"
+          delay: "24h"
+          
+      # Executive protection during blue-green
+      executive_protection:
+        dedicated_routing: true
+        instant_rollback: true
+        health_monitoring: "continuous"
+        sla_enforcement: true
+        
+      # Validation criteria
+      validation_criteria:
+        security:
+          - "hsm_connectivity_test"
+          - "post_quantum_crypto_test"
+          - "zero_trust_policy_test"
+          - "executive_authentication_test"
+          
+        performance:
+          - "latency_under_5000ms"
+          - "throughput_baseline_met"
+          - "resource_utilization_optimal"
+          
+        functionality:
+          - "crisis_management_operational"
+          - "travel_logistics_functional"
+          - "financial_management_secure"
+          
+      # Rollback configuration
+      rollback:
+        trigger_conditions:
+          - "validation_failure"
+          - "performance_degradation"
+          - "security_breach"
+          - "executive_sla_breach"
+          
+        rollback_time_target: "60s"
+        notification_channels:
+          - "executive_webhook"
+          - "security_team_slack"
+          - "monitoring_dashboard"
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: executive-protection-routing
+  namespace: executive-assistant-security
+spec:
+  hosts:
+  - executive-assistant.security
+  http:
+  # Executive authentication - highest priority
+  - match:
+    - headers:
+        user-classification:
+          exact: "executive"
+      uri:
+        prefix: "/auth"
+    route:
+    - destination:
+        host: hsm-auth-service
+        subset: production
+      weight: 100
+    timeout: 2s
+    retries:
+      attempts: 3
+      perTryTimeout: 500ms
+      
+  # Crisis management - emergency priority
+  - match:
+    - uri:
+        prefix: "/crisis"
+    route:
+    - destination:
+        host: crisis-management-service
+        subset: high-availability
+      weight: 100
+    timeout: 1s
+    
+  # Executive API access
+  - match:
+    - headers:
+        user-classification:
+          exact: "executive"
+      uri:
+        prefix: "/api"
+    route:
+    - destination:
+        host: zero-trust-api
+        subset: executive-tier
+      weight: 100
+    timeout: 3s
+    
+  # Standard user routing (lower priority)
+  - route:
+    - destination:
+        host: standard-api-gateway
+        subset: standard
+      weight: 100
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: executive-protection-destinations
+  namespace: executive-assistant-security
+spec:
+  host: "*"
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http1MaxPendingRequests: 50
+        maxRequestsPerConnection: 10
+    loadBalancer:
+      simple: ROUND_ROBIN
+    circuitBreaker:
+      consecutiveErrors: 3
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+  subsets:
+  - name: executive-tier
+    labels:
+      tier: executive
+    trafficPolicy:
+      connectionPool:
+        tcp:
+          maxConnections: 200
+        http:
+          http1MaxPendingRequests: 100
+          maxRequestsPerConnection: 20
+      circuitBreaker:
+        consecutiveErrors: 1
+        interval: 10s
+        baseEjectionTime: 10s
+  - name: high-availability
+    labels:
+      availability: high
+    trafficPolicy:
+      connectionPool:
+        tcp:
+          maxConnections: 150
+      circuitBreaker:
+        consecutiveErrors: 2
+        interval: 15s

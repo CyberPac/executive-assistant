@@ -39,7 +39,8 @@ export enum AgentStatus {
   FAILED = 'failed',
   TERMINATED = 'terminated',
   OFFLINE = 'offline',
-  MAINTENANCE = 'maintenance'
+  MAINTENANCE = 'maintenance',
+  INACTIVE = 'inactive'
 }
 
 export enum PEAAgentType {
@@ -65,5 +66,11 @@ export enum PEAAgentType {
   // Tier 4: System & Security Agents (3 agents)
   SECURITY_PRIVACY = 'security-privacy',
   SYSTEM_INTEGRATION = 'system-integration',
-  PERFORMANCE_OPTIMIZATION = 'performance-optimization'
+  PERFORMANCE_OPTIMIZATION = 'performance-optimization',
+  
+  // Phase 2 Expansion Agents
+  ADVANCED_ANALYTICS = 'advanced-analytics',
+  ENTERPRISE_INTEGRATION = 'enterprise-integration',
+  EMAIL_INTEGRATION = 'email-integration',
+  PERFORMANCE_MONITORING = 'performance-monitoring'
 }

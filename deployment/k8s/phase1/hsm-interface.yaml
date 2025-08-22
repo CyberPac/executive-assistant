@@ -1,0 +1,248 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hsm-interface-VERSION_PLACEHOLDER
+  namespace: executive-assistant-security
+  labels:
+    app: hsm-interface
+    version: VERSION_PLACEHOLDER
+    phase: "1"
+    component: security
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 2
+  selector:
+    matchLabels:
+      app: hsm-interface
+      version: VERSION_PLACEHOLDER
+  template:
+    metadata:
+      labels:
+        app: hsm-interface
+        version: VERSION_PLACEHOLDER
+        phase: "1"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        security.policy/level: "critical"
+    spec:
+      serviceAccountName: hsm-service-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: hsm-interface
+        image: ghcr.io/executive-assistant/hsm-interface:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 9090
+          name: metrics
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: HSM_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: hsm-production-config
+              key: endpoint
+        - name: HSM_SLOT_ID
+          valueFrom:
+            secretKeyRef:
+              name: hsm-production-config
+              key: slot-id
+        - name: HSM_PIN
+          valueFrom:
+            secretKeyRef:
+              name: hsm-production-config
+              key: pin
+        - name: CRYPTO_POLICY
+          value: "FIPS-140-2-Level-3"
+        - name: AUDIT_ENABLED
+          value: "true"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /startup
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 30
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: cache
+          mountPath: /app/cache
+        - name: audit-logs
+          mountPath: /app/logs
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: cache
+        emptyDir: {}
+      - name: audit-logs
+        persistentVolumeClaim:
+          claimName: hsm-audit-logs
+      nodeSelector:
+        security.level: high
+      tolerations:
+      - key: "security"
+        operator: "Equal"
+        value: "critical"
+        effect: "NoSchedule"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - hsm-interface
+              topologyKey: kubernetes.io/hostname
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hsm-interface
+  namespace: executive-assistant-security
+  labels:
+    app: hsm-interface
+    phase: "1"
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 443
+    targetPort: 8080
+    protocol: TCP
+    name: https
+  - port: 9090
+    targetPort: 9090
+    protocol: TCP
+    name: metrics
+  selector:
+    app: hsm-interface
+    version: blue  # Will be updated by deployment script
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hsm-audit-logs
+  namespace: executive-assistant-security
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: fast-ssd
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hsm-service-account
+  namespace: executive-assistant-security
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: hsm-interface-role
+  namespace: executive-assistant-security
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: hsm-interface-binding
+  namespace: executive-assistant-security
+subjects:
+- kind: ServiceAccount
+  name: hsm-service-account
+  namespace: executive-assistant-security
+roleRef:
+  kind: Role
+  name: hsm-interface-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hsm-interface-network-policy
+  namespace: executive-assistant-security
+spec:
+  podSelector:
+    matchLabels:
+      app: hsm-interface
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: executive-assistant-security
+    ports:
+    - protocol: TCP
+      port: 8080
+  egress:
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443  # HSM endpoint
+    - protocol: TCP
+      port: 53   # DNS
+    - protocol: UDP
+      port: 53   # DNS

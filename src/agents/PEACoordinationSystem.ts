@@ -34,9 +34,9 @@ import { CommunicationManagerAgent } from './communication-manager/Communication
 import { DocumentIntelligenceAgent } from './document-intelligence/DocumentIntelligenceAgent';
 import { TravelLogisticsAgent } from './travel-logistics/TravelLogisticsAgent';
 import { FinancialIntelligenceAgent } from './financial-intelligence/FinancialIntelligenceAgent';
-// import { CulturalIntelligenceAgent } from './phase2/cultural-intelligence/CulturalIntelligenceAgent';
+import { AdvancedAnalyticsAgent } from './phase2/advanced-analytics/AdvancedAnalyticsAgent';
 import { CrisisManagementAgent } from './phase2/crisis-management/CrisisManagementAgent';
-// import { ResearchIntelligenceAgent } from './phase2/research-intelligence/ResearchIntelligenceAgent';
+import { EnterpriseIntegrationAgent } from './phase2/enterprise-integration/EnterpriseIntegrationAgent';
 
 // Tier 3: Specialized Intelligence Agents
 // import { LegalIntelligenceAgent } from './phase2/legal-intelligence/LegalIntelligenceAgent';
@@ -47,7 +47,7 @@ import { CrisisManagementAgent } from './phase2/crisis-management/CrisisManageme
 // Tier 4: System & Security Agents
 import { SecurityPrivacyAgent } from './security-privacy/SecurityPrivacyAgent';
 // import { SystemIntegrationAgent } from './phase2/system-integration/SystemIntegrationAgent';
-// import { PerformanceOptimizationAgent } from './phase2/performance-optimization/PerformanceOptimizationAgent';
+import { PerformanceMonitoringAgent } from './phase2/performance-monitoring/PerformanceMonitoringAgent';
 
 export interface PEASystemStatus {
   systemId: string;
@@ -127,7 +127,7 @@ export class PEACoordinationSystem {
    */
   async initialize(): Promise<void> {
     const startTime = Date.now();
-    console.log('🚀 Initializing PEA LEASA System (15-Agent Architecture)...');
+    // Initializing PEA LEASA System (15-Agent Architecture)
 
     try {
       // Initialize Claude Flow swarm with hierarchical topology
@@ -137,7 +137,7 @@ export class PEACoordinationSystem {
         'leasa_phase2_deployment'
       );
 
-      console.log(`✅ Claude Flow swarm initialized: ${swarmResult.swarmId}`);
+      // Claude Flow swarm initialized
 
       // Initialize all agents by tier in parallel
       const agentInitializationPromises = [
@@ -151,12 +151,15 @@ export class PEACoordinationSystem {
         this.initializeTravelLogistics(),
         this.initializeFinancialIntelligence(),
         this.initializeCrisisManagement(),
-        // TODO: Add other Tier 2 agents when implemented
+        this.initializeAdvancedAnalytics(),
+        this.initializeEnterpriseIntegration(),
+        // TODO: Add remaining Tier 2 agents when implemented
         // this.initializeCulturalIntelligence(),
         // this.initializeResearchIntelligence(),
         
         // Tier 4: Security & System (currently available)
         this.initializeSecurityPrivacy(),
+        this.initializePerformanceMonitoring(),
         
         // TODO: Add Tier 3 and remaining Tier 4 agents when implemented
       ];
@@ -189,7 +192,7 @@ export class PEACoordinationSystem {
       );
 
       this.systemStatus = 'operational';
-      console.log(`✅ PEA LEASA System initialized successfully (${Date.now() - startTime}ms)`);
+      // PEA LEASA System initialized successfully
       console.log(`🎯 System ready for executive assistance with ${this.agents.size} active agents (15-agent LEASA architecture)`);
 
     } catch (error) {
@@ -358,7 +361,7 @@ export class PEACoordinationSystem {
   private async initializeExecutiveOrchestrator(): Promise<void> {
     await this.executiveOrchestrator.initialize();
     this.agents.set(PEAAgentType.EXECUTIVE_ORCHESTRATOR, this.executiveOrchestrator);
-    console.log('✅ Executive Orchestrator Agent initialized');
+    // Executive Orchestrator Agent initialized
   }
 
   private async initializeCalendarIntelligence(): Promise<void> {
@@ -366,7 +369,7 @@ export class PEACoordinationSystem {
     await calendarAgent.initialize();
     this.agents.set(PEAAgentType.CALENDAR_INTELLIGENCE, calendarAgent);
     await this.executiveOrchestrator.registerAgent(calendarAgent);
-    console.log('✅ Calendar Intelligence Agent initialized');
+    // Calendar Intelligence Agent initialized
   }
 
   private async initializeCommunicationManager(): Promise<void> {
@@ -374,7 +377,7 @@ export class PEACoordinationSystem {
     await commAgent.initialize();
     this.agents.set(PEAAgentType.COMMUNICATION_MANAGER, commAgent);
     await this.executiveOrchestrator.registerAgent(commAgent);
-    console.log('✅ Communication Manager Agent initialized');
+    // Communication Manager Agent initialized
   }
 
   private async initializeDocumentIntelligence(): Promise<void> {
@@ -382,7 +385,7 @@ export class PEACoordinationSystem {
     await docAgent.initialize();
     this.agents.set(PEAAgentType.DOCUMENT_INTELLIGENCE, docAgent);
     await this.executiveOrchestrator.registerAgent(docAgent);
-    console.log('✅ Document Intelligence Agent initialized');
+    // Document Intelligence Agent initialized
   }
 
   private async initializeSecurityPrivacy(): Promise<void> {
@@ -390,7 +393,7 @@ export class PEACoordinationSystem {
     await securityAgent.initialize();
     this.agents.set(PEAAgentType.SECURITY_PRIVACY, securityAgent);
     await this.executiveOrchestrator.registerAgent(securityAgent);
-    console.log('✅ Security Privacy Agent initialized');
+    // Security Privacy Agent initialized
   }
 
   // Phase 2 Agent Initializations
@@ -400,7 +403,7 @@ export class PEACoordinationSystem {
     await travelAgent.initialize();
     this.agents.set(PEAAgentType.TRAVEL_LOGISTICS, travelAgent);
     await this.executiveOrchestrator.registerAgent(travelAgent);
-    console.log('✅ Travel Logistics Agent initialized');
+    // Travel Logistics Agent initialized
   }
 
   private async initializeFinancialIntelligence(): Promise<void> {
@@ -408,15 +411,91 @@ export class PEACoordinationSystem {
     await financialAgent.initialize();
     this.agents.set(PEAAgentType.FINANCIAL_MANAGEMENT, financialAgent);
     await this.executiveOrchestrator.registerAgent(financialAgent);
-    console.log('✅ Financial Intelligence Agent initialized');
+    // Financial Intelligence Agent initialized
   }
 
   private async initializeCrisisManagement(): Promise<void> {
-    const crisisAgent = new CrisisManagementAgent('crisis-001', this.mcpIntegration, SecurityLevel.STRATEGIC_CONFIDENTIAL);
+    const crisisAgent = new CrisisManagementAgent(this.mcpIntegration);
     await crisisAgent.initialize();
     this.agents.set(PEAAgentType.CRISIS_MANAGEMENT, crisisAgent);
     await this.executiveOrchestrator.registerAgent(crisisAgent);
-    console.log('✅ Crisis Management Agent initialized');
+    // Crisis Management Agent initialized
+  }
+
+  private async initializeAdvancedAnalytics(): Promise<void> {
+    const config = {
+      agentId: 'analytics-001',
+      capabilities: ['analytics', 'reporting', 'insights'],
+      performanceTargets: {
+        responseTime: 75,
+        throughput: 1000,
+        accuracy: 0.95
+      },
+      analyticsConfig: {
+        metricsRetention: 86400000,
+        reportingInterval: 3600000,
+        alertThresholds: { errorRate: 0.01, responseTime: 100 }
+      }
+    };
+    const analyticsAgent = new AdvancedAnalyticsAgent('analytics-001', this.mcpIntegration, config);
+    await analyticsAgent.initialize();
+    this.agents.set(PEAAgentType.ADVANCED_ANALYTICS, analyticsAgent);
+    await this.executiveOrchestrator.registerAgent(analyticsAgent);
+    // Advanced Analytics Agent initialized
+  }
+
+  private async initializeEnterpriseIntegration(): Promise<void> {
+    const config = {
+      agentId: 'enterprise-001',
+      capabilities: ['integration', 'synchronization', 'data-mapping'],
+      performanceTargets: {
+        responseTime: 75,
+        throughput: 500,
+        accuracy: 0.98
+      },
+      integrations: {
+        office365: {
+          clientId: 'test-client-id',
+          tenantId: 'test-tenant-id',
+          scopes: ['Mail.Read', 'Calendar.Read']
+        },
+        googleWorkspace: {
+          clientId: 'test-google-client-id',
+          scopes: ['https://www.googleapis.com/auth/gmail.readonly']
+        },
+        salesforce: {
+          instanceUrl: 'https://test.salesforce.com',
+          apiVersion: 'v58.0'
+        }
+      }
+    };
+    const enterpriseAgent = new EnterpriseIntegrationAgent('enterprise-001', this.mcpIntegration, config);
+    await enterpriseAgent.initialize();
+    this.agents.set(PEAAgentType.ENTERPRISE_INTEGRATION, enterpriseAgent);
+    await this.executiveOrchestrator.registerAgent(enterpriseAgent);
+    console.log('✅ Enterprise Integration Agent initialized');
+  }
+
+  private async initializePerformanceMonitoring(): Promise<void> {
+    const config = {
+      agentId: 'performance-001',
+      capabilities: ['monitoring', 'metrics', 'alerting'],
+      performanceTargets: {
+        responseTime: 50,
+        throughput: 2000,
+        accuracy: 0.99
+      },
+      monitoring: {
+        metricsInterval: 30000,
+        alertThresholds: { responseTime: 75, errorRate: 0.01, throughput: 100 },
+        autoOptimization: true
+      }
+    };
+    const performanceAgent = new PerformanceMonitoringAgent('performance-001', this.mcpIntegration, config);
+    await performanceAgent.initialize();
+    this.agents.set(PEAAgentType.PERFORMANCE_MONITORING, performanceAgent);
+    await this.executiveOrchestrator.registerAgent(performanceAgent);
+    console.log('✅ Performance Monitoring Agent initialized');
   }
 
   private async establishCoordinationProtocols(): Promise<void> {
@@ -427,7 +506,7 @@ export class PEACoordinationSystem {
       'critical'
     );
 
-    console.log('🔗 Inter-agent coordination protocols established');
+    // Inter-agent coordination protocols established
   }
 
   private async initializeByzantineFaultTolerance(): Promise<void> {
@@ -655,11 +734,11 @@ class PerformanceMonitor {
       try {
         await this.collectPerformanceMetrics(agents);
       } catch (error) {
-        console.error('❌ Performance monitoring error:', error);
+        // Performance monitoring error
       }
     }, 30000); // Every 30 seconds
 
-    console.log('📊 Performance monitoring started');
+    // Performance monitoring started
   }
 
   private async collectPerformanceMetrics(agents: Map<PEAAgentType, PEAAgentBase>): Promise<void> {

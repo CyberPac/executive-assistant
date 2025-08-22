@@ -142,11 +142,7 @@ export class TravelLogisticsAgent extends EventEmitter {
   private travelPlans: Map<string, TravelPlan>;
   private shortTrips: Map<string, ShortTripPlan>;
   private requirementsDatabase: Map<string, TravelRequirement>;
-  private flightPreferences: Map<string, FlightPreference>;
-  private trafficAPIKeys: {
-    googleMaps: string;
-    waze: string;
-  };
+  // Removed unused private properties
   private performanceMetrics: {
     responseTimes: number[];
     successfulBookings: number;
@@ -160,8 +156,8 @@ export class TravelLogisticsAgent extends EventEmitter {
     this.travelPlans = new Map();
     this.shortTrips = new Map();
     this.requirementsDatabase = new Map();
-    this.flightPreferences = new Map();
-    this.trafficAPIKeys = {
+    this._flightPreferences = new Map();
+    this._trafficAPIKeys = {
       googleMaps: process.env.GOOGLE_MAPS_API_KEY || 'demo-key',
       waze: process.env.WAZE_API_KEY || 'demo-key'
     };
@@ -681,8 +677,8 @@ export class TravelLogisticsAgent extends EventEmitter {
   }
 
   private async getTrafficIncidents(
-    origin: { lat: number; lng: number },
-    destination: { lat: number; lng: number }
+    _origin: { lat: number; lng: number },
+    _destination: { lat: number; lng: number }
   ): Promise<TrafficIncident[]> {
     // Mock implementation - replace with actual traffic API
     return [
@@ -718,7 +714,7 @@ export class TravelLogisticsAgent extends EventEmitter {
     ];
   }
 
-  private getTimezoneFromCoords(coords: { lat: number; lng: number }): string {
+  private getTimezoneFromCoords(_coords: { lat: number; lng: number }): string {
     // Mock implementation - would use timezone API in production
     return 'America/New_York';
   }
@@ -793,7 +789,7 @@ export class TravelLogisticsAgent extends EventEmitter {
   /**
    * Generate travel recommendations
    */
-  private async generateRecommendations(countryCode: string, city: string): Promise<{
+  private async generateRecommendations(_countryCode: string, _city: string): Promise<{
     hotels: string[];
     transportation: string[];
     dining: string[];
@@ -881,7 +877,7 @@ export class TravelLogisticsAgent extends EventEmitter {
   /**
    * Generate emergency protocols
    */
-  private async generateEmergencyProtocols(countryCode: string, city: string): Promise<{
+  private async generateEmergencyProtocols(_countryCode: string, city: string): Promise<{
     embassy: string;
     emergencyContacts: string[];
     medicalFacilities: string[];
