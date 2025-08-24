@@ -515,7 +515,7 @@ export class CrisisManagementConfigFactory {
     const testConfig = JSON.parse(JSON.stringify(DEVELOPMENT_CRISIS_MANAGEMENT_CONFIG)) as CrisisManagementConfiguration;
     
     // Configure for testing with mock sources
-    testConfig.detection.monitoring.sources = testConfig.detection.monitoring.sources.map(source => ({
+    testConfig.detection.monitoring.sources = testConfig.detection.monitoring.sources.map((source: any) => ({
       ...source,
       refreshRate: 5, // 5 seconds for testing
       status: 'active'

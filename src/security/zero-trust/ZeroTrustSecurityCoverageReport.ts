@@ -313,7 +313,7 @@ export class ZeroTrustSecurityCoverageReportGenerator {
    */
   private async generateCoverageSummary(
     currentCoverage: number,
-    status: any
+    _status: any
   ): Promise<CoverageSummary> {
     const targetCoverage = 95.0;
     const improvementNeeded = Math.max(0, targetCoverage - currentCoverage);
@@ -359,7 +359,7 @@ export class ZeroTrustSecurityCoverageReportGenerator {
   /**
    * Analyze individual components
    */
-  private async analyzeComponents(status: any): Promise<ComponentAnalysis[]> {
+  private async analyzeComponents(_status: any): Promise<ComponentAnalysis[]> {
     const components: ComponentAnalysis[] = [
       {
         component: 'Zero-Trust Architecture',
@@ -471,7 +471,7 @@ export class ZeroTrustSecurityCoverageReportGenerator {
   /**
    * Perform gap analysis
    */
-  private async performGapAnalysis(components: ComponentAnalysis[]): Promise<GapAnalysis> {
+  private async performGapAnalysis(_components: ComponentAnalysis[]): Promise<GapAnalysis> {
     const criticalGaps: CriticalGap[] = [
       {
         id: 'threat-detection-automation',
@@ -570,8 +570,8 @@ export class ZeroTrustSecurityCoverageReportGenerator {
    * Generate recommendations
    */
   private async generateRecommendations(
-    gapAnalysis: GapAnalysis,
-    components: ComponentAnalysis[]
+    _gapAnalysis: GapAnalysis,
+    _components: ComponentAnalysis[]
   ): Promise<Recommendation[]> {
     return [
       {
@@ -678,7 +678,7 @@ export class ZeroTrustSecurityCoverageReportGenerator {
   /**
    * Assess risk
    */
-  private async assessRisk(gapAnalysis: GapAnalysis): Promise<RiskAssessment> {
+  private async assessRisk(_gapAnalysis: GapAnalysis): Promise<RiskAssessment> {
     const riskFactors: RiskFactor[] = [
       {
         category: 'Threat Detection',
@@ -722,7 +722,7 @@ export class ZeroTrustSecurityCoverageReportGenerator {
   /**
    * Generate security roadmap
    */
-  private async generateRoadmap(recommendations: Recommendation[]): Promise<SecurityRoadmap> {
+  private async generateRoadmap(_recommendations: Recommendation[]): Promise<SecurityRoadmap> {
     const phases: RoadmapPhase[] = [
       {
         phase: 1,
@@ -783,7 +783,7 @@ export class ZeroTrustSecurityCoverageReportGenerator {
   /**
    * Collect security metrics
    */
-  private async collectMetrics(status: any): Promise<SecurityMetrics> {
+  private async collectMetrics(_status: any): Promise<SecurityMetrics> {
     return {
       coverage: {
         identity: 90,

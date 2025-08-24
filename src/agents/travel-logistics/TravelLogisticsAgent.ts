@@ -274,6 +274,7 @@ export interface TravelLocation {
   airport?: string;
   address?: string;
   coordinates?: { lat: number; lng: number };
+  date?: Date | string;
 }
 
 export interface TravelTimeline {
@@ -936,13 +937,13 @@ export class TravelLogisticsAgent extends PEAAgentBase {
     const startTime = Date.now();
 
     // Validate request
-    if (!request.executiveId || !request.departure?.location || !request.requestedBy) {
+    if (!request.executiveId || !(request as any).departure?.location || !request.requestedBy) {
       throw new Error('Invalid travel request: Missing required fields');
     }
 
     // Check for past dates (only if it's more than 1 day in the past to account for timezone differences)
-    if (request.departure?.date) {
-      const departureDate = new Date(request.departure.date);
+    if ((request as any).departure?.date) {
+      const departureDate = new Date((request as any).departure.date);
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
       if (departureDate < oneDayAgo) {
         throw new Error('Travel date cannot be in the past');
@@ -950,8 +951,8 @@ export class TravelLogisticsAgent extends PEAAgentBase {
     }
 
     // Check for invalid times
-    if (request.departure?.time && (request.departure.time === '25:00' || request.departure.time.includes(':'))) {
-      const [hours] = request.departure.time.split(':');
+    if ((request as any).departure?.time && ((request as any).departure.time === '25:00' || (request as any).departure.time.includes(':'))) {
+      const [hours] = (request as any).departure.time.split(':');
       if (parseInt(hours) >= 24) {
         throw new Error('Invalid travel request');
       }
@@ -961,7 +962,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
     if (request.multiCity && request.cities) {
       // Call searchFlights for each segment
       for (let i = 0; i < request.cities.length; i++) {
-        await this.mcpIntegration.searchFlights({
+        await this.mcpIntegration.invokeFunction('searchFlights', {
           from: i === 0 ? 'JFK' : 'LON',
           to: i === 0 ? 'LON' : 'NRT',
           date: request.cities[i].arrival,
@@ -989,7 +990,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
 
     // For single destination, call searchFlights
     if (request.destination) {
-      await this.mcpIntegration.searchFlights({
+      await this.mcpIntegration.invokeFunction('searchFlights', {
         from: request.departure?.airport || 'JFK',
         to: request.destination?.airport || 'LHR',
         date: request.departure?.date ? new Date(request.departure.date) : new Date(),
@@ -999,11 +1000,10 @@ export class TravelLogisticsAgent extends PEAAgentBase {
 
     // Handle urgent requests with priority processing
     if (request.urgency === 'immediate') {
-      await this.mcpIntegration.sendNotification({
-        type: 'urgent_travel_processed',
-        priority: 'high',
-        message: `Urgent travel request processed for ${request.executiveId}`
-      });
+      await this.mcpIntegration.sendNotification(
+        `Urgent travel request processed for ${request.executiveId}`,
+        'high'
+      );
     }
 
     // Check for missing preferences and use defaults
@@ -1033,9 +1033,10 @@ export class TravelLogisticsAgent extends PEAAgentBase {
    */
   async createBooking(bookingDetails: BookingDetails): Promise<BookingResponse> {
     try {
-      const bookingResult = await this.mcpIntegration.bookTravel(bookingDetails);
+      const bookingResult = await this.mcpIntegration.bookTravel(bookingDetails as unknown as Record<string, unknown>);
       
-      await this.mcpIntegration.storeMemory(
+      await this.mcpIntegration.memoryUsage(
+        'store',
         `travel_booking_${bookingResult.bookingId}`,
         JSON.stringify({
           bookingId: bookingResult.bookingId,
@@ -1046,20 +1047,20 @@ export class TravelLogisticsAgent extends PEAAgentBase {
 
       return {
         success: true,
-        bookingId: bookingResult.bookingId,
-        totalCost: bookingResult.totalCost,
-        confirmations: bookingResult.confirmationNumbers
+        bookingId: (bookingResult.bookingId as string) || `booking-${Date.now()}`,
+        totalCost: (bookingResult.totalCost as number) || 0,
+        confirmations: (bookingResult.confirmationNumbers as any) || {}
       };
     } catch (error) {
-      await this.mcpIntegration.sendNotification({
-        type: 'booking_failure',
-        priority: 'high',
-        message: `Booking failed: ${error.message}`
-      });
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      await this.mcpIntegration.sendNotification(
+        `Booking failed: ${errorMessage}`,
+        'high'
+      );
 
       return {
         success: false,
-        error: error.message,
+        error: errorMessage,
         fallbackOptions: ['Manual booking', 'Alternative providers']
       };
     }
@@ -1076,8 +1077,8 @@ export class TravelLogisticsAgent extends PEAAgentBase {
 
     return {
       success: true,
-      modificationId: result.modificationId,
-      additionalCost: result.additionalCost
+      modificationId: (result.modificationId as string) || `mod-${Date.now()}`,
+      additionalCost: (result.additionalCost as number) || 0
     };
   }
 
@@ -1085,19 +1086,17 @@ export class TravelLogisticsAgent extends PEAAgentBase {
    * Cancel a booking
    */
   async cancelBooking(cancellationRequest: CancellationRequest): Promise<CancellationResponse> {
-    const result = await this.mcpIntegration.cancelBooking(cancellationRequest);
+    const result = await this.mcpIntegration.cancelBooking(cancellationRequest.bookingId);
     
-    await this.mcpIntegration.sendNotification({
-      type: 'booking_cancelled',
-      details: {
-        netRefund: result.netRefund
-      }
-    });
+    await this.mcpIntegration.sendNotification(
+      `Booking cancelled - Net refund: ${result.netRefund}`,
+      'medium'
+    );
 
     return {
       success: true,
-      netRefund: result.netRefund,
-      cancellationFees: result.cancellationFees
+      netRefund: (result.netRefund as number) || 0,
+      cancellationFees: (result.cancellationFees as number) || 0
     };
   }
 
@@ -1122,14 +1121,16 @@ export class TravelLogisticsAgent extends PEAAgentBase {
    * Get travel alerts for a location
    */
   async getTravelAlerts(location: string): Promise<any[]> {
-    return await this.mcpIntegration.getTravelAlerts(location);
+    const result = await this.mcpIntegration.getTravelAlerts(location);
+    return Array.isArray(result) ? result : [];
   }
 
   /**
    * Setup emergency protocols
    */
   async setupEmergencyProtocols(emergencySetup: EmergencySetup): Promise<EmergencyProtocolResponse> {
-    await this.mcpIntegration.storeMemory(
+    await this.mcpIntegration.memoryUsage(
+      'store',
       `emergency_protocols_${emergencySetup.executiveId}`,
       JSON.stringify({
         executiveId: emergencySetup.executiveId,
@@ -1147,7 +1148,15 @@ export class TravelLogisticsAgent extends PEAAgentBase {
    * Check visa requirements
    */
   async checkVisaRequirements(visaRequest: VisaRequest): Promise<VisaResponse> {
-    return await this.mcpIntegration.checkVisa(visaRequest);
+    const result = await this.mcpIntegration.checkVisa(visaRequest.destination, visaRequest.nationality);
+    return {
+      required: (result.required as boolean) || false,
+      type: result.type as string,
+      processingTime: result.processingTime as string,
+      cost: result.cost as number,
+      requirements: result.requirements as string[],
+      applicationUrl: result.applicationUrl as string
+    };
   }
 
   /**
@@ -1178,7 +1187,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
   /**
    * Check travel compliance
    */
-  async checkTravelCompliance(booking: TravelBooking, policy: TravelPolicy): Promise<ComplianceResponse> {
+  async checkTravelCompliance(_booking: TravelBooking, _policy: TravelPolicy): Promise<ComplianceResponse> {
     return {
       compliant: true,
       violations: [],
@@ -1190,19 +1199,24 @@ export class TravelLogisticsAgent extends PEAAgentBase {
    * Track expenses
    */
   async trackExpenses(travelId: string, expenses: TravelExpense[]): Promise<ExpenseTrackingResponse> {
-    return await this.mcpIntegration.calculateExpenses(expenses);
+    const result = await this.mcpIntegration.calculateExpenses(expenses as unknown as Record<string, unknown>);
+    return {
+      totalUSD: (result.totalUSD as number) || 0,
+      byCategory: (result.byCategory as Record<string, number>) || {},
+      conversions: (result.conversions as Record<string, number>) || {}
+    };
   }
 
   /**
    * Generate expense report
    */
   async generateExpenseReport(reportRequest: ExpenseReportRequest): Promise<ExpenseReport> {
-    const result = await this.mcpIntegration.generateReport(reportRequest);
+    const result = await this.mcpIntegration.generateReport('expense', reportRequest as unknown as Record<string, unknown>);
     return {
       success: true,
-      reportId: result.reportId,
-      summary: result.summary,
-      complianceCheck: result.complianceCheck
+      reportId: (result.reportId as string) || `report-${Date.now()}`,
+      summary: result.summary as any,
+      complianceCheck: result.complianceCheck as any
     };
   }
 
@@ -1210,7 +1224,12 @@ export class TravelLogisticsAgent extends PEAAgentBase {
    * Calculate multi-currency expenses
    */
   async calculateMultiCurrencyExpenses(expenses: TravelExpense[]): Promise<CurrencyCalculationResponse> {
-    return await this.mcpIntegration.calculateExpenses(expenses);
+    const result = await this.mcpIntegration.calculateExpenses(expenses as unknown as Record<string, unknown>);
+    return {
+      totalUSD: (result.totalUSD as number) || 0,
+      conversions: (result.conversions as Record<string, number>) || {},
+      byCategory: (result.byCategory as Record<string, number>) || {}
+    };
   }
 
   /**
@@ -1237,32 +1256,46 @@ export class TravelLogisticsAgent extends PEAAgentBase {
    * Optimize travel route
    */
   async optimizeTravelRoute(multiCityTrip: MultiCityTrip): Promise<RouteOptimizationResponse> {
-    return await this.mcpIntegration.invokeFunction('optimize_travel_route', multiCityTrip);
+    const result = await this.mcpIntegration.invokeFunction('optimize_travel_route', multiCityTrip as unknown as Record<string, unknown>);
+    return {
+      optimizedRoute: (result.optimizedRoute as string[]) || [],
+      totalCost: (result.totalCost as number) || 0,
+      totalTravelTime: (result.totalTravelTime as number) || 0,
+      savings: result.savings as any,
+      routeDetails: (result.routeDetails as any[]) || []
+    };
   }
 
   /**
    * Get travel analytics
    */
   async getTravelAnalytics(analyticsRequest: AnalyticsRequest): Promise<TravelAnalytics> {
-    return await this.mcpIntegration.invokeFunction('get_travel_analytics', analyticsRequest);
+    const result = await this.mcpIntegration.invokeFunction('get_travel_analytics', analyticsRequest as unknown as Record<string, unknown>);
+    return {
+      travelSummary: result.travelSummary as any,
+      patterns: result.patterns as any,
+      efficiency: result.efficiency as any,
+      recommendations: (result.recommendations as string[]) || []
+    };
   }
 
   /**
    * Coordinate with other PEA agents
    */
   async coordinateWithPEAAgents(travelRequest: TravelRequest, agentIds: string[]): Promise<void> {
-    await this.mcpIntegration.coordinateWith(agentIds);
+    for (const agentId of agentIds) {
+      await this.mcpIntegration.coordinateWith(agentId, `Travel coordination for ${travelRequest.id}`);
+    }
   }
 
   /**
    * Send travel notification
    */
   async sendTravelNotification(travelUpdate: TravelNotification): Promise<void> {
-    await this.mcpIntegration.sendNotification({
-      type: travelUpdate.type,
-      priority: travelUpdate.severity,
-      recipients: [travelUpdate.executiveId]
-    });
+    await this.mcpIntegration.sendNotification(
+      `${travelUpdate.type}: Executive ${travelUpdate.executiveId}`,
+      travelUpdate.severity
+    );
   }
 
   /**
@@ -1279,7 +1312,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
       this.activeRequests.set(_request.id, _request);
 
       // Initialize Claude Flow swarm coordination for travel logistics
-      const swarmResult = await this.mcpIntegration.swarmInit(
+      const _swarmResult = await this.mcpIntegration.swarmInit(
         'hierarchical',
         8, // Use 8 agents for comprehensive travel coordination
         'travel_logistics_optimized'
@@ -1288,13 +1321,18 @@ export class TravelLogisticsAgent extends PEAAgentBase {
       // Travel coordination swarm initialized
 
       // Orchestrate travel planning across all coordinators
-      await this.mcpIntegration.taskOrchestrate(
-        `Executive travel coordination: ${_request.destination.city}, ${_request.destination.country}`,
-        'adaptive',
-        _request.priority === 'critical' ? 'critical' : 'high'
-      );
+      if (_request.destination) {
+        await this.mcpIntegration.taskOrchestrate(
+          `Executive travel coordination: ${_request.destination.city}, ${_request.destination.country}`,
+          'adaptive',
+          _request.priority === 'critical' ? 'critical' : 'high'
+        );
+      }
 
       // Analyze cultural context for destination
+      if (!_request.destination) {
+        throw new Error('Travel destination is required');
+      }
       const culturalAnalysis = await this.culturalIntelligence.analyzeTravelContext(
         _request.destination,
         _request.culturalContext,
@@ -1410,7 +1448,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
         travelPlan,
         disruptionType,
         severity,
-        activatedContingencies
+        activatedContingencies.map(a => ({ ...a } as unknown as ContingencyPlan))
       );
 
       // Coordinate emergency response if critical
@@ -1422,7 +1460,7 @@ export class TravelLogisticsAgent extends PEAAgentBase {
       const updatedPlan = await this.updateTravelPlanWithDisruptionResponse(
         travelPlan,
         alternatives,
-        activatedContingencies
+        activatedContingencies.map(a => ({ ...a } as unknown as ContingencyPlan))
       );
 
       this.travelPlans.set(planId, updatedPlan);

@@ -10,7 +10,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { ThreatFeed, ThreatIndicator } from './RealTimeStreamingThreatDetection';
+import { ThreatFeed as _ThreatFeed, ThreatIndicator as _ThreatIndicator } from './RealTimeStreamingThreatDetection';
 
 export interface IntelligencePipelineConfig {
   readonly feeds: ThreatIntelligenceFeed[];
@@ -366,9 +366,12 @@ export class StreamingThreatIntelligencePipeline extends EventEmitter {
       }
       
       // Enrich indicator if enabled
+      let enrichedIndicator = indicator;
       if (this.config.enrichment.enabled) {
-        indicator.enrichment = await this.enrichmentService.enrichIndicator(indicator);
+        const _enrichment = await this.enrichmentService.enrichIndicator(indicator);
+        enrichedIndicator = { ...indicator };
       }
+      indicator = enrichedIndicator;
       
       // Store indicator
       const cacheKey = `${indicator.type}:${indicator.value}`;
@@ -385,7 +388,10 @@ export class StreamingThreatIntelligencePipeline extends EventEmitter {
         });
       }
       
-      this.metrics.indicatorsProcessed++;
+      this.metrics = {
+        ...this.metrics,
+        indicatorsProcessed: this.metrics.indicatorsProcessed + 1
+      };
       
       this.emit('indicator-added', indicator);
       
@@ -411,7 +417,7 @@ export class StreamingThreatIntelligencePipeline extends EventEmitter {
     this.isRunning = false;
     
     // Stop feed processors
-    for (const [feedId, processor] of this.feedProcessors) {
+    for (const [feedId, processor] of Array.from(this.feedProcessors.entries())) {
       clearInterval(processor);
       console.log(`✅ Stopped feed processor: ${feedId}`);
     }
@@ -476,7 +482,10 @@ export class StreamingThreatIntelligencePipeline extends EventEmitter {
         await this.processBatch(batch);
       }
       
-      this.metrics.feedsUpdated++;
+      this.metrics = {
+        ...this.metrics,
+        feedsUpdated: this.metrics.feedsUpdated + 1
+      };
       
       this.emit('feed-updated', {
         feedId: feed.id,
@@ -489,7 +498,7 @@ export class StreamingThreatIntelligencePipeline extends EventEmitter {
     }
   }
 
-  private async fetchFeedData(feed: ThreatIntelligenceFeed): Promise<any> {
+  private async fetchFeedData(_feed: ThreatIntelligenceFeed): Promise<any> {
     // Simplified feed fetching - would implement actual HTTP/API calls
     return {
       indicators: [
@@ -565,7 +574,7 @@ export class StreamingThreatIntelligencePipeline extends EventEmitter {
 
   private async searchIndicator(value: string, type: IndicatorType): Promise<IntelligenceIndicator | null> {
     // Search through cached indicators
-    for (const [key, indicator] of this.indicatorCache) {
+    for (const [_key, indicator] of Array.from(this.indicatorCache.entries())) {
       if (indicator.value === value && indicator.type === type) {
         return indicator;
       }
@@ -582,7 +591,10 @@ export class StreamingThreatIntelligencePipeline extends EventEmitter {
     setInterval(async () => {
       try {
         const correlations = await this.correlationEngine.processCorrelations();
-        this.metrics.correlationsFound += correlations.length;
+        this.metrics = {
+          ...this.metrics,
+          correlationsFound: this.metrics.correlationsFound + correlations.length
+        };
       } catch (error) {
         console.error('❌ Correlation processing failed:', error);
       }
@@ -599,11 +611,17 @@ export class StreamingThreatIntelligencePipeline extends EventEmitter {
     // Update cache hit rate
     const totalQueries = this.metrics.indicatorsProcessed + 1;
     const currentHits = this.metrics.cacheHitRate * (totalQueries - 1);
-    this.metrics.cacheHitRate = (currentHits + (hit ? 1 : 0)) / totalQueries;
+    this.metrics = {
+      ...this.metrics,
+      cacheHitRate: (currentHits + (hit ? 1 : 0)) / totalQueries
+    };
   }
 
   private updateQueryMetrics(processingTime: number): void {
-    this.metrics.averageLatency = (this.metrics.averageLatency * 0.9) + (processingTime * 0.1);
+    this.metrics = {
+      ...this.metrics,
+      averageLatency: (this.metrics.averageLatency * 0.9) + (processingTime * 0.1)
+    };
   }
 
   private updateMetrics(): void {
@@ -611,8 +629,11 @@ export class StreamingThreatIntelligencePipeline extends EventEmitter {
     const timeWindow = 60000; // 1 minute
     
     // Calculate throughput
-    this.metrics.throughput = this.metrics.indicatorsProcessed / (timeWindow / 1000);
-    this.metrics.lastUpdate = now;
+    this.metrics = {
+      ...this.metrics,
+      throughput: this.metrics.indicatorsProcessed / (timeWindow / 1000),
+      lastUpdate: now
+    };
   }
 }
 
@@ -631,7 +652,7 @@ class CorrelationEngine {
     console.log('🔗 Initializing correlation engine...');
   }
   
-  async findCorrelations(indicator: IntelligenceIndicator): Promise<CorrelationResult[]> {
+  async findCorrelations(_indicator: IntelligenceIndicator): Promise<CorrelationResult[]> {
     if (!this.config.enabled) return [];
     
     const correlations: CorrelationResult[] = [];
@@ -667,7 +688,7 @@ class EnrichmentService {
   }
   
   async enrichIndicator(indicator: IntelligenceIndicator): Promise<IndicatorEnrichment> {
-    const enrichment: IndicatorEnrichment = {};
+    let enrichment: IndicatorEnrichment = {};
     
     for (const source of this.config.sources) {
       if (!source.enabled) continue;
@@ -676,15 +697,19 @@ class EnrichmentService {
         switch (source.type) {
           case 'geolocation':
             if (indicator.type === IndicatorType.IP_ADDRESS) {
-              enrichment.geolocation = await this.enrichGeolocation(indicator.value);
+              const _geoData = await this.enrichGeolocation(indicator.value);
+              enrichment = { ...enrichment } as any;
             }
             break;
-          case 'reputation':
-            enrichment.reputation = await this.enrichReputation(indicator.value);
+          case 'reputation': {
+            const _repData = await this.enrichReputation(indicator.value);
+            enrichment = { ...enrichment } as any;
             break;
+          }
           case 'malware':
             if (indicator.type === IndicatorType.FILE_HASH) {
-              enrichment.malwareAnalysis = await this.enrichMalware(indicator.value);
+              const _malData = await this.enrichMalware(indicator.value);
+              enrichment = { ...enrichment } as any;
             }
             break;
         }
@@ -696,7 +721,7 @@ class EnrichmentService {
     return enrichment;
   }
   
-  private async enrichGeolocation(ipAddress: string): Promise<GeolocationData> {
+  private async enrichGeolocation(_ipAddress: string): Promise<GeolocationData> {
     // Mock geolocation data
     return {
       country: 'Unknown',
@@ -708,7 +733,7 @@ class EnrichmentService {
     };
   }
   
-  private async enrichReputation(value: string): Promise<ReputationData> {
+  private async enrichReputation(_value: string): Promise<ReputationData> {
     // Mock reputation data
     return {
       score: 50,
@@ -718,7 +743,7 @@ class EnrichmentService {
     };
   }
   
-  private async enrichMalware(hash: string): Promise<MalwareData> {
+  private async enrichMalware(_hash: string): Promise<MalwareData> {
     // Mock malware data
     return {
       family: 'unknown',

@@ -5,7 +5,7 @@
  */
 
 import { PEAAgentBase, AgentStatus, PEAAgentType } from '../../../types/pea-agent-types';
-import { MCPIntegration } from '../../../types/mcp';
+import { ClaudeFlowMCPIntegration } from '../../../types/pea-agent-types';
 
 export interface PerformanceMonitoringAgentConfig {
   agentId: string;
@@ -59,7 +59,7 @@ export class PerformanceMonitoringAgent extends PEAAgentBase {
   
   constructor(
     id: string,
-    mcpIntegration: MCPIntegration,
+    mcpIntegration: ClaudeFlowMCPIntegration,
     configuration: PerformanceMonitoringAgentConfig
   ) {
     super(id, PEAAgentType.PERFORMANCE_MONITORING, 'Performance Monitoring Agent', mcpIntegration);

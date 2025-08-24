@@ -209,7 +209,7 @@ export class AgentRegistry extends EventEmitter {
     }
 
     if (query.healthThreshold !== undefined) {
-      agents = agents.filter((agent) => agent.health.overall >= query.healthThreshold!);
+      agents = agents.filter((agent) => agent.health.overall !== undefined && agent.health.overall >= query.healthThreshold!);
     }
 
     if (query.namePattern) {
@@ -301,7 +301,7 @@ export class AgentRegistry extends EventEmitter {
     }
 
     // Calculate averages
-    stats.averageHealth = agents.reduce((sum, agent) => sum + agent.health.overall, 0) / agents.length;
+    stats.averageHealth = agents.reduce((sum, agent) => sum + (agent.health.overall || 0), 0) / agents.length;
 
     const totalTasks = agents.reduce(
       (sum, agent) => sum + agent.metrics.tasksCompleted + agent.metrics.tasksFailed,
@@ -323,10 +323,10 @@ export class AgentRegistry extends EventEmitter {
 
     return agents.filter((agent) => {
       const capabilities = [
-        ...agent.capabilities.languages,
-        ...agent.capabilities.frameworks,
-        ...agent.capabilities.domains,
-        ...agent.capabilities.tools,
+        ...(agent.capabilities.languages || []),
+        ...(agent.capabilities.frameworks || []),
+        ...(agent.capabilities.domains || []),
+        ...(agent.capabilities.tools || []),
       ];
 
       return requiredCapabilities.every((required) =>
@@ -469,10 +469,10 @@ export class AgentRegistry extends EventEmitter {
     // Capability match score (0-10 points)
     if (requiredCapabilities.length > 0) {
       const agentCaps = [
-        ...agent.capabilities.languages,
-        ...agent.capabilities.frameworks,
-        ...agent.capabilities.domains,
-        ...agent.capabilities.tools,
+        ...(agent.capabilities.languages || []),
+        ...(agent.capabilities.frameworks || []),
+        ...(agent.capabilities.domains || []),
+        ...(agent.capabilities.tools || []),
       ];
 
       const matches = requiredCapabilities.filter((required) =>

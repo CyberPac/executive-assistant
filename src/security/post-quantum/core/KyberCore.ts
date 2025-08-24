@@ -6,7 +6,7 @@
  * Core Kyber algorithm implementation with NIST compliance
  */
 
-import { KyberParameters, KyberOperationMetrics } from '../CRYSTALSKyber';
+// import type { KyberParameters, KyberOperationMetrics } from '../CRYSTALSKyber';
 
 export interface KyberCoreConfig {
   readonly enableConstantTime: boolean;
@@ -87,7 +87,8 @@ export class KyberCore {
 
     } catch (error) {
       console.error('❌ Core key generation failed:', error);
-      throw new Error(`Core key generation failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Core key generation failed: ${errorMessage}`);
     }
   }
 
@@ -149,7 +150,8 @@ export class KyberCore {
 
     } catch (error) {
       console.error('❌ Core encapsulation failed:', error);
-      throw new Error(`Core encapsulation failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Core encapsulation failed: ${errorMessage}`);
     }
   }
 
@@ -195,7 +197,8 @@ export class KyberCore {
 
     } catch (error) {
       console.error('❌ Core decapsulation failed:', error);
-      throw new Error(`Core decapsulation failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Core decapsulation failed: ${errorMessage}`);
     }
   }
 

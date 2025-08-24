@@ -143,7 +143,7 @@ export class CulturalAnalyzer {
   private getDefaultAnalysis(country: string, region?: string): CulturalAnalysis {
     const defaultContext: CulturalContext = {
       country,
-      region,
+      region: region || '',
       businessProtocols: ['standard-business-practices'],
       communicationPreferences: ['email', 'phone'],
       appropriatenessScore: 0.7,

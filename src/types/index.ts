@@ -4,7 +4,7 @@
 // export * from '../integrations/types.js'; // File not found
 // export * from '../memory/types.js'; // File not found
 // Import specific types from swarm to avoid AgentStatus conflict
-export {
+export type {
   AgentId,
   AgentType,
   AgentState,

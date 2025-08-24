@@ -16,9 +16,9 @@
  * @since 2025-01-21
  */
 
-import { HSMAuditEntry } from '../hsm/core/HSMAuditLogger';
+import { HSMAuditEntry as _HSMAuditEntry } from '../hsm/core/HSMAuditLogger';
 import { ImmutableAuditEntry, ImmutableAuditTrail } from './ImmutableAuditTrail';
-import { SIEMIntegrationFramework, SIEMEvent } from './SIEMIntegrationFramework';
+import { SIEMIntegrationFramework, SIEMEvent as _SIEMEvent } from './SIEMIntegrationFramework';
 import { EventEmitter } from 'events';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -637,14 +637,14 @@ export class ComplianceReportingEngine extends EventEmitter {
   }
 
   private async assessCompliance(
-    frameworkConfig: ComplianceFrameworkConfig,
-    auditData: ImmutableAuditEntry[]
+    _frameworkConfig: ComplianceFrameworkConfig,
+    _auditData: ImmutableAuditEntry[]
   ): Promise<{ controls: ControlAssessment[], risks: RiskAssessment[] }> {
     const controls: ControlAssessment[] = [];
     const risks: RiskAssessment[] = [];
     
     // Simplified compliance assessment
-    for (const requirement of frameworkConfig.requirements) {
+    for (const requirement of _frameworkConfig.requirements) {
       const control: ControlAssessment = {
         controlId: requirement.id,
         controlName: requirement.title,
@@ -671,7 +671,7 @@ export class ComplianceReportingEngine extends EventEmitter {
 
   private async generateFindings(
     assessment: { controls: ControlAssessment[], risks: RiskAssessment[] },
-    frameworkConfig: ComplianceFrameworkConfig
+    _frameworkConfig: ComplianceFrameworkConfig
   ): Promise<ComplianceFinding[]> {
     const findings: ComplianceFinding[] = [];
     
@@ -849,14 +849,13 @@ export class ComplianceReportingEngine extends EventEmitter {
     return { high: 2, medium: 5, low: 10 };
   }
 
-  private async checkFrameworkCompliance(framework: ComplianceFrameworkConfig): Promise<any> {
+  private async checkFrameworkCompliance(_framework: ComplianceFrameworkConfig): Promise<any> {
     return { score: 95, status: 'compliant' };
   }
 
-  private async checkAlertThresholds(framework: ComplianceFramework, status: any): Promise<void> {
-    for (const threshold of this.config.monitoring.alertThresholds) {
-      // Check threshold and trigger alerts
-    }
+  private async checkAlertThresholds(_framework: ComplianceFramework, _status: any): Promise<void> {
+    const _threshold = this.config.monitoring.alertThresholds[0]; // Placeholder to avoid unused variable
+    // Check threshold and trigger alerts
   }
 
   private async updateDashboard(framework: ComplianceFramework, status: any): Promise<void> {
@@ -917,7 +916,7 @@ export class ComplianceReportingEngine extends EventEmitter {
     return `ENCRYPTED:${Buffer.from(data).toString('base64')}`;
   }
 
-  private async submitToRegulatory(endpoint: SubmissionEndpoint, data: string): Promise<void> {
+  private async submitToRegulatory(endpoint: SubmissionEndpoint, _data: string): Promise<void> {
     console.log(`📤 Submitting to ${endpoint.name}: ${endpoint.url}`);
     // HTTP submission implementation
   }

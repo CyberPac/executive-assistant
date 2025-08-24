@@ -733,7 +733,7 @@ class PerformanceMonitor {
     setInterval(async () => {
       try {
         await this.collectPerformanceMetrics(agents);
-      } catch (error) {
+      } catch (_error) {
         // Performance monitoring error
       }
     }, 30000); // Every 30 seconds

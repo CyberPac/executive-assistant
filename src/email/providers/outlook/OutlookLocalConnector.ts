@@ -98,8 +98,8 @@ export class OutlookLocalConnector {
     const messages = await this.fetchLocalMessages(account.email, accessToken, options);
     
     return {
-      messages,
-      nextLink: undefined // LOCAL access doesn't use pagination links
+      messages
+      // nextLink omitted for LOCAL access that doesn't use pagination
     };
   }
 

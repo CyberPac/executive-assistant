@@ -6,7 +6,8 @@
  * Performance monitoring for quantum-resistant cryptography
  */
 
-import { CRYSTALSKyber, KyberOperationMetrics, KyberParameters } from '../CRYSTALSKyber';
+import { CRYSTALSKyber, KyberOperationMetrics } from '../CRYSTALSKyber';
+// import type { KyberParameters } from '../CRYSTALSKyber';
 import { KyberCore } from '../core/KyberCore';
 
 export interface BenchmarkConfiguration {
@@ -36,9 +37,9 @@ export interface BenchmarkResult {
     bytesPerSecond: number;
   };
   readonly memory?: {
-    peakUsage: number;
-    averageUsage: number;
-    gcCollections: number;
+    readonly peakUsage: number;
+    readonly averageUsage: number;
+    readonly gcCollections: number;
   };
 }
 
@@ -99,7 +100,7 @@ export class KyberBenchmark {
 
     } catch (error) {
       console.error('❌ Benchmark suite failed:', error);
-      throw new Error(`Benchmark suite failed: ${error.message}`);
+      throw new Error(`Benchmark suite failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -192,7 +193,7 @@ export class KyberBenchmark {
         }
 
       } catch (error) {
-        console.warn(`  Warning: Iteration ${i + 1} failed:`, error.message);
+        console.warn(`  Warning: Iteration ${i + 1} failed:`, error instanceof Error ? error.message : String(error));
       }
     }
 
@@ -206,11 +207,13 @@ export class KyberBenchmark {
       iterations: measurements.length,
       statistics,
       throughput,
-      memory: config.measureMemory ? {
-        peakUsage: Math.max(...memoryMeasurements),
-        averageUsage: memoryMeasurements.reduce((a, b) => a + b, 0) / memoryMeasurements.length,
-        gcCollections: 0 // Would need to implement GC monitoring
-      } : undefined
+      ...(config.measureMemory ? {
+        memory: {
+          peakUsage: Math.max(...memoryMeasurements),
+          averageUsage: memoryMeasurements.reduce((a, b) => a + b, 0) / memoryMeasurements.length,
+          gcCollections: 0 // Would need to implement GC monitoring
+        }
+      } : {})
     };
 
     console.log(`  ✅ ${variant} ${operation}: ${statistics.mean.toFixed(2)}ms avg`);
@@ -556,8 +559,8 @@ export class KyberPerformanceMonitor {
     errorRate: number;
     alerts: string[];
   } {
-    const cutoff = Date.now() - timeWindowMs;
-    const recentMetrics = this.metrics.filter(m => 
+    const _cutoff = Date.now() - timeWindowMs;
+    const recentMetrics = this.metrics.filter(_m => 
       // Kyber metrics don't have timestamp, filter by recent entries
       true
     ).slice(-100);

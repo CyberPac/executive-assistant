@@ -25,7 +25,7 @@
  */
 
 import { jest, describe, test, expect, beforeEach, afterEach } from '@jest/globals';
-import { EventEmitter } from 'events';
+import { EventEmitter as _EventEmitter } from 'events';
 
 // === STREAMING THREAT DETECTION INTERFACES ===
 
@@ -166,7 +166,7 @@ describe('Streaming Threat Detection Performance - TDD London School', () => {
   };
 
   // Mock Algorithm Optimization Engine
-  const mockAlgorithmOptimizer = {
+  const _mockAlgorithmOptimizer = {
     optimizeMLInference: jest.fn(),
     vectorizeComputations: jest.fn(),
     enableSIMDAcceleration: jest.fn(),
@@ -250,7 +250,7 @@ describe('Streaming Threat Detection Performance - TDD London School', () => {
     detectBottlenecks: jest.fn()
   };
 
-  const optimizedConfig: StreamingThreatConfig = {
+  const _optimizedConfig: StreamingThreatConfig = {
     targetLatency: 1000,
     streamBufferSize: 1000,
     parallelProcessors: 8,
@@ -317,7 +317,7 @@ describe('Streaming Threat Detection Performance - TDD London School', () => {
     jest.clearAllMocks();
 
     // Configure mock performance for optimized components
-    mockStreamProcessor.processEventStream.mockImplementation(async (event: ThreatEvent) => {
+    mockStreamProcessor.processEventStream.mockImplementation(async (_event: ThreatEvent) => {
       await new Promise(resolve => setTimeout(resolve, 80)); // 80ms streaming latency
       return { processed: true, streamingLatency: 80 };
     });
@@ -332,7 +332,7 @@ describe('Streaming Threat Detection Performance - TDD London School', () => {
       };
     });
 
-    mockBehaviorAnalyzer.analyzeStreamingBehavior.mockImplementation(async (event: ThreatEvent) => {
+    mockBehaviorAnalyzer.analyzeStreamingBehavior.mockImplementation(async (_event: ThreatEvent) => {
       await new Promise(resolve => setTimeout(resolve, 120)); // 120ms behavior analysis
       return {
         anomalyScore: 0.15,
@@ -341,7 +341,7 @@ describe('Streaming Threat Detection Performance - TDD London School', () => {
       };
     });
 
-    mockNetworkAccelerator.analyzeTrafficRealTime.mockImplementation(async (metrics: NetworkMetrics) => {
+    mockNetworkAccelerator.analyzeTrafficRealTime.mockImplementation(async (_metrics: NetworkMetrics) => {
       await new Promise(resolve => setTimeout(resolve, 90)); // 90ms network analysis
       return {
         geoRisk: 0.1,
@@ -359,7 +359,7 @@ describe('Streaming Threat Detection Performance - TDD London School', () => {
       };
     });
 
-    mockExecutiveAccelerator.assessExecutiveRiskFast.mockImplementation(async (context: EventContext) => {
+    mockExecutiveAccelerator.assessExecutiveRiskFast.mockImplementation(async (_context: EventContext) => {
       await new Promise(resolve => setTimeout(resolve, 90)); // 90ms executive assessment
       return {
         riskLevel: 'low',
@@ -368,7 +368,7 @@ describe('Streaming Threat Detection Performance - TDD London School', () => {
       };
     });
 
-    mockAlertOptimizer.generateAlertFast.mockImplementation(async (threat: any) => {
+    mockAlertOptimizer.generateAlertFast.mockImplementation(async (_threat: any) => {
       await new Promise(resolve => setTimeout(resolve, 40)); // 40ms alert generation
       return {
         alertGenerated: true,
@@ -376,7 +376,7 @@ describe('Streaming Threat Detection Performance - TDD London School', () => {
       };
     });
 
-    mockResponseEngine.executeActionFast.mockImplementation(async (action: SecurityAction) => {
+    mockResponseEngine.executeActionFast.mockImplementation(async (_action: SecurityAction) => {
       await new Promise(resolve => setTimeout(resolve, 30)); // 30ms response execution
       return {
         actionExecuted: true,
@@ -397,7 +397,7 @@ describe('Streaming Threat Detection Performance - TDD London School', () => {
   describe('TDD Red Phase: Failing Performance Tests for Streaming Architecture', () => {
     test('FAILING: should process streaming events within 100ms latency target', async () => {
       // ARRANGE: Stream processing needs optimization
-      mockStreamProcessor.processEventStream.mockImplementation(async (event: ThreatEvent) => {
+      mockStreamProcessor.processEventStream.mockImplementation(async (_event: ThreatEvent) => {
         // Current slow implementation - simulate batch processing delays
         await new Promise(resolve => setTimeout(resolve, 250)); // Too slow for streaming
         return { processed: true, streamingLatency: 250 };
@@ -483,7 +483,7 @@ describe('Streaming Threat Detection Performance - TDD London School', () => {
     test('FAILING: should achieve end-to-end streaming detection within 1000ms SLA', async () => {
       // ARRANGE: Full streaming pipeline needs optimization
       const streamingThreatDetector = {
-        detectStreamingThreat: jest.fn().mockImplementation(async (event: ThreatEvent) => {
+        detectStreamingThreat: jest.fn().mockImplementation(async (_event: ThreatEvent) => {
           const detectionStart = Date.now();
           
           // Simulate current unoptimized pipeline
@@ -536,7 +536,7 @@ describe('Streaming Threat Detection Performance - TDD London School', () => {
   describe('TDD Green Phase: Optimized Implementation for Streaming Performance', () => {
     test('should implement optimized streaming event processing with <100ms latency', async () => {
       // ARRANGE: Implement optimized streaming processor
-      mockStreamProcessor.processEventStream.mockImplementation(async (event: ThreatEvent) => {
+      mockStreamProcessor.processEventStream.mockImplementation(async (_event: ThreatEvent) => {
         // Optimized implementation with event queuing and parallel processing
         await new Promise(resolve => setTimeout(resolve, 75)); // Optimized to 75ms
         return { processed: true, streamingLatency: 75 };
@@ -631,7 +631,7 @@ describe('Streaming Threat Detection Performance - TDD London School', () => {
     test('should achieve optimized end-to-end streaming detection within SLA', async () => {
       // ARRANGE: Implement fully optimized streaming pipeline
       const optimizedStreamingDetector = {
-        detectStreamingThreat: jest.fn().mockImplementation(async (event: ThreatEvent) => {
+        detectStreamingThreat: jest.fn().mockImplementation(async (_event: ThreatEvent) => {
           const detectionStart = Date.now();
           
           // Optimized parallel pipeline execution

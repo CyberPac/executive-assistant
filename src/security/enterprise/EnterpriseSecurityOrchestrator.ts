@@ -579,7 +579,7 @@ export class EnterpriseSecurityOrchestrator extends EventEmitter {
     await new Promise(resolve => setTimeout(resolve, step.estimatedDuration * 100));
   }
 
-  private async executeManualStep(step: PlaybookStep, incident: any): Promise<void> {
+  private async executeManualStep(step: PlaybookStep, _incident: any): Promise<void> {
     // Simulate manual step coordination
     console.log(`👤 Manual step requires human intervention: ${step.description}`);
     await new Promise(resolve => setTimeout(resolve, step.estimatedDuration * 50));
@@ -587,7 +587,7 @@ export class EnterpriseSecurityOrchestrator extends EventEmitter {
 
   // Simulation methods for various enterprise functions
 
-  private async deploySecurityControl(control: any): Promise<void> {
+  private async deploySecurityControl(_control: any): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
 

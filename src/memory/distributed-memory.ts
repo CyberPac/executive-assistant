@@ -49,7 +49,7 @@ export interface DistributedMemoryConfig {
 export class DistributedMemorySystem {
   private memory: Map<string, MemoryEntry> = new Map();
   private config: DistributedMemoryConfig;
-  private cleanupTimer?: ReturnType<typeof setTimeout>;
+  private cleanupTimer?: NodeJS.Timeout;
 
   constructor(config: Partial<DistributedMemoryConfig> = {}) {
     this.config = {
@@ -78,13 +78,13 @@ export class DistributedMemorySystem {
       key,
       value: this.config.enableCompression ? this.compress(value) : value,
       timestamp: new Date(),
-      ttl: options?.ttl || this.config.defaultTTL,
-      namespace: options?.namespace || 'default',
-      agentId: options?.agentId,
-      metadata: options?.metadata
+      ...(options?.ttl && { ttl: options.ttl }),
+      ...(options?.namespace && { namespace: options.namespace }),
+      ...(options?.agentId && { agentId: options.agentId }),
+      ...(options?.metadata && { metadata: options.metadata })
     };
 
-    this.memory.set(this.getStorageKey(key, entry.namespace), entry);
+    this.memory.set(this.getStorageKey(key, options?.namespace || 'default'), entry);
 
     if (this.config.enablePersistence) {
       await this.persistEntry(entry);
@@ -175,7 +175,7 @@ export class DistributedMemorySystem {
   async clearNamespace(namespace: string): Promise<number> {
     let deletedCount = 0;
     
-    for (const [storageKey, entry] of this.memory.entries()) {
+    for (const [storageKey, entry] of Array.from(this.memory.entries())) {
       if (entry.namespace === namespace) {
         this.memory.delete(storageKey);
         deletedCount++;
@@ -227,7 +227,7 @@ export class DistributedMemorySystem {
    * Delete a specific entry by key
    */
   async deleteEntry(key: string, namespace?: string): Promise<boolean> {
-    const storageKey = this.getStorageKey(key, namespace);
+    const storageKey = this.getStorageKey(key, namespace || 'default');
     return this.memory.delete(storageKey);
   }
 
@@ -237,7 +237,7 @@ export class DistributedMemorySystem {
   async cleanup(): Promise<number> {
     let cleanedCount = 0;
 
-    for (const [storageKey, entry] of this.memory.entries()) {
+    for (const [storageKey, entry] of Array.from(this.memory.entries())) {
       if (this.isExpired(entry)) {
         this.memory.delete(storageKey);
         cleanedCount++;

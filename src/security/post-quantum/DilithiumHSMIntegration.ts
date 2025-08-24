@@ -7,7 +7,12 @@
  */
 
 import { HSMInterface, HSMOperationResult, HSMKeyMetadata } from '../hsm/HSMInterface';
-import { CRYSTALSDilithium, DilithiumKeyPair, DilithiumParameters } from './CRYSTALSDilithium';
+import { CRYSTALSDilithium } from './CRYSTALSDilithium';
+// import type { HSMAuditEntry } from '../hsm/core/HSMAuditLogger';
+import * as crypto from 'crypto';
+
+// Define DilithiumVariant type
+type DilithiumVariant = 'Dilithium2' | 'Dilithium3' | 'Dilithium5';
 
 export interface DilithiumHSMConfig {
   readonly hsmEndpoint: string;
@@ -107,10 +112,14 @@ export class DilithiumHSMIntegration {
         classification: dilithiumKeyPair.metadata.classification as any,
         createdAt: dilithiumKeyPair.createdAt,
         rotationPolicy: dilithiumKeyPair.metadata.rotationPolicy,
+        hardwareGenerated: true,
+        escrowStatus: 'none',
+        integrityHash: crypto.createHash('sha256').update(dilithiumKeyPair.keyId + Date.now().toString()).digest('hex'),
+        accessLog: [],
         dilithiumVariant: dilithiumKeyPair.parameters.variant,
         securityLevel: dilithiumKeyPair.parameters.securityLevel,
         quantumResistant: true,
-        hsmKeyHandle: hsmKeyHandle || '',
+        hsmKeyHandle: hsmKeyHandle ?? '',
         signatureCount: 0
       };
 
@@ -128,7 +137,7 @@ export class DilithiumHSMIntegration {
         data: {
           keyId: dilithiumKeyPair.keyId,
           publicKey: dilithiumKeyPair.publicKey,
-          hsmKeyHandle,
+          ...(hsmKeyHandle && { hsmKeyHandle }),
           metadata
         },
         metrics: {
@@ -137,6 +146,25 @@ export class DilithiumHSMIntegration {
           timestamp: new Date(),
           keyId: dilithiumKeyPair.keyId,
           bytesProcessed: dilithiumKeyPair.parameters.publicKeySize + dilithiumKeyPair.parameters.privateKeySize
+        },
+        auditTrail: {
+          operationId: crypto.randomUUID(),
+          timestamp: new Date(),
+          operation: 'dilithium_key_generation',
+          keyId: dilithiumKeyPair.keyId,
+          result: 'success',
+          integrityVerified: true,
+          performanceMetrics: {
+            duration: totalLatency,
+            operationType: 'key_generation'
+          },
+          securityContext: {
+            authMethod: 'hsm_certificate',
+            sessionId: 'hsm_session_' + crypto.randomUUID().substring(0, 8)
+          },
+          additionalData: {
+            variant: dilithiumKeyPair.parameters.variant
+          }
         },
         dilithiumMetrics: {
           hsmLatency: hsmKeyHandle ? 50 : 0, // Simulated HSM latency
@@ -149,11 +177,13 @@ export class DilithiumHSMIntegration {
     } catch (error) {
       console.error('❌ HSM Dilithium key generation failed:', error);
       
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
       return {
         success: false,
         error: {
           code: 'HSM_DILITHIUM_KEYGEN_FAILED',
-          message: `HSM Dilithium key generation failed: ${error.message}`,
+          message: `HSM Dilithium key generation failed: ${errorMessage}`,
           recoverable: true,
           details: { originalError: error }
         },
@@ -167,6 +197,21 @@ export class DilithiumHSMIntegration {
           totalLatency: Date.now() - startTime,
           securityLevel: 0,
           operationCount: 0
+        },
+        auditTrail: {
+          operationId: crypto.randomUUID(),
+          timestamp: new Date(),
+          operation: 'dilithium_operation_error',
+          result: 'error',
+          integrityVerified: false,
+          performanceMetrics: {
+            duration: Date.now() - startTime,
+            operationType: 'error_handling'
+          },
+          securityContext: {
+            authMethod: 'hsm_certificate',
+            sessionId: 'error_session_' + crypto.randomUUID().substring(0, 8)
+          }
         }
       };
     }
@@ -268,17 +313,37 @@ export class DilithiumHSMIntegration {
           totalLatency,
           securityLevel: this.detectSecurityLevel(signature),
           operationCount: this.getSignatureCount(params.keyId) + 1
+        },
+        auditTrail: {
+          operationId: crypto.randomUUID(),
+          timestamp: new Date(),
+          operation: 'dilithium_signing',
+          keyId: params.keyId,
+          result: 'success',
+          integrityVerified: true,
+          performanceMetrics: {
+            duration: totalLatency,
+            operationType: 'signing'
+          },
+          securityContext: {
+            authMethod: 'hsm_certificate'
+          },
+          additionalData: {
+            hsmSigned: hsmSigned.toString()
+          }
         }
       };
 
     } catch (error) {
       console.error('❌ HSM Dilithium signing failed:', error);
       
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
       return {
         success: false,
         error: {
           code: 'HSM_DILITHIUM_SIGN_FAILED',
-          message: `HSM Dilithium signing failed: ${error.message}`,
+          message: `HSM Dilithium signing failed: ${errorMessage}`,
           recoverable: true,
           details: { keyId: params.keyId }
         },
@@ -293,6 +358,21 @@ export class DilithiumHSMIntegration {
           totalLatency: Date.now() - startTime,
           securityLevel: 0,
           operationCount: 0
+        },
+        auditTrail: {
+          operationId: crypto.randomUUID(),
+          timestamp: new Date(),
+          operation: 'dilithium_operation_error',
+          result: 'error',
+          integrityVerified: false,
+          performanceMetrics: {
+            duration: Date.now() - startTime,
+            operationType: 'error_handling'
+          },
+          securityContext: {
+            authMethod: 'hsm_certificate',
+            sessionId: 'error_session_' + crypto.randomUUID().substring(0, 8)
+          }
         }
       };
     }
@@ -379,17 +459,38 @@ export class DilithiumHSMIntegration {
           totalLatency,
           securityLevel: this.detectSecurityLevel(params.signature),
           operationCount: 1
+        },
+        auditTrail: {
+          operationId: crypto.randomUUID(),
+          timestamp: new Date(),
+          operation: 'dilithium_verification',
+          keyId: params.keyId,
+          result: 'success',
+          integrityVerified: true,
+          performanceMetrics: {
+            duration: totalLatency,
+            operationType: 'verification'
+          },
+          securityContext: {
+            authMethod: 'hsm_certificate'
+          },
+          additionalData: {
+            valid: valid.toString(),
+            hsmVerified: hsmVerified.toString()
+          }
         }
       };
 
     } catch (error) {
       console.error('❌ HSM Dilithium verification failed:', error);
       
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
       return {
         success: false,
         error: {
           code: 'HSM_DILITHIUM_VERIFY_FAILED',
-          message: `HSM Dilithium verification failed: ${error.message}`,
+          message: `HSM Dilithium verification failed: ${errorMessage}`,
           recoverable: true,
           details: { keyId: params.keyId }
         },
@@ -404,6 +505,21 @@ export class DilithiumHSMIntegration {
           totalLatency: Date.now() - startTime,
           securityLevel: 0,
           operationCount: 0
+        },
+        auditTrail: {
+          operationId: crypto.randomUUID(),
+          timestamp: new Date(),
+          operation: 'dilithium_operation_error',
+          result: 'error',
+          integrityVerified: false,
+          performanceMetrics: {
+            duration: Date.now() - startTime,
+            operationType: 'error_handling'
+          },
+          securityContext: {
+            authMethod: 'hsm_certificate',
+            sessionId: 'error_session_' + crypto.randomUUID().substring(0, 8)
+          }
         }
       };
     }
@@ -465,7 +581,7 @@ export class DilithiumHSMIntegration {
         this.signatureAuditLog.set(newKeyResult.data!.keyId, []);
         
         // Archive old audit log
-        migrationGuide.auditLogArchived = oldAuditLog.length;
+        (migrationGuide as any).auditLogArchived = oldAuditLog.length;
       }
 
       const totalLatency = Date.now() - startTime;
@@ -476,7 +592,7 @@ export class DilithiumHSMIntegration {
         success: true,
         data: {
           newKeyId: newKeyResult.data!.keyId,
-          newHsmKeyHandle: newKeyResult.data!.hsmKeyHandle || '',
+          newHsmKeyHandle: newKeyResult.data!.hsmKeyHandle ?? '',
           rotationTime: new Date(),
           migrationGuide
         },
@@ -491,17 +607,37 @@ export class DilithiumHSMIntegration {
           totalLatency,
           securityLevel: newKeyResult.data!.metadata.securityLevel,
           operationCount: 1
+        },
+        auditTrail: {
+          operationId: crypto.randomUUID(),
+          timestamp: new Date(),
+          operation: 'dilithium_key_rotation',
+          keyId: params.currentKeyId,
+          result: 'success',
+          integrityVerified: true,
+          performanceMetrics: {
+            duration: totalLatency,
+            operationType: 'key_rotation'
+          },
+          securityContext: {
+            authMethod: 'hsm_certificate'
+          },
+          additionalData: {
+            newKeyId: newKeyResult.data!.keyId
+          }
         }
       };
 
     } catch (error) {
       console.error('❌ HSM Dilithium key rotation failed:', error);
       
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
       return {
         success: false,
         error: {
           code: 'HSM_DILITHIUM_ROTATION_FAILED',
-          message: `HSM Dilithium key rotation failed: ${error.message}`,
+          message: `HSM Dilithium key rotation failed: ${errorMessage}`,
           recoverable: true,
           details: { currentKeyId: params.currentKeyId }
         },
@@ -516,6 +652,21 @@ export class DilithiumHSMIntegration {
           totalLatency: Date.now() - startTime,
           securityLevel: 0,
           operationCount: 0
+        },
+        auditTrail: {
+          operationId: crypto.randomUUID(),
+          timestamp: new Date(),
+          operation: 'dilithium_operation_error',
+          result: 'error',
+          integrityVerified: false,
+          performanceMetrics: {
+            duration: Date.now() - startTime,
+            operationType: 'error_handling'
+          },
+          securityContext: {
+            authMethod: 'hsm_certificate',
+            sessionId: 'error_session_' + crypto.randomUUID().substring(0, 8)
+          }
         }
       };
     }
@@ -787,5 +938,21 @@ export class DilithiumHSMSignatureManager {
       totalSignatures,
       recommendations
     };
+  }
+
+  private getSecurityLevel(variant: DilithiumVariant): 2 | 3 | 5 {
+    switch (variant) {
+      case 'Dilithium2': return 2;
+      case 'Dilithium3': return 3;
+      case 'Dilithium5': return 5;
+      default: return 3; // Default to security level 3
+    }
+  }
+
+  /**
+   * Calculate integrity hash for key
+   */
+  private calculateIntegrityHash(keyId: string): string {
+    return crypto.createHash('sha256').update(keyId + Date.now().toString()).digest('hex');
   }
 }

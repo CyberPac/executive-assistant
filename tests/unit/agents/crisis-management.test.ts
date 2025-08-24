@@ -7,10 +7,10 @@ import {
   CrisisManagementAgent,
   CrisisType,
   CrisisSeverity,
-  CrisisEvent,
-  CrisisResponse
+  CrisisEvent as _CrisisEvent,
+  CrisisResponse as _CrisisResponse
 } from '../../../src/agents/phase2/crisis-management/CrisisManagementAgent';
-import { PEAAgentType, AgentStatus, SecurityLevel, ExecutiveContext } from '../../../src/types/pea-agent-types';
+import { PEAAgentType, AgentStatus, SecurityLevel, ExecutiveContext as _ExecutiveContext } from '../../../src/types/pea-agent-types';
 
 // Define missing types for testing
 interface CrisisStatus {

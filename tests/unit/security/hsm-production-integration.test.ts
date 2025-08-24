@@ -6,7 +6,7 @@
  * Tests: Performance, Security, Compliance, Failover
  */
 
-import { describe, test, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
+import { describe, test, expect, beforeAll, afterAll, beforeEach as _beforeEach } from '@jest/globals';
 import { HSMInterface, HSMConfiguration } from '../../../src/security/hsm/HSMInterface';
 import { ThalesHSMAdapter } from '../../../src/security/hsm/vendors/ThalesHSMAdapter';
 import { SecureCrypto, CryptoUtils } from '../../../src/security/hsm/utils/SecureCrypto';

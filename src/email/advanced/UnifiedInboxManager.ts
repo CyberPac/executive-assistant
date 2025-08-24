@@ -207,10 +207,11 @@ export class UnifiedInboxManager {
         id: `${accountId}_${gmailMessage.id}`,
         subject: content.headers['subject'] || '',
         body: content.htmlContent || content.textContent || '',
-        from: {
-          name: this.extractNameFromHeader(content.headers['from']),
-          email: this.extractEmailFromHeader(content.headers['from'])
-        },
+        from: (() => {
+          const name = this.extractNameFromHeader(content.headers['from']);
+          const email = this.extractEmailFromHeader(content.headers['from']);
+          return name ? { name, email } : { email };
+        })(),
         to: this.parseEmailHeaders(content.headers['to'] || ''),
         cc: this.parseEmailHeaders(content.headers['cc'] || ''),
         timestamp: new Date(parseInt(gmailMessage.internalDate)),
@@ -244,15 +245,15 @@ export class UnifiedInboxManager {
         subject: outlookMessage.subject || '',
         body: outlookMessage.body?.content || outlookMessage.bodyPreview || '',
         from: {
-          name: outlookMessage.from?.name,
+          ...(outlookMessage.from?.name && { name: outlookMessage.from.name }),
           email: outlookMessage.from?.address
         },
         to: outlookMessage.toRecipients?.map((r: any) => ({ 
-          name: r.name, 
+          ...(r.name && { name: r.name }),
           email: r.address 
         })) || [],
         cc: outlookMessage.ccRecipients?.map((r: any) => ({ 
-          name: r.name, 
+          ...(r.name && { name: r.name }),
           email: r.address 
         })) || [],
         timestamp: new Date(outlookMessage.receivedDateTime),
@@ -534,9 +535,10 @@ export class UnifiedInboxManager {
   private parseEmailHeaders(header: string): { name?: string; email: string }[] {
     if (!header) return [];
     
-    return header.split(',').map(addr => ({
-      name: this.extractNameFromHeader(addr.trim()),
-      email: this.extractEmailFromHeader(addr.trim())
-    }));
+    return header.split(',').map(addr => {
+      const name = this.extractNameFromHeader(addr.trim());
+      const email = this.extractEmailFromHeader(addr.trim());
+      return name ? { name, email } : { email };
+    });
   }
 }

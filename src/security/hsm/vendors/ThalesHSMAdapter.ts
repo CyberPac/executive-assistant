@@ -37,7 +37,7 @@ export class ThalesHSMAdapter extends BaseHSMVendorAdapter {
       const connectionId = this.generateConnectionId();
       const thalesConnection = await this.establishThalesConnection(config, connectionId);
       
-      const connection: HSMConnection = {
+      const _connection: HSMConnection = {
         connectionId,
         vendor: 'Thales',
         status: 'connected',
@@ -48,7 +48,7 @@ export class ThalesHSMAdapter extends BaseHSMVendorAdapter {
       this.connections.set(connectionId, thalesConnection);
       
       console.log(`✅ Connected to Thales HSM: ${connectionId}`);
-      return connection;
+      return _connection;
 
     } catch (error) {
       console.error('❌ Thales HSM connection failed:', error);
@@ -56,19 +56,19 @@ export class ThalesHSMAdapter extends BaseHSMVendorAdapter {
     }
   }
 
-  async disconnect(connection: HSMConnection): Promise<void> {
-    const thalesConnection = this.connections.get(connection.connectionId);
+  async disconnect(_connection: HSMConnection): Promise<void> {
+    const thalesConnection = this.connections.get(_connection.connectionId);
     if (thalesConnection) {
       await this.closeThalesConnection(thalesConnection);
-      this.connections.delete(connection.connectionId);
-      console.log(`🔌 Disconnected from Thales HSM: ${connection.connectionId}`);
+      this.connections.delete(_connection.connectionId);
+      console.log(`🔌 Disconnected from Thales HSM: ${_connection.connectionId}`);
     }
   }
 
-  async healthCheck(connection: HSMConnection): Promise<HSMVendorHealthStatus> {
-    this.validateConnection(connection);
+  async healthCheck(_connection: HSMConnection): Promise<HSMVendorHealthStatus> {
+    this.validateConnection(_connection);
     
-    const thalesConnection = this.connections.get(connection.connectionId);
+    const thalesConnection = this.connections.get(_connection.connectionId);
     if (!thalesConnection) {
       throw new Error('Thales connection not found');
     }
@@ -129,11 +129,11 @@ export class ThalesHSMAdapter extends BaseHSMVendorAdapter {
     }
   }
 
-  async generateKey(connection: HSMConnection, params: HSMKeyGenerationParams): Promise<HSMVendorKeyResult> {
-    this.validateConnection(connection);
+  async generateKey(_connection: HSMConnection, params: HSMKeyGenerationParams): Promise<HSMVendorKeyResult> {
+    this.validateConnection(_connection);
     this.validateKeyGenerationParams(params);
 
-    const thalesConnection = this.connections.get(connection.connectionId);
+    const thalesConnection = this.connections.get(_connection.connectionId);
     if (!thalesConnection) {
       throw new Error('Thales connection not found');
     }
@@ -158,9 +158,8 @@ export class ThalesHSMAdapter extends BaseHSMVendorAdapter {
       
       console.log(`✅ Successfully generated Thales key: ${keyResult.keyId}`);
       
-      return {
+      const vendorResult: HSMVendorKeyResult = {
         keyId: keyResult.keyId,
-        publicKey: keyResult.publicKey,
         keyHandle: keyResult.keyHandle,
         attributes: {
           ...keyMetadata,
@@ -170,6 +169,12 @@ export class ThalesHSMAdapter extends BaseHSMVendorAdapter {
           fipsCompliant: true
         }
       };
+      
+      if (keyResult.publicKey) {
+        vendorResult.publicKey = keyResult.publicKey;
+      }
+      
+      return vendorResult;
 
     } catch (error) {
       console.error('❌ Thales key generation failed:', error);
@@ -181,11 +186,11 @@ export class ThalesHSMAdapter extends BaseHSMVendorAdapter {
     }
   }
 
-  async encrypt(connection: HSMConnection, params: HSMEncryptionParams): Promise<HSMVendorCryptoResult> {
-    this.validateConnection(connection);
+  async encrypt(_connection: HSMConnection, params: HSMEncryptionParams): Promise<HSMVendorCryptoResult> {
+    this.validateConnection(_connection);
     this.validateEncryptionParams(params);
 
-    const thalesConnection = this.connections.get(connection.connectionId);
+    const thalesConnection = this.connections.get(_connection.connectionId);
     if (!thalesConnection) {
       throw new Error('Thales connection not found');
     }
@@ -194,14 +199,25 @@ export class ThalesHSMAdapter extends BaseHSMVendorAdapter {
       // Perform hardware encryption in Thales HSM
       const result = await this.performThalesEncryption(thalesConnection, params);
       
-      return {
-        result: result.ciphertext,
-        metadata: {
-          iv: result.iv,
-          tag: result.tag,
-          algorithm: params.algorithm
-        }
+      const cryptoResult: HSMVendorCryptoResult = {
+        result: result.ciphertext
       };
+      
+      if (result.iv || result.tag) {
+        cryptoResult.metadata = {
+          algorithm: params.algorithm
+        };
+        
+        if (result.iv) {
+          cryptoResult.metadata.iv = result.iv;
+        }
+        
+        if (result.tag) {
+          cryptoResult.metadata.tag = result.tag;
+        }
+      }
+      
+      return cryptoResult;
 
     } catch (error) {
       console.error('❌ Thales encryption failed:', error);
@@ -209,10 +225,10 @@ export class ThalesHSMAdapter extends BaseHSMVendorAdapter {
     }
   }
 
-  async decrypt(connection: HSMConnection, params: HSMDecryptionParams): Promise<HSMVendorCryptoResult> {
-    this.validateConnection(connection);
+  async decrypt(_connection: HSMConnection, params: HSMDecryptionParams): Promise<HSMVendorCryptoResult> {
+    this.validateConnection(_connection);
 
-    const thalesConnection = this.connections.get(connection.connectionId);
+    const thalesConnection = this.connections.get(_connection.connectionId);
     if (!thalesConnection) {
       throw new Error('Thales connection not found');
     }
@@ -234,10 +250,10 @@ export class ThalesHSMAdapter extends BaseHSMVendorAdapter {
     }
   }
 
-  async sign(connection: HSMConnection, params: HSMSigningParams): Promise<HSMVendorSignatureResult> {
-    this.validateConnection(connection);
+  async sign(_connection: HSMConnection, params: HSMSigningParams): Promise<HSMVendorSignatureResult> {
+    this.validateConnection(_connection);
 
-    const thalesConnection = this.connections.get(connection.connectionId);
+    const thalesConnection = this.connections.get(_connection.connectionId);
     if (!thalesConnection) {
       throw new Error('Thales connection not found');
     }
@@ -258,10 +274,10 @@ export class ThalesHSMAdapter extends BaseHSMVendorAdapter {
     }
   }
 
-  async verify(connection: HSMConnection, params: HSMVerificationParams): Promise<HSMVendorVerificationResult> {
-    this.validateConnection(connection);
+  async verify(_connection: HSMConnection, params: HSMVerificationParams): Promise<HSMVendorVerificationResult> {
+    this.validateConnection(_connection);
 
-    const thalesConnection = this.connections.get(connection.connectionId);
+    const thalesConnection = this.connections.get(_connection.connectionId);
     if (!thalesConnection) {
       throw new Error('Thales connection not found');
     }
@@ -283,32 +299,32 @@ export class ThalesHSMAdapter extends BaseHSMVendorAdapter {
   }
 
   // Stub implementations for remaining abstract methods
-  async importKey(connection: HSMConnection, params: HSMKeyImportParams): Promise<HSMVendorKeyResult> {
+  async importKey(_connection: HSMConnection, _params: HSMKeyImportParams): Promise<HSMVendorKeyResult> {
     // Implementation would use Thales key import APIs
     throw new Error('Method not implemented');
   }
 
-  async exportKey(connection: HSMConnection, keyId: string, format: string): Promise<HSMVendorExportResult> {
+  async exportKey(_connection: HSMConnection, _keyId: string, _format: string): Promise<HSMVendorExportResult> {
     // Implementation would use Thales key export APIs
     throw new Error('Method not implemented');
   }
 
-  async deleteKey(connection: HSMConnection, keyId: string): Promise<HSMVendorOperationResult> {
+  async deleteKey(_connection: HSMConnection, _keyId: string): Promise<HSMVendorOperationResult> {
     // Implementation would use Thales key deletion APIs
     return this.createOperationResult(true, 'Key deleted successfully');
   }
 
-  async getKeyMetadata(connection: HSMConnection, keyId: string): Promise<HSMVendorKeyMetadata> {
+  async getKeyMetadata(_connection: HSMConnection, _keyId: string): Promise<HSMVendorKeyMetadata> {
     // Implementation would query Thales key metadata
     throw new Error('Method not implemented');
   }
 
-  async listKeys(connection: HSMConnection, filter?: HSMKeyFilter): Promise<HSMVendorKeyList> {
+  async listKeys(_connection: HSMConnection, _filter?: HSMKeyFilter): Promise<HSMVendorKeyList> {
     // Implementation would list keys from Thales HSM
     throw new Error('Method not implemented');
   }
 
-  async getAuditLogs(connection: HSMConnection, filter?: HSMAuditFilter): Promise<HSMVendorAuditResult> {
+  async getAuditLogs(_connection: HSMConnection, _filter?: HSMAuditFilter): Promise<HSMVendorAuditResult> {
     // Implementation would retrieve Thales audit logs
     throw new Error('Method not implemented');
   }
@@ -355,7 +371,7 @@ export class ThalesHSMAdapter extends BaseHSMVendorAdapter {
     };
   }
 
-  private async closeThalesConnection(connection: ThalesConnection): Promise<void> {
+  private async closeThalesConnection(_connection: ThalesConnection): Promise<void> {
     // Simulate connection cleanup
     await new Promise(resolve => setTimeout(resolve, 50));
   }
@@ -393,11 +409,16 @@ export class ThalesHSMAdapter extends BaseHSMVendorAdapter {
       publicKey = this.generateMockPublicKey(params.algorithm);
     }
     
-    return {
+    const result: { keyId: string; publicKey?: Buffer; keyHandle: string } = {
       keyId,
-      publicKey,
       keyHandle
     };
+    
+    if (publicKey) {
+      result.publicKey = publicKey;
+    }
+    
+    return result;
   }
   
   private calculateOperationTime(keyType: string, algorithm: string): number {

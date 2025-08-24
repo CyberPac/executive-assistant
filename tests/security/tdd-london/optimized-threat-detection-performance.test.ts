@@ -20,7 +20,7 @@
  */
 
 import { jest, describe, test, expect, beforeEach, afterEach } from '@jest/globals';
-import { EventEmitter } from 'events';
+import { EventEmitter as _EventEmitter } from 'events';
 
 // Import optimized threat detection interfaces
 interface OptimizedThreatConfig {
@@ -371,7 +371,7 @@ describe('Optimized Real-Time Threat Detection - TDD London Performance Tests', 
   describe('TDD Red Phase: Failing Tests for Component Latency Budgets', () => {
     test('FAILING: should complete streaming event processing within 100ms budget', async () => {
       // ARRANGE: Configure slow streaming processor (current implementation)
-      mockStreamProcessor.processEventStream.mockImplementation(async (context: ThreatContext) => {
+      mockStreamProcessor.processEventStream.mockImplementation(async (_context: ThreatContext) => {
         await new Promise(resolve => setTimeout(resolve, 150)); // Exceeds 100ms budget
         return { processed: true, streamingLatency: 150 };
       });
@@ -386,7 +386,7 @@ describe('Optimized Real-Time Threat Detection - TDD London Performance Tests', 
 
     test('FAILING: should complete ML inference within 200ms budget with SIMD acceleration', async () => {
       // ARRANGE: Configure slow ML inference (no optimizations)
-      mockVectorizedMLEngine.performInference.mockImplementation(async (features: Record<string, number>) => {
+      mockVectorizedMLEngine.performInference.mockImplementation(async (_features: Record<string, number>) => {
         await new Promise(resolve => setTimeout(resolve, 300)); // Exceeds 200ms budget
         return {
           prediction: 'benign',
@@ -408,7 +408,7 @@ describe('Optimized Real-Time Threat Detection - TDD London Performance Tests', 
 
     test('FAILING: should complete behavior analysis within 150ms budget', async () => {
       // ARRANGE: Configure slow behavior analysis
-      mockBehaviorAnalysisAccelerator.analyzeStreamingBehavior.mockImplementation(async (context: ThreatContext) => {
+      mockBehaviorAnalysisAccelerator.analyzeStreamingBehavior.mockImplementation(async (_context: ThreatContext) => {
         await new Promise(resolve => setTimeout(resolve, 200)); // Exceeds 150ms budget
         return {
           anomalyScore: 0.15,
@@ -428,7 +428,7 @@ describe('Optimized Real-Time Threat Detection - TDD London Performance Tests', 
 
     test('FAILING: should complete network analysis within 100ms budget', async () => {
       // ARRANGE: Configure slow network analysis
-      mockNetworkAnalysisAccelerator.analyzeTrafficRealTime.mockImplementation(async (networkContext: any) => {
+      mockNetworkAnalysisAccelerator.analyzeTrafficRealTime.mockImplementation(async (_networkContext: any) => {
         await new Promise(resolve => setTimeout(resolve, 180)); // Exceeds 100ms budget
         return {
           geoRisk: 0.1,
@@ -468,7 +468,7 @@ describe('Optimized Real-Time Threat Detection - TDD London Performance Tests', 
 
     test('FAILING: should complete executive risk assessment within 100ms budget', async () => {
       // ARRANGE: Configure slow executive protection assessment
-      mockExecutiveProtectionAccelerator.assessExecutiveRiskFast.mockImplementation(async (context: ThreatContext) => {
+      mockExecutiveProtectionAccelerator.assessExecutiveRiskFast.mockImplementation(async (_context: ThreatContext) => {
         await new Promise(resolve => setTimeout(resolve, 160)); // Exceeds 100ms budget
         return {
           riskLevel: 'low',
@@ -488,7 +488,7 @@ describe('Optimized Real-Time Threat Detection - TDD London Performance Tests', 
 
     test('FAILING: should complete end-to-end threat detection within 1000ms SLA', async () => {
       // ARRANGE: Configure slow end-to-end detection (sum of slow components)
-      optimizedThreatEngine.detectAdvancedThreats.mockImplementation(async (context: ThreatContext) => {
+      optimizedThreatEngine.detectAdvancedThreats.mockImplementation(async (_context: ThreatContext) => {
         const startTime = Date.now();
         
         // Sequential slow operations (no parallelization)
@@ -549,7 +549,7 @@ describe('Optimized Real-Time Threat Detection - TDD London Performance Tests', 
   describe('TDD Green Phase: Minimal Implementation for Latency Compliance', () => {
     test('should implement optimized streaming processing within 100ms budget', async () => {
       // ARRANGE: Configure optimized streaming processor
-      mockStreamProcessor.processEventStream.mockImplementation(async (context: ThreatContext) => {
+      mockStreamProcessor.processEventStream.mockImplementation(async (_context: ThreatContext) => {
         const startTime = Date.now();
         
         // Optimized streaming with buffering and parallel processing
@@ -572,7 +572,7 @@ describe('Optimized Real-Time Threat Detection - TDD London Performance Tests', 
 
     test('should implement SIMD-accelerated ML inference within 200ms budget', async () => {
       // ARRANGE: Configure optimized ML inference with SIMD acceleration
-      mockVectorizedMLEngine.performInference.mockImplementation(async (features: Record<string, number>) => {
+      mockVectorizedMLEngine.performInference.mockImplementation(async (_features: Record<string, number>) => {
         const startTime = Date.now();
         
         // SIMD-accelerated vectorized inference with caching
@@ -599,7 +599,7 @@ describe('Optimized Real-Time Threat Detection - TDD London Performance Tests', 
 
     test('should implement cached behavior analysis within 150ms budget', async () => {
       // ARRANGE: Configure optimized behavior analysis with pattern caching
-      mockBehaviorAnalysisAccelerator.analyzeStreamingBehavior.mockImplementation(async (context: ThreatContext) => {
+      mockBehaviorAnalysisAccelerator.analyzeStreamingBehavior.mockImplementation(async (_context: ThreatContext) => {
         const startTime = Date.now();
         
         // Optimized behavior analysis with pattern caching and parallel computation
@@ -624,7 +624,7 @@ describe('Optimized Real-Time Threat Detection - TDD London Performance Tests', 
 
     test('should implement geo-cached network analysis within 100ms budget', async () => {
       // ARRANGE: Configure optimized network analysis with geo-caching
-      mockNetworkAnalysisAccelerator.analyzeTrafficRealTime.mockImplementation(async (networkContext: any) => {
+      mockNetworkAnalysisAccelerator.analyzeTrafficRealTime.mockImplementation(async (_networkContext: any) => {
         const startTime = Date.now();
         
         // Optimized network analysis with geo-caching and parallel traffic analysis
@@ -674,7 +674,7 @@ describe('Optimized Real-Time Threat Detection - TDD London Performance Tests', 
 
     test('should implement cached executive risk assessment within 100ms budget', async () => {
       // ARRANGE: Configure optimized executive protection with caching
-      mockExecutiveProtectionAccelerator.assessExecutiveRiskFast.mockImplementation(async (context: ThreatContext) => {
+      mockExecutiveProtectionAccelerator.assessExecutiveRiskFast.mockImplementation(async (_context: ThreatContext) => {
         const startTime = Date.now();
         
         // Optimized executive risk assessment with profile caching and parallel risk calculation
@@ -699,7 +699,7 @@ describe('Optimized Real-Time Threat Detection - TDD London Performance Tests', 
 
     test('should implement parallel end-to-end detection within 1000ms SLA', async () => {
       // ARRANGE: Configure optimized end-to-end detection with parallel processing
-      optimizedThreatEngine.detectAdvancedThreats.mockImplementation(async (context: ThreatContext) => {
+      optimizedThreatEngine.detectAdvancedThreats.mockImplementation(async (_context: ThreatContext) => {
         const startTime = Date.now();
         
         // Phase 1: Streaming event processing
@@ -793,14 +793,14 @@ describe('Optimized Real-Time Threat Detection - TDD London Performance Tests', 
       const targetLatency = 1000; // 1 second = 1,000ms
       const expectedImprovement = oldImplementationLatency / targetLatency; // 300x
       
-      optimizedThreatEngine.detectAdvancedThreats.mockImplementation(async (context: ThreatContext) => {
+      optimizedThreatEngine.detectAdvancedThreats.mockImplementation(async (_context: ThreatContext) => {
         const startTime = Date.now();
         
         // Simulate highly optimized detection (sub-500ms)
         await new Promise(resolve => setTimeout(resolve, 450));
         
         const detectionLatency = Date.now() - startTime;
-        const actualImprovement = oldImplementationLatency / detectionLatency;
+        const _actualImprovement = oldImplementationLatency / detectionLatency;
         
         return {
           detectionId: `performance-champion-${context.agentId}`,
@@ -837,7 +837,7 @@ describe('Optimized Real-Time Threat Detection - TDD London Performance Tests', 
 
       // ACT: Measure performance improvement
       const result = await optimizedThreatEngine.detectAdvancedThreats(executiveContext);
-      const actualImprovement = oldImplementationLatency / result.detectionLatency;
+      const _actualImprovement = oldImplementationLatency / result.detectionLatency;
 
       // ASSERT: Should demonstrate massive performance improvement
       expect(result.detectionLatency).toBeLessThan(targetLatency);
@@ -864,7 +864,7 @@ describe('Optimized Real-Time Threat Detection - TDD London Performance Tests', 
         }
       }));
 
-      optimizedThreatEngine.detectAdvancedThreats.mockImplementation(async (context: ThreatContext) => {
+      optimizedThreatEngine.detectAdvancedThreats.mockImplementation(async (_context: ThreatContext) => {
         const startTime = Date.now();
         
         // Simulate optimized concurrent processing with slight variance
@@ -920,7 +920,7 @@ describe('Optimized Real-Time Threat Detection - TDD London Performance Tests', 
       const latencies = results.map(r => r.detectionLatency);
       const avgLatency = latencies.reduce((sum, l) => sum + l, 0) / latencies.length;
       const maxLatency = Math.max(...latencies);
-      const minLatency = Math.min(...latencies);
+      const _minLatency = Math.min(...latencies);
       const p95Latency = latencies.sort((a, b) => a - b)[Math.floor(latencies.length * 0.95)];
 
       // ASSERT: All concurrent detections should meet SLA
@@ -973,7 +973,7 @@ describe('Optimized Real-Time Threat Detection - TDD London Performance Tests', 
         }
       };
 
-      optimizedThreatEngine.detectAdvancedThreats.mockImplementation(async (context: ThreatContext) => {
+      optimizedThreatEngine.detectAdvancedThreats.mockImplementation(async (_context: ThreatContext) => {
         const startTime = Date.now();
         
         // High-threat scenarios require more intensive analysis but still optimized

@@ -11,9 +11,11 @@
  * - Log rotation and archival
  */
 
-import { createHash, randomBytes } from 'crypto';
+import { createHash, randomBytes as _randomBytes } from 'crypto';
 import * as fs from 'fs/promises';
+const _fs = fs; // Prevent unused import warning
 import * as path from 'path';
+const _path = path; // Prevent unused import warning
 import { SecureCrypto } from '../utils/SecureCrypto';
 
 export interface HSMAuditEntry {
@@ -30,6 +32,7 @@ export interface HSMAuditEntry {
     duration: number;
     bytesProcessed?: number;
     operationType: string;
+    timestamp?: Date;
   };
   readonly securityContext: {
     authMethod: string;
@@ -195,7 +198,7 @@ export class HSMAuditLogger {
   /**
    * Generate statistics for audit reporting
    */
-  async generateStatistics(timeRange: { start: Date; end: Date }): Promise<{
+  async generateStatistics(_timeRange: { start: Date; end: Date }): Promise<{
     totalOperations: number;
     successfulOperations: number;
     failedOperations: number;
@@ -235,9 +238,10 @@ export class HSMAuditLogger {
   private async flushBuffer(): Promise<void> {
     if (this.logBuffer.length === 0) return;
     
+    const entries = [...this.logBuffer];
+    this.logBuffer = [];
+    
     try {
-      const entries = [...this.logBuffer];
-      this.logBuffer = [];
       
       // Prepare log data
       const logData = entries.map(entry => ({

@@ -161,7 +161,8 @@ export class CRYSTALSDilithium {
 
     } catch (error) {
       console.error('❌ Dilithium key generation failed:', error);
-      throw new Error(`Dilithium key generation failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      throw new Error(`Dilithium key generation failed: ${errorMessage}`);
     }
   }
 
@@ -217,7 +218,8 @@ export class CRYSTALSDilithium {
 
     } catch (error) {
       console.error('❌ Dilithium signing failed:', error);
-      throw new Error(`Dilithium signing failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      throw new Error(`Dilithium signing failed: ${errorMessage}`);
     }
   }
 
@@ -280,7 +282,8 @@ export class CRYSTALSDilithium {
 
     } catch (error) {
       console.error('❌ Dilithium verification failed:', error);
-      throw new Error(`Dilithium verification failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      throw new Error(`Dilithium verification failed: ${errorMessage}`);
     }
   }
 
@@ -442,7 +445,7 @@ export class CRYSTALSDilithium {
     seed: Uint8Array,
     publicKey: Uint8Array,
     privateKey: Uint8Array,
-    params: DilithiumParameters
+    _params: DilithiumParameters
   ): Promise<void> {
     // Expand seed to full key material using SHAKE-256 equivalent
     let seedValue = 0;
@@ -466,7 +469,7 @@ export class CRYSTALSDilithium {
   private async applyEntropyMixing(
     publicKey: Uint8Array,
     privateKey: Uint8Array,
-    params: DilithiumParameters
+    _params: DilithiumParameters
   ): Promise<void> {
     // Apply additional entropy mixing for enhanced security
     const entropy = new Uint8Array(32);
@@ -547,7 +550,7 @@ export class CRYSTALSDilithium {
   }
 
   private detectVariantFromPublicKeySize(keySize: number): string {
-    for (const [variant, params] of this.parameters) {
+    for (const [variant, params] of Array.from(this.parameters.entries())) {
       if (params.publicKeySize === keySize) {
         return variant;
       }
@@ -556,7 +559,7 @@ export class CRYSTALSDilithium {
   }
 
   private detectVariantFromPrivateKeySize(keySize: number): string {
-    for (const [variant, params] of this.parameters) {
+    for (const [variant, params] of Array.from(this.parameters.entries())) {
       if (params.privateKeySize === keySize) {
         return variant;
       }
@@ -628,7 +631,7 @@ export class DilithiumUtils {
       .replace(/\s/g, '');
     
     const binaryString = atob(base64Key);
-    return new Uint8Array(binaryString.length).map((_, i) => binaryString.charCodeAt(i));
+    return new Uint8Array(Array.from(binaryString, (_, i) => binaryString.charCodeAt(i)));
   }
 
   /**

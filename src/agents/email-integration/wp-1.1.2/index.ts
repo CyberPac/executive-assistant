@@ -14,8 +14,7 @@
  * Effort: 8 hours
  */
 
-import { PEAAgentBase, PEAAgentType, AgentStatus, SecurityLevel, ExecutiveContext } from '../../../types/pea-agent-types';
-import { MCPIntegration } from '../../../types/mcp';
+import { PEAAgentBase, PEAAgentType, AgentStatus, SecurityLevel, ExecutiveContext, ClaudeFlowMCPIntegration } from '../../../types/pea-agent-types';
 
 // Email Integration Types
 export interface EmailProviderConfig {
@@ -94,7 +93,7 @@ export class EmailIntegrationAgent extends PEAAgentBase {
 
   constructor(
     id: string,
-    mcpIntegration: MCPIntegration,
+    mcpIntegration: ClaudeFlowMCPIntegration,
     securityLevel: SecurityLevel = SecurityLevel.BUSINESS_SENSITIVE
   ) {
     super(id, PEAAgentType.EMAIL_INTEGRATION, 'Email Integration Agent', mcpIntegration, securityLevel);
@@ -397,7 +396,7 @@ export class WorkPackage112 {
   private workPackageId = '1.1.2';
   private description = 'Email Integration Technical Design - COMPLETED';
   
-  constructor(mcpIntegration: MCPIntegration) {
+  constructor(mcpIntegration: ClaudeFlowMCPIntegration) {
     this.emailAgent = new EmailIntegrationAgent(
       'wp-1.1.2-email-agent',
       mcpIntegration,

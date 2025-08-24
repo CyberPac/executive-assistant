@@ -480,7 +480,6 @@ export class AgentManager extends EventEmitter {
       name: overrides.name || `${template.name}-${agentId.slice(-8)}`,
       type: template.type,
       status: AgentStatus.INITIALIZING,
-      currentTask: undefined,
       capabilities: {
         ...template.capabilities,
         maxConcurrentTasks: template.capabilities.maxConcurrentTasks,
@@ -563,7 +562,6 @@ export class AgentManager extends EventEmitter {
       },
       lastHeartbeat: new Date(),
       lastActivity: new Date(),
-      currentTask: undefined,
       errorHistory: [],
     };
 
@@ -639,7 +637,7 @@ export class AgentManager extends EventEmitter {
       
       this.addAgentError(agentId, agentError);
 
-      this.logger.error('Failed to start agent', error, { agentId });
+      this.logger.error('Failed to start agent', error as Error, { agentId });
       throw agentError;
     }
   }
@@ -858,24 +856,37 @@ export class AgentManager extends EventEmitter {
     try {
       // Initialize components if not present
       if (!health.components) {
-        health.components = {};
+        health.components = {
+        responsiveness: 0,
+        performance: 0,
+        reliability: 0,
+        resourceUsage: 0
+      };
       }
       
       // Check responsiveness
       const responsiveness = await this.checkResponsiveness(agentId);
-      health.components.responsiveness = responsiveness;
+      if (health.components) {
+        health.components.responsiveness = responsiveness;
+      }
 
       // Check performance
       const performance = this.calculatePerformanceScore(agentId);
-      health.components.performance = performance;
+      if (health.components) {
+        health.components.performance = performance;
+      }
 
       // Check reliability
       const reliability = this.calculateReliabilityScore(agentId);
-      health.components.reliability = reliability;
+      if (health.components) {
+        health.components.reliability = reliability;
+      }
 
       // Check resource usage
       const resourceScore = this.calculateResourceScore(agentId);
-      health.components.resourceUsage = resourceScore;
+      if (health.components) {
+        health.components.resourceUsage = resourceScore;
+      }
 
       // Calculate overall health
       const overall = (responsiveness + performance + reliability + resourceScore) / 4;
@@ -894,7 +905,7 @@ export class AgentManager extends EventEmitter {
         await this.restartAgent(agentId, 'health_critical');
       }
     } catch (error) {
-      this.logger.error('Health check failed', error, { agentId });
+      this.logger.error('Health check failed', error as Error, { agentId });
       health.overall = 0;
       health.lastCheck = now;
     }

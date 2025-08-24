@@ -1156,28 +1156,37 @@ export class ZeroTrustPolicyEngine {
     this.evaluationCache.set(key, result);
   }
 
-  private updateMetrics(result: PolicyEvaluationResult, cached: boolean): void {
-    this.metrics.evaluationsCount++;
-    
+  private updateMetrics(result: PolicyEvaluationResult, _cached: boolean): void {
     // Update average evaluation time
     const alpha = 0.1;
-    this.metrics.averageEvaluationTime = 
+    const newAverageEvaluationTime = 
       (this.metrics.averageEvaluationTime * (1 - alpha)) + (result.duration * alpha);
     
     // Update cache hit rate
     const cacheHits = Array.from(this.evaluationCache.values())
       .filter(r => r.metadata.cacheHit).length;
-    this.metrics.cacheHitRate = cacheHits / this.metrics.evaluationsCount;
+    const newEvaluationsCount = this.metrics.evaluationsCount + 1;
+    const newCacheHitRate = cacheHits / newEvaluationsCount;
     
     // Update violations count
-    this.metrics.violationsCount += result.violations.length;
+    const newViolationsCount = this.metrics.violationsCount + result.violations.length;
     
-    this.metrics.timestamp = new Date();
+    this.metrics = {
+      ...this.metrics,
+      evaluationsCount: newEvaluationsCount,
+      averageEvaluationTime: newAverageEvaluationTime,
+      cacheHitRate: newCacheHitRate,
+      violationsCount: newViolationsCount,
+      timestamp: new Date()
+    };
   }
 
   private updatePolicyMetrics(): void {
-    this.metrics.totalRules = this.policies.size;
-    this.metrics.activeRules = Array.from(this.policies.values()).filter(p => p.enabled).length;
+    this.metrics = {
+      ...this.metrics,
+      totalRules: this.policies.size,
+      activeRules: Array.from(this.policies.values()).filter(p => p.enabled).length
+    };
   }
 
   private monitorPolicyPerformance(): void {
@@ -1185,7 +1194,10 @@ export class ZeroTrustPolicyEngine {
     const targetEvaluationTime = this.config.ruleEngine.optimization.performanceTargets.maxEvaluationTime;
     const evaluationPerformance = Math.max(0, 1 - (this.metrics.averageEvaluationTime / targetEvaluationTime));
     
-    this.metrics.performanceScore = evaluationPerformance * 100;
+    this.metrics = {
+      ...this.metrics,
+      performanceScore: evaluationPerformance * 100
+    };
     
     if (this.metrics.averageEvaluationTime > targetEvaluationTime) {
       console.warn(`⚠️ Policy evaluation time exceeded target: ${this.metrics.averageEvaluationTime}ms`);

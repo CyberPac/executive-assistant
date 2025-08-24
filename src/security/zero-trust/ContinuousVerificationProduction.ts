@@ -95,6 +95,54 @@ export interface FaultToleranceConfig {
   readonly bulkheadIsolation: boolean;
 }
 
+// Missing exports for threat detection integration
+export interface ThreatDetectionResult {
+  readonly threatId: string;
+  readonly severity: 'low' | 'medium' | 'high' | 'critical';
+  readonly confidence: number;
+  readonly indicators: ThreatIndicator[];
+  readonly detectionId: string;
+  readonly responseActions: SecurityAction[];
+  readonly detectionLatency: number;
+  readonly timestamp: Date;
+}
+
+export interface ThreatIndicator {
+  readonly type: 'behavioral' | 'network' | 'authentication' | 'data_access';
+  readonly value: string;
+  readonly confidence: number;
+  readonly severity: number;
+  readonly source: string;
+}
+
+export interface SecurityAction {
+  readonly action: 'block' | 'alert' | 'monitor' | 'isolate' | 'investigate' | 'restrict' | 'quarantine';
+  readonly priority: number;
+  readonly description: string;
+  readonly automated: boolean;
+}
+
+export interface BehavioralAnalysisResult {
+  readonly userId: string;
+  readonly anomalyScore: number;
+  readonly behaviors: string[];
+  readonly baseline: Record<string, number>;
+  readonly deviations: Record<string, number>;
+  readonly timestamp: Date;
+}
+
+export interface AdvancedThreatDetectionResult {
+  readonly threatId: string;
+  readonly severity: 'low' | 'medium' | 'high' | 'critical';
+  readonly confidence: number;
+  readonly indicators: ThreatIndicator[];
+  readonly detectionId: string;
+  readonly responseActions: SecurityAction[];
+  readonly detectionLatency: number;
+  readonly timestamp: Date;
+  readonly analysisDetails: Record<string, unknown>;
+}
+
 export interface RetryConfig {
   readonly maxAttempts: number;
   readonly backoffStrategy: 'fixed' | 'exponential' | 'linear';
@@ -210,7 +258,7 @@ export class ContinuousVerificationProduction {
   /**
    * Perform verification with production-grade performance
    */
-  async verifyAgent(agentId: string, context?: Partial<VerificationContext>): Promise<any> {
+  async verifyAgent(agentId: string, _context?: Partial<VerificationContext>): Promise<any> {
     this.ensureDeployed();
     
     const startTime = Date.now();
@@ -221,7 +269,7 @@ export class ContinuousVerificationProduction {
       
       // Perform verification with timeout protection
       const result = await Promise.race([
-        engine.verifyAgentNow(agentId, context),
+        engine.verifyAgentNow(agentId),
         this.createTimeoutPromise()
       ]);
       
@@ -430,7 +478,7 @@ export class ContinuousVerificationProduction {
           bestScore = score;
           bestEngine = engine;
         }
-      } catch (error) {
+      } catch (_error) {
         // Skip engines that can't provide metrics
         console.warn(`⚠️ Could not get metrics from engine, using fallback selection`);
       }
@@ -518,8 +566,14 @@ export class ContinuousVerificationProduction {
     }
     
     // Update deployment metrics
-    this.metrics.deployment.replicas = this.engines.size;
-    this.metrics.timestamp = new Date();
+    this.metrics = {
+      ...this.metrics,
+      timestamp: new Date(),
+      deployment: {
+        ...this.metrics.deployment,
+        replicas: this.engines.size
+      }
+    };
   }
 
   private async initializeAutoScaling(): Promise<void> {

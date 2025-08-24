@@ -160,7 +160,8 @@ export class CRYSTALSKyber {
 
     } catch (error) {
       console.error('❌ Kyber key generation failed:', error);
-      throw new Error(`Kyber key generation failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      throw new Error(`Kyber key generation failed: ${errorMessage}`);
     }
   }
 
@@ -209,7 +210,8 @@ export class CRYSTALSKyber {
 
     } catch (error) {
       console.error('❌ Kyber encapsulation failed:', error);
-      throw new Error(`Kyber encapsulation failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      throw new Error(`Kyber encapsulation failed: ${errorMessage}`);
     }
   }
 
@@ -267,7 +269,8 @@ export class CRYSTALSKyber {
 
     } catch (error) {
       console.error('❌ Kyber decapsulation failed:', error);
-      throw new Error(`Kyber decapsulation failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      throw new Error(`Kyber decapsulation failed: ${errorMessage}`);
     }
   }
 
@@ -297,7 +300,7 @@ export class CRYSTALSKyber {
   private async applyEntropyMixing(
     publicKey: Uint8Array, 
     privateKey: Uint8Array, 
-    params: KyberParameters
+    _params: KyberParameters
   ): Promise<void> {
     // Apply additional entropy mixing for enhanced security
     const entropy = new Uint8Array(32);
@@ -522,7 +525,7 @@ export class CRYSTALSKyber {
   }
 
   private detectVariantFromKeySize(keySize: number): string {
-    for (const [variant, params] of this.parameters) {
+    for (const [variant, params] of Array.from(this.parameters.entries())) {
       if (params.publicKeySize === keySize) {
         return variant;
       }
@@ -531,7 +534,7 @@ export class CRYSTALSKyber {
   }
 
   private detectVariantFromPrivateKeySize(keySize: number): string {
-    for (const [variant, params] of this.parameters) {
+    for (const [variant, params] of Array.from(this.parameters.entries())) {
       if (params.privateKeySize === keySize) {
         return variant;
       }
@@ -631,7 +634,7 @@ export class KyberUtils {
       .replace(/\s/g, '');
     
     const binaryString = atob(base64Key);
-    return new Uint8Array(binaryString.length).map((_, i) => binaryString.charCodeAt(i));
+    return new Uint8Array(Array.from(binaryString, (_, i) => binaryString.charCodeAt(i)));
   }
 
   /**

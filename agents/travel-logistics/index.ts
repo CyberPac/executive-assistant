@@ -142,7 +142,11 @@ export class TravelLogisticsAgent extends EventEmitter {
   private travelPlans: Map<string, TravelPlan>;
   private shortTrips: Map<string, ShortTripPlan>;
   private requirementsDatabase: Map<string, TravelRequirement>;
-  // Removed unused private properties
+  private _flightPreferences: Map<string, FlightPreference>;
+  private _trafficAPIKeys: {
+    googleMaps: string;
+    waze: string;
+  };
   private performanceMetrics: {
     responseTimes: number[];
     successfulBookings: number;

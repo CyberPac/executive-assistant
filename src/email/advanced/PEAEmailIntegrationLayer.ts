@@ -105,7 +105,7 @@ export class PEAEmailIntegrationLayer {
       threadId: thread.id,
       priority: this.determinePriority(intelligence, deadlines),
       stakeholders: thread.participants,
-      culturalContext: await this.determineCulturalContext(thread.participants),
+      culturalContext: (await this.determineCulturalContext(thread.participants)) || '',
       actionItems,
       deadlines,
       suggestedAgents

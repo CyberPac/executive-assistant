@@ -8,8 +8,10 @@
 
 import { CRYSTALSKyber, KyberKeyPair, KyberEncapsulationResult, KyberDecapsulationResult } from './CRYSTALSKyber';
 import { CRYSTALSDilithium, DilithiumKeyPair, DilithiumSignatureResult, DilithiumVerificationResult } from './CRYSTALSDilithium';
-import { KyberHSMIntegration, KyberHSMKeyManager } from './KyberHSMIntegration';
-import { DilithiumHSMIntegration, DilithiumHSMSignatureManager } from './DilithiumHSMIntegration';
+import { KyberHSMIntegration } from './KyberHSMIntegration';
+// import type { KyberHSMKeyManager } from './KyberHSMIntegration';
+import { DilithiumHSMIntegration } from './DilithiumHSMIntegration';
+// import type { DilithiumHSMSignatureManager } from './DilithiumHSMIntegration';
 import { DilithiumValidator, SecurityValidationConfig } from './validation/DilithiumValidator';
 import { HSMInterface } from '../hsm/HSMInterface';
 
@@ -26,8 +28,8 @@ export interface PostQuantumConfig {
 
 export interface PostQuantumKeyPair {
   readonly keyId: string;
-  readonly kyberKeyPair?: KyberKeyPair;
-  readonly dilithiumKeyPair?: DilithiumKeyPair;
+  readonly kyberKeyPair?: KyberKeyPair | undefined;
+  readonly dilithiumKeyPair?: DilithiumKeyPair | undefined;
   readonly combinedMetadata: {
     classification: 'executive' | 'strategic' | 'confidential';
     usage: string[];
@@ -38,7 +40,7 @@ export interface PostQuantumKeyPair {
 
 export interface HybridEncryptionResult {
   readonly encapsulationResult: KyberEncapsulationResult;
-  readonly signatureResult?: DilithiumSignatureResult;
+  readonly signatureResult?: DilithiumSignatureResult | undefined;
   readonly combinedCiphertext: Uint8Array;
   readonly metadata: {
     keyId: string;
@@ -50,7 +52,7 @@ export interface HybridEncryptionResult {
 
 export interface HybridDecryptionResult {
   readonly decapsulationResult: KyberDecapsulationResult;
-  readonly verificationResult?: DilithiumVerificationResult;
+  readonly verificationResult?: DilithiumVerificationResult | undefined;
   readonly plaintext: Uint8Array;
   readonly metadata: {
     keyId: string;
@@ -83,7 +85,7 @@ export class PostQuantumSuite {
   private readonly kyberHSM?: KyberHSMIntegration;
   private readonly dilithiumHSM?: DilithiumHSMIntegration;
   private readonly validator?: DilithiumValidator;
-  private readonly hsm?: HSMInterface;
+  private readonly hsm?: HSMInterface | undefined;
   private readonly keyRegistry: Map<string, PostQuantumKeyPair> = new Map();
   private readonly operationMetrics: any[] = [];
 
@@ -265,8 +267,8 @@ export class PostQuantumSuite {
 
     const postQuantumKeyPair: PostQuantumKeyPair = {
       keyId,
-      kyberKeyPair,
-      dilithiumKeyPair,
+      kyberKeyPair: kyberKeyPair || undefined,
+      dilithiumKeyPair: dilithiumKeyPair || undefined,
       combinedMetadata: {
         classification,
         usage,
@@ -377,7 +379,7 @@ export class PostQuantumSuite {
 
     const result: HybridEncryptionResult = {
       encapsulationResult,
-      signatureResult,
+      signatureResult: signatureResult || undefined,
       combinedCiphertext,
       metadata: {
         keyId: params.recipientKeyId,
@@ -493,7 +495,7 @@ export class PostQuantumSuite {
 
     const result: HybridDecryptionResult = {
       decapsulationResult,
-      verificationResult,
+      verificationResult: verificationResult || undefined,
       plaintext,
       metadata: {
         keyId: params.recipientKeyId,
@@ -643,7 +645,7 @@ export class PostQuantumSuite {
   private extractCiphertextComponents(combinedCiphertext: Uint8Array): {
     kyberCiphertext: Uint8Array;
     encryptedData: Uint8Array;
-    signature?: Uint8Array;
+    signature?: Uint8Array | undefined;
   } {
     let offset = 0;
     

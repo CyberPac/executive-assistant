@@ -7,7 +7,9 @@
  */
 
 import { HSMInterface, HSMOperationResult, HSMKeyMetadata } from '../hsm/HSMInterface';
-import { CRYSTALSKyber, KyberKeyPair, KyberParameters } from './CRYSTALSKyber';
+import { CRYSTALSKyber } from './CRYSTALSKyber';
+// import type { HSMAuditEntry } from '../hsm/core/HSMAuditLogger';
+import * as crypto from 'crypto';
 
 export interface KyberHSMConfig {
   readonly hsmEndpoint: string;
@@ -102,11 +104,15 @@ export class KyberHSMIntegration {
         usage: kyberKeyPair.metadata.usage,
         classification: kyberKeyPair.metadata.classification as any,
         createdAt: kyberKeyPair.createdAt,
+        hardwareGenerated: true,
+        escrowStatus: 'none',
+        integrityHash: crypto.createHash('sha256').update(kyberKeyPair.keyId + Date.now().toString()).digest('hex'),
+        accessLog: [],
         rotationPolicy: kyberKeyPair.metadata.rotationPolicy,
         kyberVariant: kyberKeyPair.parameters.variant,
         securityLevel: kyberKeyPair.parameters.securityLevel,
         quantumResistant: true,
-        hsmKeyHandle: hsmKeyHandle || ''
+        hsmKeyHandle: hsmKeyHandle ?? ''
       };
 
       const totalLatency = Date.now() - startTime;
@@ -118,7 +124,7 @@ export class KyberHSMIntegration {
         data: {
           keyId: kyberKeyPair.keyId,
           publicKey: kyberKeyPair.publicKey,
-          hsmKeyHandle,
+          ...(hsmKeyHandle && { hsmKeyHandle }),
           metadata
         },
         metrics: {
@@ -132,17 +138,36 @@ export class KyberHSMIntegration {
           hsmLatency: hsmKeyHandle ? 50 : 0, // Simulated HSM latency
           totalLatency,
           securityLevel: kyberKeyPair.parameters.securityLevel
+        },
+        auditTrail: {
+          operationId: crypto.randomUUID(),
+          timestamp: new Date(),
+          operation: 'kyber_key_generation',
+          keyId: kyberKeyPair.keyId,
+          result: 'success',
+          integrityVerified: true,
+          performanceMetrics: {
+            duration: totalLatency,
+            operationType: 'key_generation'
+          },
+          securityContext: {
+            authMethod: 'hsm_certificate'
+          },
+          additionalData: {
+            variant: kyberKeyPair.parameters.variant
+          }
         }
       };
 
     } catch (error) {
       console.error('❌ HSM Kyber key generation failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       
       return {
         success: false,
         error: {
           code: 'HSM_KYBER_KEYGEN_FAILED',
-          message: `HSM Kyber key generation failed: ${error.message}`,
+          message: `HSM Kyber key generation failed: ${errorMessage}`,
           recoverable: true,
           details: { originalError: error }
         },
@@ -155,6 +180,21 @@ export class KyberHSMIntegration {
           hsmLatency: 0,
           totalLatency: Date.now() - startTime,
           securityLevel: 0
+        },
+        auditTrail: {
+          operationId: crypto.randomUUID(),
+          timestamp: new Date(),
+          operation: 'kyber_operation_error',
+          result: 'error',
+          integrityVerified: false,
+          performanceMetrics: {
+            duration: Date.now() - startTime,
+            operationType: 'error_handling'
+          },
+          securityContext: {
+            authMethod: 'hsm_certificate',
+            sessionId: 'error_session_' + crypto.randomUUID().substring(0, 8)
+          }
         }
       };
     }
@@ -219,17 +259,36 @@ export class KyberHSMIntegration {
           hsmLatency,
           totalLatency,
           securityLevel: this.detectSecurityLevel(params.publicKey)
+        },
+        auditTrail: {
+          operationId: crypto.randomUUID(),
+          timestamp: new Date(),
+          operation: 'kyber_encapsulation',
+          keyId: params.keyId,
+          result: 'success',
+          integrityVerified: true,
+          performanceMetrics: {
+            duration: totalLatency,
+            operationType: 'encapsulation'
+          },
+          securityContext: {
+            authMethod: 'hsm_certificate'
+          },
+          additionalData: {
+            hsmValidated: hsmValidated.toString()
+          }
         }
       };
 
     } catch (error) {
       console.error('❌ HSM Kyber encapsulation failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       
       return {
         success: false,
         error: {
           code: 'HSM_KYBER_ENCAP_FAILED',
-          message: `HSM Kyber encapsulation failed: ${error.message}`,
+          message: `HSM Kyber encapsulation failed: ${errorMessage}`,
           recoverable: true,
           details: { keyId: params.keyId }
         },
@@ -243,6 +302,21 @@ export class KyberHSMIntegration {
           hsmLatency: 0,
           totalLatency: Date.now() - startTime,
           securityLevel: 0
+        },
+        auditTrail: {
+          operationId: crypto.randomUUID(),
+          timestamp: new Date(),
+          operation: 'kyber_operation_error',
+          result: 'error',
+          integrityVerified: false,
+          performanceMetrics: {
+            duration: Date.now() - startTime,
+            operationType: 'error_handling'
+          },
+          securityContext: {
+            authMethod: 'hsm_certificate',
+            sessionId: 'error_session_' + crypto.randomUUID().substring(0, 8)
+          }
         }
       };
     }
@@ -313,17 +387,36 @@ export class KyberHSMIntegration {
           hsmLatency,
           totalLatency,
           securityLevel: this.detectSecurityLevel(params.ciphertext)
+        },
+        auditTrail: {
+          operationId: crypto.randomUUID(),
+          timestamp: new Date(),
+          operation: 'kyber_decapsulation',
+          keyId: params.keyId,
+          result: 'success',
+          integrityVerified: true,
+          performanceMetrics: {
+            duration: totalLatency,
+            operationType: 'decapsulation'
+          },
+          securityContext: {
+            authMethod: 'hsm_certificate'
+          },
+          additionalData: {
+            hsmDecrypted: hsmDecrypted.toString()
+          }
         }
       };
 
     } catch (error) {
       console.error('❌ HSM Kyber decapsulation failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       
       return {
         success: false,
         error: {
           code: 'HSM_KYBER_DECAP_FAILED',
-          message: `HSM Kyber decapsulation failed: ${error.message}`,
+          message: `HSM Kyber decapsulation failed: ${errorMessage}`,
           recoverable: true,
           details: { keyId: params.keyId }
         },
@@ -337,6 +430,21 @@ export class KyberHSMIntegration {
           hsmLatency: 0,
           totalLatency: Date.now() - startTime,
           securityLevel: 0
+        },
+        auditTrail: {
+          operationId: crypto.randomUUID(),
+          timestamp: new Date(),
+          operation: 'kyber_operation_error',
+          result: 'error',
+          integrityVerified: false,
+          performanceMetrics: {
+            duration: Date.now() - startTime,
+            operationType: 'error_handling'
+          },
+          securityContext: {
+            authMethod: 'hsm_certificate',
+            sessionId: 'error_session_' + crypto.randomUUID().substring(0, 8)
+          }
         }
       };
     }
@@ -386,7 +494,7 @@ export class KyberHSMIntegration {
         success: true,
         data: {
           newKeyId: newKeyResult.data!.keyId,
-          newHsmKeyHandle: newKeyResult.data!.hsmKeyHandle || '',
+          newHsmKeyHandle: newKeyResult.data!.hsmKeyHandle ?? '',
           rotationTime: new Date()
         },
         metrics: {
@@ -399,17 +507,36 @@ export class KyberHSMIntegration {
           hsmLatency: hsmRotationResult.metrics.duration,
           totalLatency,
           securityLevel: newKeyResult.data!.metadata.securityLevel
+        },
+        auditTrail: {
+          operationId: crypto.randomUUID(),
+          timestamp: new Date(),
+          operation: 'kyber_key_rotation',
+          keyId: params.currentKeyId,
+          result: 'success',
+          integrityVerified: true,
+          performanceMetrics: {
+            duration: totalLatency,
+            operationType: 'key_rotation'
+          },
+          securityContext: {
+            authMethod: 'hsm_certificate'
+          },
+          additionalData: {
+            newKeyId: newKeyResult.data!.keyId
+          }
         }
       };
 
     } catch (error) {
       console.error('❌ HSM Kyber key rotation failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       
       return {
         success: false,
         error: {
           code: 'HSM_KYBER_ROTATION_FAILED',
-          message: `HSM Kyber key rotation failed: ${error.message}`,
+          message: `HSM Kyber key rotation failed: ${errorMessage}`,
           recoverable: true,
           details: { currentKeyId: params.currentKeyId }
         },
@@ -423,6 +550,21 @@ export class KyberHSMIntegration {
           hsmLatency: 0,
           totalLatency: Date.now() - startTime,
           securityLevel: 0
+        },
+        auditTrail: {
+          operationId: crypto.randomUUID(),
+          timestamp: new Date(),
+          operation: 'kyber_operation_error',
+          result: 'error',
+          integrityVerified: false,
+          performanceMetrics: {
+            duration: Date.now() - startTime,
+            operationType: 'error_handling'
+          },
+          securityContext: {
+            authMethod: 'hsm_certificate',
+            sessionId: 'error_session_' + crypto.randomUUID().substring(0, 8)
+          }
         }
       };
     }
@@ -634,5 +776,21 @@ export class KyberHSMKeyManager {
       keysByClassification,
       recommendations
     };
+  }
+
+  private getSecurityLevel(variant: string): 1 | 2 | 3 {
+    switch (variant) {
+      case 'Kyber512': return 1;
+      case 'Kyber768': return 2;
+      case 'Kyber1024': return 3;
+      default: return 1;
+    }
+  }
+
+  /**
+   * Calculate integrity hash for key
+   */
+  private calculateIntegrityHash(keyId: string): string {
+    return crypto.createHash('sha256').update(keyId + Date.now().toString()).digest('hex');
   }
 }

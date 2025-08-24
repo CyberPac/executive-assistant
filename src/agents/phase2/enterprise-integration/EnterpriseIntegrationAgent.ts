@@ -4,8 +4,7 @@
  * Date: 2025-08-16 13:53:00 UTC
  */
 
-import { PEAAgentBase, AgentStatus, PEAAgentType } from '../../../types/pea-agent-types';
-import { MCPIntegration } from '../../../types/mcp';
+import { PEAAgentBase, AgentStatus, PEAAgentType, ClaudeFlowMCPIntegration } from '../../../types/pea-agent-types';
 
 export interface EnterpriseIntegrationAgentConfig {
   agentId: string;
@@ -54,7 +53,7 @@ export class EnterpriseIntegrationAgent extends PEAAgentBase {
   
   constructor(
     id: string,
-    mcpIntegration: MCPIntegration,
+    mcpIntegration: ClaudeFlowMCPIntegration,
     configuration: EnterpriseIntegrationAgentConfig
   ) {
     super(id, PEAAgentType.ENTERPRISE_INTEGRATION, 'Enterprise Integration Agent', mcpIntegration);
@@ -115,7 +114,7 @@ export class EnterpriseIntegrationAgent extends PEAAgentBase {
           status: 'error',
           lastSync: new Date(),
           syncedItems: 0,
-          errors: [error.message]
+          errors: [error instanceof Error ? error.message : String(error)]
         };
         
         this.integrations.get(platform).status = 'error';
@@ -138,7 +137,7 @@ export class EnterpriseIntegrationAgent extends PEAAgentBase {
     return {
       workflowId: workflow.id,
       status: workflowExecution.success ? 'completed' : 'failed',
-      results: workflowExecution.results || [],
+      results: (workflowExecution.results || []) as any[],
       duration: Date.now() - startTime,
       timestamp: new Date()
     };
@@ -236,7 +235,7 @@ export class EnterpriseIntegrationAgent extends PEAAgentBase {
     const health = {};
     
     for (const [platform, integration] of this.integrations.entries()) {
-      health[platform] = {
+      (health as any)[platform] = {
         status: integration.status,
         uptime: integration.uptime || 0,
         lastHealthCheck: new Date(),

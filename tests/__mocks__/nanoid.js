@@ -1,22 +1,6 @@
-/**
- * Mock for nanoid - fixes ESM compatibility issues
- */
+// Mock nanoid for consistent test IDs
+const nanoid = jest.fn(() => 'mock-id-' + Math.random().toString(36).substr(2, 9));
+nanoid.customAlphabet = jest.fn(() => () => 'mock-custom-id-' + Math.random().toString(36).substr(2, 9));
 
-// Mock the default export (nanoid function)
-const nanoid = () => 'mock-nanoid-id-12345';
-
-// Mock the customAlphabet function
-const customAlphabet = (alphabet, size) => {
-  return () => `mock-custom-${size || 21}`;
-};
-
-// Mock the urlAlphabet export
-const urlAlphabet = 'Unescape6789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
-
-module.exports = {
-  nanoid,
-  customAlphabet,
-  urlAlphabet,
-  __esModule: true,
-  default: nanoid
-};
+module.exports = { nanoid };
+module.exports.nanoid = nanoid;

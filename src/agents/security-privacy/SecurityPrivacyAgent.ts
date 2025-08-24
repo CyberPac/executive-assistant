@@ -602,7 +602,7 @@ class QuantumReadyEncryptionManager {
 
     return {
       success: true,
-      algorithm: algorithms[encryptionLevel] || algorithms['standard'],
+      algorithm: (algorithms as any)[encryptionLevel] || algorithms['standard'],
       quantumReady: encryptionLevel === 'hsm_required',
       encryptionTime: '< 1ms'
     };

@@ -12,25 +12,25 @@ export interface HSMVendorAdapter {
   
   // Connection Management
   connect(config: HSMConnectionConfig): Promise<HSMConnection>;
-  disconnect(connection: HSMConnection): Promise<void>;
-  healthCheck(connection: HSMConnection): Promise<HSMVendorHealthStatus>;
+  disconnect(_connection: HSMConnection): Promise<void>;
+  healthCheck(_connection: HSMConnection): Promise<HSMVendorHealthStatus>;
   
   // Key Operations
-  generateKey(connection: HSMConnection, params: HSMKeyGenerationParams): Promise<HSMVendorKeyResult>;
-  importKey(connection: HSMConnection, params: HSMKeyImportParams): Promise<HSMVendorKeyResult>;
-  exportKey(connection: HSMConnection, keyId: string, format: string): Promise<HSMVendorExportResult>;
-  deleteKey(connection: HSMConnection, keyId: string): Promise<HSMVendorOperationResult>;
+  generateKey(_connection: HSMConnection, params: HSMKeyGenerationParams): Promise<HSMVendorKeyResult>;
+  importKey(_connection: HSMConnection, params: HSMKeyImportParams): Promise<HSMVendorKeyResult>;
+  exportKey(_connection: HSMConnection, keyId: string, format: string): Promise<HSMVendorExportResult>;
+  deleteKey(_connection: HSMConnection, keyId: string): Promise<HSMVendorOperationResult>;
   
   // Cryptographic Operations
-  encrypt(connection: HSMConnection, params: HSMEncryptionParams): Promise<HSMVendorCryptoResult>;
-  decrypt(connection: HSMConnection, params: HSMDecryptionParams): Promise<HSMVendorCryptoResult>;
-  sign(connection: HSMConnection, params: HSMSigningParams): Promise<HSMVendorSignatureResult>;
-  verify(connection: HSMConnection, params: HSMVerificationParams): Promise<HSMVendorVerificationResult>;
+  encrypt(_connection: HSMConnection, params: HSMEncryptionParams): Promise<HSMVendorCryptoResult>;
+  decrypt(_connection: HSMConnection, params: HSMDecryptionParams): Promise<HSMVendorCryptoResult>;
+  sign(_connection: HSMConnection, params: HSMSigningParams): Promise<HSMVendorSignatureResult>;
+  verify(_connection: HSMConnection, params: HSMVerificationParams): Promise<HSMVendorVerificationResult>;
   
   // Administrative Operations
-  getKeyMetadata(connection: HSMConnection, keyId: string): Promise<HSMVendorKeyMetadata>;
-  listKeys(connection: HSMConnection, filter?: HSMKeyFilter): Promise<HSMVendorKeyList>;
-  getAuditLogs(connection: HSMConnection, filter?: HSMAuditFilter): Promise<HSMVendorAuditResult>;
+  getKeyMetadata(_connection: HSMConnection, keyId: string): Promise<HSMVendorKeyMetadata>;
+  listKeys(_connection: HSMConnection, filter?: HSMKeyFilter): Promise<HSMVendorKeyList>;
+  getAuditLogs(_connection: HSMConnection, filter?: HSMAuditFilter): Promise<HSMVendorAuditResult>;
 }
 
 export interface HSMConnectionConfig {
@@ -232,7 +232,17 @@ export abstract class BaseHSMVendorAdapter implements HSMVendorAdapter {
   }
 
   protected createOperationResult(success: boolean, message?: string, details?: Record<string, any>): HSMVendorOperationResult {
-    return { success, message, details };
+    const result: HSMVendorOperationResult = { success };
+    
+    if (message !== undefined) {
+      result.message = message;
+    }
+    
+    if (details !== undefined) {
+      result.details = details;
+    }
+    
+    return result;
   }
 
   protected validateKeyGenerationParams(params: HSMKeyGenerationParams): void {
@@ -249,17 +259,17 @@ export abstract class BaseHSMVendorAdapter implements HSMVendorAdapter {
 
   // Abstract methods to be implemented by vendor-specific adapters
   abstract connect(config: HSMConnectionConfig): Promise<HSMConnection>;
-  abstract disconnect(connection: HSMConnection): Promise<void>;
-  abstract healthCheck(connection: HSMConnection): Promise<HSMVendorHealthStatus>;
-  abstract generateKey(connection: HSMConnection, params: HSMKeyGenerationParams): Promise<HSMVendorKeyResult>;
-  abstract importKey(connection: HSMConnection, params: HSMKeyImportParams): Promise<HSMVendorKeyResult>;
-  abstract exportKey(connection: HSMConnection, keyId: string, format: string): Promise<HSMVendorExportResult>;
-  abstract deleteKey(connection: HSMConnection, keyId: string): Promise<HSMVendorOperationResult>;
-  abstract encrypt(connection: HSMConnection, params: HSMEncryptionParams): Promise<HSMVendorCryptoResult>;
-  abstract decrypt(connection: HSMConnection, params: HSMDecryptionParams): Promise<HSMVendorCryptoResult>;
-  abstract sign(connection: HSMConnection, params: HSMSigningParams): Promise<HSMVendorSignatureResult>;
-  abstract verify(connection: HSMConnection, params: HSMVerificationParams): Promise<HSMVendorVerificationResult>;
-  abstract getKeyMetadata(connection: HSMConnection, keyId: string): Promise<HSMVendorKeyMetadata>;
-  abstract listKeys(connection: HSMConnection, filter?: HSMKeyFilter): Promise<HSMVendorKeyList>;
-  abstract getAuditLogs(connection: HSMConnection, filter?: HSMAuditFilter): Promise<HSMVendorAuditResult>;
+  abstract disconnect(_connection: HSMConnection): Promise<void>;
+  abstract healthCheck(_connection: HSMConnection): Promise<HSMVendorHealthStatus>;
+  abstract generateKey(_connection: HSMConnection, params: HSMKeyGenerationParams): Promise<HSMVendorKeyResult>;
+  abstract importKey(_connection: HSMConnection, params: HSMKeyImportParams): Promise<HSMVendorKeyResult>;
+  abstract exportKey(_connection: HSMConnection, keyId: string, format: string): Promise<HSMVendorExportResult>;
+  abstract deleteKey(_connection: HSMConnection, keyId: string): Promise<HSMVendorOperationResult>;
+  abstract encrypt(_connection: HSMConnection, params: HSMEncryptionParams): Promise<HSMVendorCryptoResult>;
+  abstract decrypt(_connection: HSMConnection, params: HSMDecryptionParams): Promise<HSMVendorCryptoResult>;
+  abstract sign(_connection: HSMConnection, params: HSMSigningParams): Promise<HSMVendorSignatureResult>;
+  abstract verify(_connection: HSMConnection, params: HSMVerificationParams): Promise<HSMVendorVerificationResult>;
+  abstract getKeyMetadata(_connection: HSMConnection, keyId: string): Promise<HSMVendorKeyMetadata>;
+  abstract listKeys(_connection: HSMConnection, filter?: HSMKeyFilter): Promise<HSMVendorKeyList>;
+  abstract getAuditLogs(_connection: HSMConnection, filter?: HSMAuditFilter): Promise<HSMVendorAuditResult>;
 }

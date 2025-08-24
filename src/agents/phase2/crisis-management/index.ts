@@ -55,7 +55,7 @@ export {
 } from './CrisisManagementConfig';
 
 // Re-export base types for convenience
-export {
+export type {
   CrisisEvent,
   CrisisType,
   CrisisSeverity,
@@ -195,7 +195,7 @@ export class CrisisManagementSystem {
         'store',
         `crisis_management_system/failures/${Date.now()}`,
         JSON.stringify({
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
           timestamp: new Date().toISOString(),
           executiveId: executiveContext.executiveId,
           monitoringDataSample: JSON.stringify(monitoringData).substring(0, 500)

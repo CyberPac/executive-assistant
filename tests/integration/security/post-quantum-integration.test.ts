@@ -6,7 +6,7 @@
  * Integration testing for quantum-resistant cryptography suite
  */
 
-import { describe, test, expect, beforeEach, afterEach } from '@jest/testing-library';
+import { describe, test, expect, beforeEach, afterEach } from '@jest/globals';
 import { PostQuantumSuite, createExecutivePostQuantumConfig, createDefaultPostQuantumConfig } from '../../../src/security/post-quantum/PostQuantumSuite';
 import { HSMInterface } from '../../../src/security/hsm/HSMInterface';
 import { DilithiumValidator, createExecutiveValidationConfig } from '../../../src/security/post-quantum/validation/DilithiumValidator';
@@ -14,7 +14,7 @@ import { DilithiumValidator, createExecutiveValidationConfig } from '../../../sr
 describe('Post-Quantum Cryptography Integration Tests', () => {
   let postQuantumSuite: PostQuantumSuite;
   let mockHSM: HSMInterface;
-  let validator: DilithiumValidator;
+  let _validator: DilithiumValidator;
 
   beforeEach(async () => {
     // Create mock HSM interface
@@ -62,7 +62,7 @@ describe('Post-Quantum Cryptography Integration Tests', () => {
     await postQuantumSuite.initialize();
 
     // Create validator for security testing
-    validator = new DilithiumValidator(createExecutiveValidationConfig());
+    _validator = new DilithiumValidator(createExecutiveValidationConfig());
   });
 
   afterEach(() => {
@@ -184,7 +184,7 @@ describe('Post-Quantum Cryptography Integration Tests', () => {
     });
 
     test('should retrieve key pairs by ID', async () => {
-      const keyPair = await postQuantumSuite.generateKeyPair({
+      const _keyPair = await postQuantumSuite.generateKeyPair({
         keyId: 'test-key-123',
         classification: 'executive'
       });

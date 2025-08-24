@@ -206,7 +206,7 @@ export class HistoricalEmailIngestion {
     do {
       const result = await this.gmailConnector.getMessages(accountId, {
         maxResults: Math.min(100, (options.maxEmails || 1000) - totalFetched),
-        pageToken
+        ...(pageToken && { pageToken })
       });
 
       for (const gmailMessage of result.messages) {
@@ -352,7 +352,7 @@ export class HistoricalEmailIngestion {
 
       // Process sender
       this.updateContactRelationship(relationships, email.from.email, {
-        name: email.from.name,
+        ...(email.from.name && { name: email.from.name }),
         email: email.from.email,
         lastContact: email.timestamp,
         topics: analysis.contentAnalysis.topics,
@@ -362,7 +362,7 @@ export class HistoricalEmailIngestion {
       // Process recipients
       email.to.forEach(recipient => {
         this.updateContactRelationship(relationships, recipient.email, {
-          name: recipient.name,
+          ...(recipient.name && { name: recipient.name }),
           email: recipient.email,
           lastContact: email.timestamp,
           topics: analysis.contentAnalysis.topics,
@@ -467,10 +467,11 @@ export class HistoricalEmailIngestion {
       id: gmailMessage.id,
       subject: content.headers['subject'] || '',
       body: content.htmlContent || content.textContent || '',
-      from: { 
-        name: this.extractNameFromHeader(content.headers['from']),
-        email: this.extractEmailFromHeader(content.headers['from'])
-      },
+      from: (() => {
+        const name = this.extractNameFromHeader(content.headers['from']);
+        const email = this.extractEmailFromHeader(content.headers['from']);
+        return name ? { name, email } : { email };
+      })(),
       to: this.parseEmailHeaders(content.headers['to'] || ''),
       cc: this.parseEmailHeaders(content.headers['cc'] || ''),
       timestamp: new Date(parseInt(gmailMessage.internalDate)),
@@ -510,7 +511,7 @@ export class HistoricalEmailIngestion {
     } else {
       relationships.set(email, {
         email,
-        name: data.name,
+        ...(data.name && { name: data.name }),
         relationship: 'partner',
         frequency: 1,
         lastContact: data.lastContact || new Date(),
@@ -534,10 +535,11 @@ export class HistoricalEmailIngestion {
   private parseEmailHeaders(header: string): { name?: string; email: string }[] {
     if (!header) return [];
     
-    return header.split(',').map(addr => ({
-      name: this.extractNameFromHeader(addr.trim()),
-      email: this.extractEmailFromHeader(addr.trim())
-    }));
+    return header.split(',').map(addr => {
+      const name = this.extractNameFromHeader(addr.trim());
+      const email = this.extractEmailFromHeader(addr.trim());
+      return name ? { name, email } : { email };
+    });
   }
 
   private extractAttachments(_payload: any): { filename: string; size: number; mimeType: string }[] {

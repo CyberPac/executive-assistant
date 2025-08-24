@@ -26,10 +26,10 @@ import {
 } from '../../../src/security/threat-detection/UltraFastThreatDetectionEngine';
 import {
   ThreatDetectionConfigFactory,
-  PERFORMANCE_BENCHMARKS,
+  PERFORMANCE_BENCHMARKS as _PERFORMANCE_BENCHMARKS,
   PRODUCTION_SLA_THRESHOLDS,
   EXECUTIVE_SLA_THRESHOLDS,
-  PerformanceValidator
+  PerformanceValidator as _PerformanceValidator
 } from '../../../src/security/threat-detection/ThreatDetectionConfigOptimized';
 import { HSMInterface } from '../../../src/security/hsm/HSMInterface';
 

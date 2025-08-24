@@ -104,7 +104,7 @@ export class EmailIntelligenceEngine {
       categorization,
       stakeholderAnalysis,
       actionItems,
-      culturalIntelligence
+      ...(culturalIntelligence && { culturalIntelligence })
     };
   }
 
@@ -239,11 +239,16 @@ export class EmailIntelligenceEngine {
     // Identify new contacts
     const newContacts = [email.from, ...email.to]
       .filter(addr => !this.isKnownStakeholder(addr.email))
-      .map(addr => ({
-        name: addr.name,
-        email: addr.email,
-        estimatedRole: this.estimateRole(addr.email, email.body)
-      }));
+      .map(addr => {
+        const name = addr.name;
+        const estimatedRole = this.estimateRole(addr.email, email.body);
+        const base = { email: addr.email };
+        return {
+          ...base,
+          ...(name && { name }),
+          ...(estimatedRole && { estimatedRole })
+        };
+      });
 
     // Calculate relationship strength
     const relationshipStrength = this.calculateRelationshipStrength(email, knownStakeholders);
@@ -286,7 +291,7 @@ export class EmailIntelligenceEngine {
     return {
       suggestedResponses,
       requiredActions,
-      deadline,
+      ...(deadline && { deadline }),
       escalationRecommended
     };
   }
@@ -310,12 +315,12 @@ export class EmailIntelligenceEngine {
       communicationStyle
     );
 
-    return {
-      senderCulture,
+    const result = {
       communicationStyle,
       culturalSensitivity,
       appropriateResponse
     };
+    return senderCulture ? { ...result, senderCulture } : result;
   }
 
   // Helper methods for analysis
