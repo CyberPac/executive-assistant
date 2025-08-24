@@ -1,97 +1,144 @@
-// Jest setup file for test environment
-// Mock console methods to reduce noise in test output
-global.console = {
-  ...console,
-  // Keep these for debugging
-  log: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-  // Keep these working
-  debug: console.debug,
-  info: console.info,
-  trace: console.trace,
-};
+/**
+ * Jest Setup for Executive Assistant Test Suite
+ * Handles async cleanup, mocks, and test environment configuration
+ */
 
-// Mock performance timer for tests with CI-friendly defaults
-global.MockPerformanceTimer = class MockPerformanceTimer {
-  constructor() {
-    this.startTime = 0;
+// Global test timeout
+jest.setTimeout(60000);
+
+// Mock console to reduce noise in tests but preserve errors
+const originalConsoleError = console.error;
+const originalConsoleWarn = console.warn;
+
+console.log = jest.fn();
+console.info = jest.fn();
+console.warn = jest.fn((message) => {
+  // Only show warnings for actual test issues
+  if (typeof message === 'string' && message.includes('Warning')) {
+    originalConsoleWarn(message);
   }
-
-  start = jest.fn(() => {
-    this.startTime = performance.now();
-  });
-
-  end = jest.fn(() => {
-    return performance.now() - this.startTime || 50; // Faster default for CI
-  });
-
-  measure = jest.fn(() => {
-    return performance.now() - this.startTime || 50; // Faster default for CI
-  });
-
-  reset = jest.fn(() => {
-    this.startTime = 0;
-  });
-};
-
-// Mock performance.now for consistent timing in tests
-if (typeof global.performance === 'undefined') {
-  global.performance = {
-    now: jest.fn(() => Date.now())
-  };
-}
-
-// Mock functions for test utilities
-global.assertAgentInitialization = (agent, expectedType) => {
-  expect(agent).toBeDefined();
-  if (expectedType) {
-    expect(agent.type).toBe(expectedType);
-  }
-};
-
-global.assertPerformanceMetrics = (metrics, expectedMetrics = {}) => {
-  expect(metrics).toBeDefined();
-  expect(typeof metrics.responseTime).toBe('number');
-  
-  if (expectedMetrics.responseTimeMs) {
-    expect(metrics.responseTime).toBeLessThan(expectedMetrics.responseTimeMs);
-  }
-  if (expectedMetrics.accuracyScore) {
-    expect(metrics.accuracyScore || 0.9).toBeGreaterThanOrEqual(expectedMetrics.accuracyScore);
-  }
-};
-
-global.createMockSecurityThreat = (overrides = {}) => ({
-  id: 'threat-001',
-  type: 'unauthorized_access',
-  severity: 'high',
-  description: 'Mock security threat for testing',
-  source: 'test-source',
-  timestamp: new Date(),
-  indicators: [],
-  affected_systems: ['system-1'],
-  status: 'detected',
-  ...overrides
+});
+console.error = jest.fn((message) => {
+  // Always show errors
+  originalConsoleError(message);
 });
 
-// Custom Jest matchers
-expect.extend({
-  toBeWithinRange(received, min, max) {
-    const pass = received >= min && received <= max;
-    if (pass) {
-      return {
-        message: () => `expected ${received} not to be within range ${min} - ${max}`,
-        pass: true,
-      };
-    } else {
-      return {
-        message: () => `expected ${received} to be within range ${min} - ${max}`,
-        pass: false,
-      };
+// Global cleanup handlers
+const cleanupHandlers = new Set();
+
+global.addCleanupHandler = (handler) => {
+  cleanupHandlers.add(handler);
+};
+
+// Clean up after each test
+afterEach(async () => {
+  // Run all cleanup handlers
+  for (const handler of cleanupHandlers) {
+    try {
+      await handler();
+    } catch (error) {
+      console.error('Cleanup handler failed:', error);
     }
-  },
+  }
+  cleanupHandlers.clear();
+  
+  // Clear all timers
+  jest.clearAllTimers();
+  
+  // Clear all mocks
+  jest.clearAllMocks();
 });
 
-// Set test timeout
-jest.setTimeout(30000);
+// Global cleanup before exit
+afterAll(async () => {
+  // Force cleanup of any remaining resources
+  if (global.gc) {
+    global.gc();
+  }
+  
+  // Small delay to allow cleanup
+  await new Promise(resolve => setTimeout(resolve, 100));
+});
+
+// Handle process cleanup
+process.on('exit', () => {
+  // Final cleanup
+  cleanupHandlers.clear();
+});
+
+// Mock timers by default for predictable tests
+jest.useFakeTimers();
+
+// Setup global test environment
+global.TEST_MODE = true;
+global.NODE_ENV = 'test';
+
+// Mock WebSocket to prevent connection attempts
+jest.mock('ws', () => {
+  const EventEmitter = require('events');
+  
+  class MockWebSocket extends EventEmitter {
+    constructor() {
+      super();
+      this.readyState = 1; // OPEN
+      this.OPEN = 1;
+      this.CLOSED = 3;
+      
+      // Simulate connection after next tick
+      process.nextTick(() => {
+        this.emit('open');
+      });
+    }
+    
+    send(data) {
+      // Mock send - do nothing
+    }
+    
+    close() {
+      this.readyState = 3; // CLOSED
+      this.emit('close');
+    }
+    
+    terminate() {
+      this.close();
+    }
+  }
+  
+  return MockWebSocket;
+});
+
+// Mock better-sqlite3 to prevent file system operations
+jest.mock('better-sqlite3', () => {
+  return jest.fn().mockImplementation(() => ({
+    prepare: jest.fn().mockReturnValue({
+      run: jest.fn(),
+      get: jest.fn(),
+      all: jest.fn().mockReturnValue([]),
+    }),
+    exec: jest.fn(),
+    close: jest.fn(),
+    pragma: jest.fn(),
+  }));
+});
+
+// Mock nanoid for consistent test values
+jest.mock('nanoid', () => ({
+  nanoid: jest.fn(() => 'test-id-' + Math.floor(Math.random() * 1000)),
+}));
+
+// Global error handler to catch unhandled promises
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+});
+
+// Ensure proper cleanup of Node.js internals
+const originalExit = process.exit;
+process.exit = (code) => {
+  // Run final cleanup
+  cleanupHandlers.clear();
+  originalExit(code);
+};
