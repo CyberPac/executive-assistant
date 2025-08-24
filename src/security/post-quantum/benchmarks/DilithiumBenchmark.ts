@@ -8,7 +8,7 @@
 
 import { CRYSTALSDilithium, DilithiumKeyPair } from '../CRYSTALSDilithium';
 import { DilithiumHSMIntegration } from '../DilithiumHSMIntegration';
-import { HSMInterface } from '../../hsm/HSMInterface';
+// import { HSMInterface } from '../../hsm/HSMInterface';
 
 export interface BenchmarkConfig {
   readonly iterations: number;
@@ -71,7 +71,9 @@ export class DilithiumBenchmark {
 
   constructor(config: BenchmarkConfig, hsmIntegration?: DilithiumHSMIntegration) {
     this.dilithium = new CRYSTALSDilithium();
-    this.hsmIntegration = hsmIntegration;
+    if (hsmIntegration) {
+      this.hsmIntegration = hsmIntegration;
+    }
     this.config = config;
     
     console.log('🚀 Dilithium Benchmark Suite initialized');
@@ -158,7 +160,7 @@ export class DilithiumBenchmark {
         successCount++;
         
       } catch (error) {
-        console.warn(`Key generation failed for ${variant}: ${error.message}`);
+        console.warn(`Key generation failed for ${variant}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 
@@ -201,7 +203,7 @@ export class DilithiumBenchmark {
         successCount++;
         
       } catch (error) {
-        console.warn(`Signing failed for ${variant}: ${error.message}`);
+        console.warn(`Signing failed for ${variant}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 
@@ -246,7 +248,7 @@ export class DilithiumBenchmark {
         successCount++;
         
       } catch (error) {
-        console.warn(`Verification failed for ${variant}: ${error.message}`);
+        console.warn(`Verification failed for ${variant}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 
@@ -290,7 +292,7 @@ export class DilithiumBenchmark {
         hsmKeyGenSuccess++;
         
       } catch (error) {
-        console.warn(`HSM key generation failed: ${error.message}`);
+        console.warn(`HSM key generation failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 
@@ -336,7 +338,7 @@ export class DilithiumBenchmark {
           await this.dilithium.sign(message, keyPair.privateKey, keyPair.keyId);
           batchTimes.push(Date.now() - operationStart);
         } catch (error) {
-          console.warn(`Concurrent operation failed: ${error.message}`);
+          console.warn(`Concurrent operation failed: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
       
@@ -369,10 +371,10 @@ export class DilithiumBenchmark {
    * Memory usage benchmark
    */
   async benchmarkMemoryUsage(): Promise<{
-    keyPairMemory: number;
-    signatureMemory: number;
-    peakMemory: number;
-    recommendations: string[];
+    readonly keyPairMemory: number;
+    readonly signatureMemory: number;
+    readonly peakMemory: number;
+    readonly recommendations: string[];
   }> {
     console.log('💾 Benchmarking memory usage...');
     
@@ -444,7 +446,7 @@ export class DilithiumBenchmark {
         await this.dilithium.verify(message, signature.signature, keyPair.publicKey, keyPair.keyId);
         
       } catch (error) {
-        console.warn(`Warmup round ${i + 1} failed: ${error.message}`);
+        console.warn(`Warmup round ${i + 1} failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
     
@@ -462,10 +464,9 @@ export class DilithiumBenchmark {
     const { variant, operation, messageSize, times, successCount, totalIterations } = params;
     
     if (times.length === 0) {
-      return {
+      const result: BenchmarkResult = {
         variant,
         operation,
-        messageSize,
         iterations: totalIterations,
         totalTime: 0,
         averageTime: 0,
@@ -477,6 +478,12 @@ export class DilithiumBenchmark {
         successRate: 0,
         targetMet: false
       };
+      
+      if (messageSize !== undefined) {
+        (result as any).messageSize = messageSize;
+      }
+      
+      return result;
     }
 
     const totalTime = times.reduce((sum, time) => sum + time, 0);
@@ -489,10 +496,9 @@ export class DilithiumBenchmark {
     const successRate = (successCount / totalIterations) * 100;
     const targetMet = averageTime < this.config.targetLatency;
 
-    return {
+    const result: BenchmarkResult = {
       variant,
       operation,
-      messageSize,
       iterations: times.length,
       totalTime,
       averageTime,
@@ -504,6 +510,12 @@ export class DilithiumBenchmark {
       successRate,
       targetMet
     };
+    
+    if (messageSize !== undefined) {
+      (result as any).messageSize = messageSize;
+    }
+    
+    return result;
   }
 
   private generateSummary(results: BenchmarkResult[], totalTime: number): BenchmarkSummary {

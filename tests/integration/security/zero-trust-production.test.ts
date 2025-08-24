@@ -178,7 +178,7 @@ describe('Zero-Trust Production Integration', () => {
     if (productionManager) {
       try {
         await productionManager.shutdown();
-      } catch (error) {
+      } catch (_error) {
         // Ignore shutdown errors in tests
       }
     }

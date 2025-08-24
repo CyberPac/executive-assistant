@@ -21,7 +21,7 @@
 
 import { HSMInterface } from '../hsm/HSMInterface';
 import { CRYSTALSKyber } from '../post-quantum/CRYSTALSKyber';
-import { SecurityLevel, AgentStatus } from '../../types/pea-agent-types';
+import { SecurityLevel as _SecurityLevel, AgentStatus as _AgentStatus } from '../../types/pea-agent-types';
 
 export interface ZeroTrustConfiguration {
   readonly systemId: string;
@@ -33,6 +33,7 @@ export interface ZeroTrustConfiguration {
   readonly policyEnforcement: PolicyEnforcementConfig;
   readonly monitoring: MonitoringConfig;
   readonly byzantineTolerance: ByzantineToleranceConfig;
+  readonly auditLogging: AuditLoggingConfig;
 }
 
 export interface ContinuousVerificationConfig {
@@ -559,7 +560,7 @@ export class ZeroTrustArchitecture {
   async getComplianceDashboard(): Promise<ComplianceDashboard> {
     this.ensureInitialized();
     
-    const now = new Date();
+    const _now = new Date();
     
     return {
       systemStatus: await this.getSystemStatus(),
@@ -752,8 +753,10 @@ export class ZeroTrustArchitecture {
   private updateVerificationMetrics(result: ZeroTrustVerificationResult): void {
     // Update performance metrics based on verification result
     const avgResponseTime = this.performanceMetrics.averageResponseTime;
-    this.performanceMetrics.averageResponseTime = 
-      (avgResponseTime + result.latencyMs) / 2;
+    this.performanceMetrics = {
+      ...this.performanceMetrics,
+      averageResponseTime: (avgResponseTime + result.latencyMs) / 2
+    };
   }
 
   private async getSystemStatus(): Promise<SystemStatus> {
@@ -853,12 +856,25 @@ export class ZeroTrustArchitecture {
     );
     
     if (recentResults.length > 0) {
-      this.performanceMetrics.averageResponseTime = 
-        recentResults.reduce((sum, r) => sum + r.latencyMs, 0) / recentResults.length;
-      
-      this.performanceMetrics.throughput = recentResults.length * 12; // Per hour
-      this.performanceMetrics.errorRate = 
-        recentResults.filter(r => !r.success).length / recentResults.length;
+      this.performanceMetrics = {
+        ...this.performanceMetrics,
+        averageResponseTime: recentResults.reduce((sum, r) => sum + r.latencyMs, 0) / recentResults.length,
+        throughput: recentResults.length * 12, // Per hour
+        errorRate: recentResults.filter(r => !r.success).length / recentResults.length
+      };
     }
+  }
+
+  async shutdown(): Promise<void> {
+    console.log('🔐 Shutting down Zero Trust Architecture...');
+    
+    // Clean up resources
+    this.verificationCache.clear();
+    this.threatAssessments.clear();
+    
+    // Reset initialization state
+    this.isInitialized = false;
+    
+    console.log('✅ Zero Trust Architecture shutdown completed');
   }
 }

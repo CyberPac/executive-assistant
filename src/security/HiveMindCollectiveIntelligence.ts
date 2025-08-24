@@ -10,8 +10,8 @@
  * @since 2025-08-21
  */
 
-import { EnterpriseSecurityOrchestrator } from './enterprise/EnterpriseSecurityOrchestrator';
-import { SecurityGapRemediationEngine } from './SecurityGapRemediationEngine';
+import { EnterpriseSecurityOrchestrator as _EnterpriseSecurityOrchestrator } from './enterprise/EnterpriseSecurityOrchestrator';
+import { SecurityGapRemediationEngine as _SecurityGapRemediationEngine } from './SecurityGapRemediationEngine';
 import { EventEmitter } from 'events';
 
 export interface CollectiveIntelligenceConfig {
@@ -288,7 +288,7 @@ export class HiveMindCollectiveIntelligence extends EventEmitter {
       const contributors: string[] = [];
       
       // Collect knowledge from all agents
-      for (const [agentId, agent] of this.swarmAgents.entries()) {
+      for (const [agentId, _agent] of this.swarmAgents.entries()) {
         const agentKnowledge = await this.collectAgentKnowledge(agentId, domain);
         
         facts.push(...agentKnowledge.facts);
@@ -470,7 +470,7 @@ export class HiveMindCollectiveIntelligence extends EventEmitter {
     return connections;
   }
 
-  private async initializeKnowledgeSyncProtocols(topology: any): Promise<void> {
+  private async initializeKnowledgeSyncProtocols(_topology: any): Promise<void> {
     // Initialize knowledge synchronization protocols
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
@@ -649,7 +649,7 @@ export class HiveMindCollectiveIntelligence extends EventEmitter {
   private async createImplementationPlan(
     selectedAlternative: string,
     alternatives: DecisionAlternative[],
-    context: DecisionContext
+    _context: DecisionContext
   ): Promise<ImplementationPlan> {
     const alternative = alternatives.find(alt => alt.alternativeId === selectedAlternative)!;
     
@@ -807,7 +807,7 @@ export class HiveMindCollectiveIntelligence extends EventEmitter {
 
   private async executeImplementationPhase(
     phase: ImplementationPhase,
-    decision: CollectiveDecision
+    _decision: CollectiveDecision
   ): Promise<void> {
     console.log(`🔧 Executing implementation phase: ${phase.description}`);
     
@@ -843,11 +843,18 @@ export class HiveMindCollectiveIntelligence extends EventEmitter {
 
   private async maintainCoordination(): Promise<void> {
     // Maintain coordination health
-    for (const [agentId, agent] of this.swarmAgents.entries()) {
-      // Update agent performance metrics
-      agent.performanceMetrics.averageResponseTime = 
-        (agent.performanceMetrics.averageResponseTime + Math.random() * 1000) / 2;
-      agent.lastActivity = new Date();
+    for (const [_agentId, agent] of this.swarmAgents.entries()) {
+      // Update agent performance metrics with immutable pattern
+      const currentResponseTime = agent.performanceMetrics.averageResponseTime;
+      const newPerformanceMetrics = {
+        ...agent.performanceMetrics,
+        averageResponseTime: (currentResponseTime + Math.random() * 1000) / 2
+      };
+      // Update agent with new performance metrics and activity timestamp
+      Object.assign(agent, {
+        performanceMetrics: newPerformanceMetrics,
+        lastActivity: new Date()
+      });
     }
   }
 }

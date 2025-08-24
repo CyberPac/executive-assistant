@@ -9,6 +9,7 @@
 
 import { HSMConfiguration } from '../HSMInterface';
 import * as path from 'path';
+const _path = path; // Prevent unused import warning
 
 /**
  * Production HSM Configuration Factory

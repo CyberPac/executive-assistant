@@ -16,7 +16,7 @@
  * @since 2025-01-21
  */
 
-import { HSMAuditEntry, HSMAuditLogger } from '../hsm/core/HSMAuditLogger';
+import { HSMAuditEntry, HSMAuditLogger as _HSMAuditLogger } from '../hsm/core/HSMAuditLogger';
 import { EventEmitter } from 'events';
 
 export interface SIEMConfig {
@@ -301,7 +301,7 @@ export class SIEMIntegrationFramework extends EventEmitter {
       this.eventBuffer.push(siemEvent);
       
       // Update metrics
-      this.metrics.eventsProcessed++;
+      this.metrics = { ...this.metrics, eventsProcessed: this.metrics.eventsProcessed + 1 };
       
       // Flush if buffer is full or high-priority event
       if (this.eventBuffer.length >= this.config.performance.batchSize || 
@@ -311,7 +311,7 @@ export class SIEMIntegrationFramework extends EventEmitter {
       
     } catch (error) {
       console.error('❌ Failed to log security event to SIEM:', error);
-      this.metrics.eventsFailed++;
+      this.metrics = { ...this.metrics, eventsFailed: this.metrics.eventsFailed + 1 };
       throw error;
     }
   }
@@ -333,7 +333,7 @@ export class SIEMIntegrationFramework extends EventEmitter {
       this.eventBuffer.push(siemEvent);
       
       // Update metrics
-      this.metrics.eventsProcessed++;
+      this.metrics = { ...this.metrics, eventsProcessed: this.metrics.eventsProcessed + 1 };
       
       // Flush if buffer is full or high-priority event
       if (this.eventBuffer.length >= this.config.performance.batchSize || 
@@ -343,7 +343,7 @@ export class SIEMIntegrationFramework extends EventEmitter {
       
     } catch (error) {
       console.error('❌ Failed to send SIEM event:', error);
-      this.metrics.eventsFailed++;
+      this.metrics = { ...this.metrics, eventsFailed: this.metrics.eventsFailed + 1 };
       throw error;
     }
   }
@@ -365,13 +365,13 @@ export class SIEMIntegrationFramework extends EventEmitter {
           }
         } catch (error) {
           console.error('❌ Failed to convert audit entry to SIEM event:', error);
-          this.metrics.eventsFailed++;
+          this.metrics = { ...this.metrics, eventsFailed: this.metrics.eventsFailed + 1 };
         }
       }
       
       // Add to buffer
       this.eventBuffer.push(...siemEvents);
-      this.metrics.eventsProcessed += siemEvents.length;
+      this.metrics = { ...this.metrics, eventsProcessed: this.metrics.eventsProcessed + siemEvents.length };
       
       // Force flush for batch processing
       await this.flushBuffer();
@@ -543,7 +543,7 @@ export class SIEMIntegrationFramework extends EventEmitter {
     try {
       const connection = await this.createConnection();
       this.connections.set('primary', connection);
-      this.metrics.connectionStatus = 'connected';
+      this.metrics = { ...this.metrics, connectionStatus: 'connected' };
       
       // Setup failover connections if enabled
       if (this.config.reliability.failover.enabled) {
@@ -551,7 +551,7 @@ export class SIEMIntegrationFramework extends EventEmitter {
       }
       
     } catch (error) {
-      this.metrics.connectionStatus = 'failed';
+      this.metrics = { ...this.metrics, connectionStatus: 'failed' };
       throw error;
     }
   }
@@ -636,7 +636,7 @@ export class SIEMIntegrationFramework extends EventEmitter {
     
     for (const [index, endpoint] of this.config.reliability.failover.secondaryEndpoints.entries()) {
       try {
-        const failoverConfig = {
+        const _failoverConfig = {
           ...this.config.connection,
           endpoint
         };
@@ -685,7 +685,7 @@ export class SIEMIntegrationFramework extends EventEmitter {
     const severity = this.mapSeverity(auditEntry.result);
     const category = this.mapCategory(auditEntry.operation);
     
-    return {
+    const result: SIEMEvent = {
       id: auditEntry.operationId,
       timestamp: auditEntry.timestamp,
       severity,
@@ -694,9 +694,14 @@ export class SIEMIntegrationFramework extends EventEmitter {
       message: `HSM Operation: ${auditEntry.operation} - ${auditEntry.result}`,
       rawData: auditEntry,
       normalizedData: await this.normalizeEvent(auditEntry),
-      compliance: this.getComplianceMetadata(auditEntry),
-      executive: executiveContext
+      compliance: this.getComplianceMetadata(auditEntry)
     };
+    
+    if (executiveContext) {
+      return { ...result, executive: executiveContext };
+    }
+    
+    return result;
   }
 
   private mapSeverity(result: string): SeverityLevel {
@@ -737,7 +742,7 @@ export class SIEMIntegrationFramework extends EventEmitter {
     };
   }
 
-  private getComplianceMetadata(auditEntry: HSMAuditEntry): ComplianceMetadata {
+  private getComplianceMetadata(_auditEntry: HSMAuditEntry): ComplianceMetadata {
     return {
       frameworks: this.config.compliance.frameworks,
       classification: {
@@ -816,7 +821,7 @@ export class SIEMIntegrationFramework extends EventEmitter {
     return true;
   }
 
-  private evaluateCustomFilter(event: SIEMEvent, filter: CustomFilter): boolean {
+  private evaluateCustomFilter(_event: SIEMEvent, _filter: CustomFilter): boolean {
     // Simplified filter evaluation
     // In production, would use proper expression engine
     return true;
@@ -866,7 +871,7 @@ export class SIEMIntegrationFramework extends EventEmitter {
 
   private async deliverEvent(event: SIEMEvent): Promise<void> {
     // Format event based on SIEM vendor
-    const formattedEvent = this.formatEvent(event);
+    const _formattedEvent = this.formatEvent(event);
     
     // Deliver to SIEM (simplified implementation)
     console.log(`📤 Delivering event ${event.id} to ${this.config.vendor}`);
@@ -942,11 +947,11 @@ export class SIEMIntegrationFramework extends EventEmitter {
         await this.attemptFailover();
       }
       
-      this.metrics.connectionStatus = isHealthy ? 'connected' : 'disconnected';
+      this.metrics = { ...this.metrics, connectionStatus: isHealthy ? 'connected' : 'disconnected' };
       
     } catch (error) {
       console.error('❌ Health check failed:', error);
-      this.metrics.connectionStatus = 'error';
+      this.metrics = { ...this.metrics, connectionStatus: 'error' };
     }
   }
 
@@ -975,27 +980,27 @@ export class SIEMIntegrationFramework extends EventEmitter {
 
   private updateMetrics(eventCount: number, latency: number, success: boolean): void {
     if (success) {
-      this.metrics.eventsDelivered += eventCount;
+      this.metrics = { ...this.metrics, eventsDelivered: this.metrics.eventsDelivered + eventCount };
     } else {
-      this.metrics.eventsFailed += eventCount;
+      this.metrics = { ...this.metrics, eventsFailed: this.metrics.eventsFailed + eventCount };
     }
     
     // Update average latency (exponential moving average)
-    this.metrics.averageLatency = (this.metrics.averageLatency * 0.9) + (latency * 0.1);
+    this.metrics = { ...this.metrics, averageLatency: (this.metrics.averageLatency * 0.9) + (latency * 0.1) };
     
     // Update throughput (events per second)
-    this.metrics.throughput = eventCount / (latency / 1000);
+    this.metrics = { ...this.metrics, throughput: eventCount / (latency / 1000) };
     
     // Update buffer utilization
-    this.metrics.bufferUtilization = (this.eventBuffer.length / this.config.performance.batchSize) * 100;
+    this.metrics = { ...this.metrics, bufferUtilization: (this.eventBuffer.length / this.config.performance.batchSize) * 100 };
     
-    this.metrics.lastEventTime = new Date();
+    this.metrics = { ...this.metrics, lastEventTime: new Date() };
   }
 
   private async closeConnections(): Promise<void> {
     console.log('🔌 Closing SIEM connections...');
     
-    for (const [key, connection] of this.connections.entries()) {
+    for (const [key, _connection] of this.connections.entries()) {
       try {
         // Connection-specific cleanup
         console.log(`✅ Closed connection: ${key}`);
@@ -1005,6 +1010,6 @@ export class SIEMIntegrationFramework extends EventEmitter {
     }
     
     this.connections.clear();
-    this.metrics.connectionStatus = 'disconnected';
+    this.metrics = { ...this.metrics, connectionStatus: 'disconnected' };
   }
 }

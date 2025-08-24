@@ -4,8 +4,7 @@
  * Date: 2025-08-16 13:53:00 UTC
  */
 
-import { PEAAgentBase, AgentStatus, PEAAgentType } from '../../../types/pea-agent-types';
-import { MCPIntegration } from '../../../types/mcp';
+import { PEAAgentBase, AgentStatus, PEAAgentType, ClaudeFlowMCPIntegration } from '../../../types/pea-agent-types';
 
 export interface AdvancedAnalyticsAgentConfig {
   agentId: string;
@@ -60,7 +59,7 @@ export class AdvancedAnalyticsAgent extends PEAAgentBase {
   
   constructor(
     id: string,
-    mcpIntegration: MCPIntegration,
+    mcpIntegration: ClaudeFlowMCPIntegration,
     configuration: AdvancedAnalyticsAgentConfig
   ) {
     super(id, PEAAgentType.ADVANCED_ANALYTICS, 'Advanced Analytics Agent', mcpIntegration);
@@ -126,9 +125,9 @@ export class AdvancedAnalyticsAgent extends PEAAgentBase {
     });
     
     return {
-      workloadTrends: predictions.workloadTrends || [],
-      performanceTrends: predictions.performanceTrends || [],
-      recommendations: predictions.recommendations || []
+      workloadTrends: Array.isArray(predictions.workloadTrends) ? predictions.workloadTrends : [],
+      performanceTrends: Array.isArray(predictions.performanceTrends) ? predictions.performanceTrends : [],
+      recommendations: Array.isArray(predictions.recommendations) ? predictions.recommendations : []
     };
   }
   

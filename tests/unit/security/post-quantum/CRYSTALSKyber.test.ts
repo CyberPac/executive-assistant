@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { CRYSTALSKyber, KyberKeyPair, KyberParameters, KyberUtils } from '../../../../src/security/post-quantum/CRYSTALSKyber';
+import { CRYSTALSKyber, KyberKeyPair, KyberParameters as _KyberParameters, KyberUtils } from '../../../../src/security/post-quantum/CRYSTALSKyber';
 import { KyberCore } from '../../../../src/security/post-quantum/core/KyberCore';
 import { KyberBenchmark } from '../../../../src/security/post-quantum/benchmarks/KyberBenchmark';
 import { KyberValidator } from '../../../../src/security/post-quantum/validation/KyberValidator';
@@ -291,7 +291,7 @@ describe('CRYSTALS-Kyber Implementation', () => {
     it('should collect performance metrics', async () => {
       const keyPair = await kyber.generateKeyPair({ variant: 'Kyber768' });
       const encapResult = await kyber.encapsulate(keyPair.publicKey, keyPair.keyId);
-      const decapResult = await kyber.decapsulate(
+      const _decapResult = await kyber.decapsulate(
         encapResult.ciphertext,
         keyPair.privateKey,
         keyPair.keyId

@@ -3,7 +3,7 @@
  * Centralized exports for all advanced email functionality
  */
 
-export { UnifiedInboxManager, EmailAccount, EmailThread } from './UnifiedInboxManager';
-export { EmailThreadingEngine, ThreadDetectionOptions, ThreadAnalytics, CrossPlatformThread } from './EmailThreadingEngine';
-export { PEAEmailIntegrationLayer, PEAEmailContext, ActionItem, Deadline, PEAAgentAssignment } from './PEAEmailIntegrationLayer';
-export { EmailPerformanceOptimizer, PerformanceMetrics, OptimizationConfig } from './EmailPerformanceOptimizer';
+export type { UnifiedInboxManager, EmailAccount, EmailThread } from './UnifiedInboxManager';
+export type { EmailThreadingEngine, ThreadDetectionOptions, ThreadAnalytics, CrossPlatformThread } from './EmailThreadingEngine';
+export type { PEAEmailIntegrationLayer, PEAEmailContext, ActionItem, Deadline, PEAAgentAssignment } from './PEAEmailIntegrationLayer';
+export type { EmailPerformanceOptimizer, PerformanceMetrics, OptimizationConfig } from './EmailPerformanceOptimizer';

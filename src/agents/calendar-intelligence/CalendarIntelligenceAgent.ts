@@ -396,7 +396,7 @@ export class CalendarIntelligenceAgent extends PEAAgentBase {
   ): Promise<CulturalGuidance> {
     // Generate cultural guidance for international meetings
     const countries = attendees.map(a => a.country);
-    const protocols = countries.map(country => this.culturalProtocols.get(country)).filter(Boolean);
+    const protocols = countries.map(country => this.culturalProtocols.get(country)).filter((protocol): protocol is CulturalProtocol => protocol !== undefined);
 
     return {
       country: 'international',

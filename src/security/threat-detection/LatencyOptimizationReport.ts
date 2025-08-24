@@ -19,8 +19,9 @@
  * @author Executive Assistant Security Team
  */
 
-import { performance } from 'perf_hooks';
-import { UltraFastMetrics, PerformanceOptimizationResult } from './UltraFastThreatDetectionEngine';
+// import { performance } from 'perf_hooks';
+import { UltraFastMetrics } from './UltraFastThreatDetectionEngine';
+// import type { PerformanceOptimizationResult } from './UltraFastThreatDetectionEngine';
 import { SLAThresholds } from './ThreatDetectionConfigOptimized';
 
 export interface OptimizationMetrics {
@@ -380,7 +381,7 @@ export class LatencyOptimizationReportGenerator {
 
   private generateExecutiveSummary(
     metrics: OptimizationMetrics,
-    ultraFastMetrics: UltraFastMetrics
+    _ultraFastMetrics: UltraFastMetrics
   ): PerformanceReport['summary'] {
     return {
       overallImprovement: `${metrics.improvement.speedImprovement.toFixed(0)}x speed improvement (${metrics.improvement.latencyReduction.toFixed(1)}% latency reduction)`,

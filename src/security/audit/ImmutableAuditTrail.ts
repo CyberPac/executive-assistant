@@ -414,7 +414,7 @@ export class ImmutableAuditTrail {
       }
     };
     
-    const block: AuditBlock = {
+    let block: AuditBlock = {
       index: 0,
       timestamp: new Date(),
       previousHash: '0',
@@ -426,11 +426,16 @@ export class ImmutableAuditTrail {
       validator: 'system'
     };
     
-    // Calculate block hash
-    block.hash = await this.calculateBlockHash(block);
+    // Calculate block hash and signature
+    const blockHash = await this.calculateBlockHash(block);
+    const blockSignature = await this.signBlock(block);
     
-    // Sign block
-    block.signature = await this.signBlock(block);
+    // Create new block with hash and signature (immutable update)
+    block = {
+      ...block,
+      hash: blockHash,
+      signature: blockSignature
+    };
     
     console.log('✅ Genesis block created');
     return block;
@@ -444,16 +449,21 @@ export class ImmutableAuditTrail {
     const entryHash = await this.calculateEntryHash(auditEntry);
     const integrityProof = await this.createIntegrityProof(entryHash);
     
-    return {
+    const result: ImmutableAuditEntry = {
       id: entryId,
       originalEntry: auditEntry,
       entryHash,
       timestamp: new Date(),
       sequence: this.entrySequence,
       integrity: integrityProof,
-      executive: executiveMetadata,
       compliance: this.deriveComplianceMetadata(auditEntry, executiveMetadata)
     };
+    
+    if (executiveMetadata) {
+      return { ...result, executive: executiveMetadata };
+    }
+    
+    return result;
   }
 
   private async calculateEntryHash(auditEntry: HSMAuditEntry): Promise<string> {
@@ -534,7 +544,7 @@ export class ImmutableAuditTrail {
       const previousBlock = this.chain[this.chain.length - 1];
       const merkleRoot = await this.calculateMerkleRoot(this.pendingEntries);
       
-      const block: AuditBlock = {
+      let block: AuditBlock = {
         index: this.chain.length,
         timestamp: new Date(),
         previousHash: previousBlock.hash,
@@ -546,11 +556,16 @@ export class ImmutableAuditTrail {
         validator: 'executive-assistant'
       };
       
-      // Calculate block hash
-      block.hash = await this.calculateBlockHash(block);
+      // Calculate block hash and signature
+      const blockHash = await this.calculateBlockHash(block);
+      const blockSignature = await this.signBlock(block);
       
-      // Sign block
-      block.signature = await this.signBlock(block);
+      // Update block with immutable pattern
+      block = {
+        ...block,
+        hash: blockHash,
+        signature: blockSignature
+      };
       
       // Add block to chain
       this.chain.push(block);
@@ -618,7 +633,7 @@ export class ImmutableAuditTrail {
     sign.update(block.hash);
     
     // In production, would use actual private key
-    const fakePrivateKey = '-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC...\n-----END PRIVATE KEY-----';
+    const _fakePrivateKey = '-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC...\n-----END PRIVATE KEY-----';
     
     try {
       return sign.sign('fake-key', 'hex');

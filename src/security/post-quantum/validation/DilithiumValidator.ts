@@ -56,7 +56,7 @@ export interface SecurityAuditResult {
  */
 export class DilithiumValidator {
   private readonly dilithium: CRYSTALSDilithium;
-  private readonly hsmIntegration?: DilithiumHSMIntegration;
+  private readonly hsmIntegration?: DilithiumHSMIntegration | undefined;
   private readonly config: SecurityValidationConfig;
 
   constructor(config: SecurityValidationConfig, hsmIntegration?: DilithiumHSMIntegration) {
@@ -309,7 +309,8 @@ export class DilithiumValidator {
     } catch (error) {
       passed = false;
       score = 0;
-      details.push(`Key generation failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      details.push(`Key generation failed: ${errorMessage}`);
     }
 
     return {
@@ -367,7 +368,8 @@ export class DilithiumValidator {
     } catch (error) {
       passed = false;
       score = 0;
-      details.push(`Signature validation failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      details.push(`Signature validation failed: ${errorMessage}`);
     }
 
     return {
@@ -471,7 +473,8 @@ export class DilithiumValidator {
     } catch (error) {
       passed = false;
       score = 0;
-      details.push(`Entropy validation failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      details.push(`Entropy validation failed: ${errorMessage}`);
     }
 
     return {
@@ -533,7 +536,8 @@ export class DilithiumValidator {
     } catch (error) {
       passed = false;
       score = 0;
-      details.push(`Performance validation failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      details.push(`Performance validation failed: ${errorMessage}`);
     }
 
     return {
@@ -599,7 +603,8 @@ export class DilithiumValidator {
     } catch (error) {
       passed = false;
       score = 0;
-      details.push(`HSM security validation failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      details.push(`HSM security validation failed: ${errorMessage}`);
     }
 
     return {

@@ -304,8 +304,8 @@ export class GmailConnector {
 
     return {
       headers,
-      textContent,
-      htmlContent
+      ...(textContent && { textContent }),
+      ...(htmlContent && { htmlContent })
     };
   }
 

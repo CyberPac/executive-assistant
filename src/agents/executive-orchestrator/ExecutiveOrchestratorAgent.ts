@@ -143,14 +143,16 @@ export class ExecutiveOrchestratorAgent extends PEAAgentBase {
         stakeholders: task.context.stakeholders.map(s => typeof s === 'string' ? s : s.toString()),
         timeConstraints: {
           immediate: task.priority === 'critical',
-          deadline: task.context.deadline ? task.context.deadline.toISOString() : undefined,
+          ...(task.context.deadline && { deadline: task.context.deadline.toISOString() }),
           timezone: task.context.timeZone || 'UTC'
         },
-        culturalContext: task.context.culturalContext ? {
-          ...task.context.culturalContext,
-          protocol: task.context.culturalContext.businessProtocols?.[0] || 'standard',
-          sensitivity: 'medium' as 'low' | 'medium' | 'high'
-        } : undefined,
+        ...(task.context.culturalContext && {
+          culturalContext: {
+            ...task.context.culturalContext,
+            protocol: task.context.culturalContext.businessProtocols?.[0] || 'standard',
+            sensitivity: 'medium' as 'low' | 'medium' | 'high'
+          }
+        }),
         confidentialityLevel: this.mapSecurityLevelToConfidentiality(task.context.confidentialityLevel) || 'internal'
       };
 
@@ -530,7 +532,7 @@ class ExecutiveContextEngine {
  * Byzantine Consensus Validator for fault-tolerant decisions
  */
 class ByzantineConsensusValidator {
-  private config: ByzantineFaultTolerance;
+  private config?: ByzantineFaultTolerance;
 
   async initialize(config: ByzantineFaultTolerance): Promise<void> {
     this.config = config;

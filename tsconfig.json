@@ -32,7 +32,11 @@
     }
   },
   "include": [
-    "src/**/*"
+    "src/**/*.ts",
+    "src/**/*.tsx", 
+    "src/**/*.d.ts",
+    "src/**/*.js",
+    "src/**/*.jsx"
   ],
   "exclude": [
     "node_modules",

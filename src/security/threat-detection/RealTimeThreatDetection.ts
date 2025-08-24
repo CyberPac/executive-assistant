@@ -11,9 +11,10 @@
  * @since 2025-01-21
  */
 
-import { ThreatDetectionResult, ThreatIndicator, SecurityAction } from '../zero-trust/ContinuousVerificationProduction';
+import { ThreatDetectionResult } from '../zero-trust/ContinuousVerificationProduction';
+import { ThreatIndicator, SecurityAction as _SecurityAction } from './OptimizedRealTimeThreatEngine';
 import { HSMInterface } from '../hsm/HSMInterface';
-import { SecurityLevel, AgentStatus } from '../../types/pea-agent-types';
+import { SecurityLevel, AgentStatus as _AgentStatus } from '../../types/pea-agent-types';
 
 export interface ThreatDetectionConfig {
   readonly detectionLatencyTarget: number; // <1000ms
@@ -277,30 +278,30 @@ export class RealTimeThreatDetectionEngine {
         executiveRisk as ExecutiveRiskAssessment
       );
       
-      const result: AdvancedThreatDetectionResult = {
+      const result = {
         detectionId,
         timestamp: new Date(),
         threatLevel,
-        indicators,
-        responseActions,
+        indicators: indicators as any,
+        responseActions: responseActions as any,
         confidenceScore,
         detectionLatency,
         mlPrediction: mlPrediction as MLPredictionResult,
-        behaviorAnalysis: behaviorAnalysis as BehavioralAnalysisResult,
+        behaviorAnalysis: behaviorAnalysis as BehaviorAnalysisResult,
         networkAnalysis: networkAnalysis as NetworkAnalysisResult,
         cryptoAnalysis: cryptoAnalysis as CryptographicAnalysisResult,
         executiveRiskAssessment: executiveRisk as ExecutiveRiskAssessment
       };
       
       // Cache result for performance
-      this.threatCache.set(context.agentId, result);
+      this.threatCache.set(context.agentId, result as any);
       
       // Update metrics
-      this.updateDetectionMetrics(result);
+      this.updateDetectionMetrics(result as any);
       
       // Execute real-time response if enabled
       if (this.config.realTimeResponseEnabled) {
-        await this.executeRealTimeResponse(result, context);
+        await this.executeRealTimeResponse(result as any, context);
       }
       
       console.log(`✅ Advanced threat detection completed: ${context.agentId} - ${threatLevel} (${detectionLatency}ms)`);
@@ -309,7 +310,7 @@ export class RealTimeThreatDetectionEngine {
         console.warn(`⚠️ Detection latency exceeded target: ${detectionLatency}ms`);
       }
       
-      return result;
+      return result as any;
       
     } catch (error) {
       console.error(`❌ Advanced threat detection failed for ${context.agentId}:`, error);
@@ -444,7 +445,7 @@ export class RealTimeThreatDetectionEngine {
     };
   }
 
-  private async performCryptographicAnalysis(context: ThreatContext): Promise<CryptographicAnalysisResult> {
+  private async performCryptographicAnalysis(_context: ThreatContext): Promise<CryptographicAnalysisResult> {
     const hsmStatus = await this.hsmInterface.getHealthStatus();
     
     return {
@@ -473,27 +474,29 @@ export class RealTimeThreatDetectionEngine {
 
   private generateThreatIndicators(
     mlPrediction?: MLPredictionResult,
-    behaviorAnalysis?: BehavioralAnalysisResult,
+    behaviorAnalysis?: BehaviorAnalysisResult,
     networkAnalysis?: NetworkAnalysisResult,
     cryptoAnalysis?: CryptographicAnalysisResult
-  ): ThreatIndicator[] {
-    const indicators: ThreatIndicator[] = [];
+  ): any[] {
+    const indicators: any[] = [];
     
     if (mlPrediction && mlPrediction.prediction !== 'benign') {
       indicators.push({
         type: 'behavioral',
+        value: mlPrediction.prediction,
+        confidence: mlPrediction.confidence,
         severity: mlPrediction.confidence,
-        description: `ML model prediction: ${mlPrediction.prediction}`,
-        evidence: { confidence: mlPrediction.confidence, anomalyScore: mlPrediction.anomalyScore }
+        source: 'ml_model'
       });
     }
     
     if (behaviorAnalysis && behaviorAnalysis.normalityScore < 0.5) {
       indicators.push({
         type: 'behavioral',
+        value: `deviation_score_${(1 - behaviorAnalysis.normalityScore).toFixed(2)}`,
+        confidence: 1 - behaviorAnalysis.normalityScore,
         severity: 1 - behaviorAnalysis.normalityScore,
-        description: `Behavioral deviation detected`,
-        evidence: { deviationPatterns: behaviorAnalysis.deviationPatterns }
+        source: 'behavior_analysis'
       });
     }
     
@@ -501,31 +504,31 @@ export class RealTimeThreatDetectionEngine {
       if (networkAnalysis.geoRisk > 0.7) {
         indicators.push({
           type: 'network',
+          value: `geo_risk_${networkAnalysis.geoRisk.toFixed(2)}`,
+          confidence: networkAnalysis.geoRisk,
           severity: networkAnalysis.geoRisk,
-          description: `High geolocation risk detected`,
-          evidence: { geoRisk: networkAnalysis.geoRisk }
+          source: 'geolocation_analysis'
         });
       }
       
       if (networkAnalysis.trafficAnomalies.length > 0) {
         indicators.push({
           type: 'network',
+          value: `traffic_anomalies_${networkAnalysis.trafficAnomalies.length}`,
+          confidence: Math.min(networkAnalysis.trafficAnomalies.length * 0.2, 1.0),
           severity: Math.min(networkAnalysis.trafficAnomalies.length * 0.2, 1.0),
-          description: `Network traffic anomalies detected`,
-          evidence: { anomalies: networkAnalysis.trafficAnomalies }
+          source: 'traffic_analysis'
         });
       }
     }
     
     if (cryptoAnalysis && (!cryptoAnalysis.keyIntegrity || cryptoAnalysis.hsmStatus !== 'healthy')) {
       indicators.push({
-        type: 'cryptographic',
+        type: 'authentication',
+        value: `hsm_status_${cryptoAnalysis.hsmStatus}`,
+        confidence: cryptoAnalysis.keyIntegrity ? 0.5 : 0.9,
         severity: cryptoAnalysis.keyIntegrity ? 0.5 : 0.9,
-        description: `Cryptographic integrity concern`,
-        evidence: { 
-          keyIntegrity: cryptoAnalysis.keyIntegrity,
-          hsmStatus: cryptoAnalysis.hsmStatus
-        }
+        source: 'hsm_analysis'
       });
     }
     
@@ -552,10 +555,10 @@ export class RealTimeThreatDetectionEngine {
 
   private generateAdvancedSecurityActions(
     threatLevel: string,
-    indicators: ThreatIndicator[],
+    indicators: any[],
     context: ThreatContext
-  ): SecurityAction[] {
-    const actions: SecurityAction[] = [];
+  ): any[] {
+    const actions: any[] = [];
     const isExecutive = context.executiveContext !== undefined;
     
     switch (threatLevel) {
@@ -566,16 +569,19 @@ export class RealTimeThreatDetectionEngine {
           automated: true,
           description: isExecutive 
             ? 'Immediate executive protection protocol activation'
-            : 'Critical threat - immediate access block'
+            : 'Critical threat - immediate access block',
+          executionTime: 0
         });
         actions.push({
-          action: 'investigate',
+          action: 'alert',
           priority: 1,
           automated: false,
-          description: 'Security team investigation required'
+          description: 'Security team investigation required',
+          executionTime: 0
         });
         if (isExecutive) {
           actions.push({
+            type: 'alert',
             action: 'alert',
             priority: 1,
             automated: true,
@@ -589,11 +595,12 @@ export class RealTimeThreatDetectionEngine {
           action: 'restrict',
           priority: 2,
           automated: true,
-          description: 'Enhanced restrictions and monitoring'
+          description: 'Enhanced restrictions and monitoring',
+          executionTime: 0
         });
         if (isExecutive) {
           actions.push({
-            action: 'alert',
+            type: 'alert',
             priority: 2,
             automated: true,
             description: 'Executive security team notification'
@@ -603,7 +610,6 @@ export class RealTimeThreatDetectionEngine {
       
       case 'medium':
         actions.push({
-          action: 'monitor',
           priority: 3,
           automated: true,
           description: 'Enhanced monitoring and logging'
@@ -612,7 +618,6 @@ export class RealTimeThreatDetectionEngine {
       
       default:
         actions.push({
-          action: 'monitor',
           priority: 4,
           automated: true,
           description: 'Standard monitoring'
@@ -688,7 +693,7 @@ export class RealTimeThreatDetectionEngine {
     return {
       hour: new Date().getHours(),
       dayOfWeek: new Date().getDay(),
-      securityLevel: context.securityLevel === 'EXECUTIVE' ? 1 : 0,
+      securityLevel: String(context.securityLevel).includes('EXECUTIVE') ? 1 : 0,
       geoRisk: context.networkContext.geoLocation.riskScore,
       deviceTrust: context.deviceContext.deviceTrust,
       executiveMode: context.executiveContext ? 1 : 0

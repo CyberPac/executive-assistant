@@ -105,6 +105,59 @@ class MockMCPIntegration implements ClaudeFlowMCPIntegration {
       patterns: ['coordination', 'optimization']
     };
   }
+
+  async invokeFunction(functionName: string, params: Record<string, unknown>): Promise<Record<string, unknown>> {
+    console.log(`📞 Mock Function Call: ${functionName}`, params);
+    return { success: true, result: `mock-${functionName}-result` };
+  }
+
+  async sendNotification(message: string, priority?: string): Promise<void> {
+    console.log(`📢 Mock Notification [${priority || 'normal'}]: ${message}`);
+  }
+
+  async coordinateWith(agentId: string, task: string): Promise<Record<string, unknown>> {
+    console.log(`🤝 Mock Coordination: ${agentId} - ${task}`);
+    return { acknowledged: true, agentId, task };
+  }
+
+  async retrieveMemory(key: string, namespace?: string): Promise<any> {
+    const data = this.memory.get(`${namespace || 'default'}:${key}`);
+    return {
+      success: !!data,
+      key,
+      value: data || null
+    };
+  }
+
+  async bookTravel(params: Record<string, unknown>): Promise<Record<string, unknown>> {
+    console.log(`✈️ Mock Travel Booking:`, params);
+    return { success: true, bookingId: `mock-booking-${Date.now()}` };
+  }
+
+  async cancelBooking(bookingId: string): Promise<Record<string, unknown>> {
+    console.log(`❌ Mock Cancel Booking: ${bookingId}`);
+    return { success: true, cancelled: true };
+  }
+
+  async getTravelAlerts(location: string): Promise<Record<string, unknown>> {
+    console.log(`🚨 Mock Travel Alerts: ${location}`);
+    return { alerts: [], location };
+  }
+
+  async checkVisa(destination: string, citizenship: string): Promise<Record<string, unknown>> {
+    console.log(`📋 Mock Visa Check: ${destination} for ${citizenship}`);
+    return { required: false, destination, citizenship };
+  }
+
+  async calculateExpenses(data: Record<string, unknown>): Promise<Record<string, unknown>> {
+    console.log(`💰 Mock Expense Calculation:`, data);
+    return { total: 0, currency: 'USD' };
+  }
+
+  async generateReport(type: string, data: Record<string, unknown>): Promise<Record<string, unknown>> {
+    console.log(`📊 Mock Report Generation: ${type}`, data);
+    return { reportId: `mock-report-${Date.now()}`, type };
+  }
 }
 
 /**

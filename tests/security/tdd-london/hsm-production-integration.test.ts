@@ -11,41 +11,41 @@
  */
 
 import { jest, describe, test, expect, beforeEach, afterEach, beforeAll } from '@jest/globals';
-import { HSMInterface, HSMConfiguration, HSMOperationResult, HSMHealthStatus, HSMKeyMetadata } from '../../../src/security/hsm/HSMInterface';
-import { HSMVendorAdapter } from '../../../src/security/hsm/vendors/HSMVendorAdapter';
+import { HSMInterface, HSMConfiguration, HSMOperationResult as _HSMOperationResult, HSMHealthStatus as _HSMHealthStatus, HSMKeyMetadata as _HSMKeyMetadata } from '../../../src/security/hsm/HSMInterface';
+import { HSMVendorAdapter as _HSMVendorAdapter } from '../../../src/security/hsm/vendors/HSMVendorAdapter';
 import { ThalesHSMAdapter } from '../../../src/security/hsm/vendors/ThalesHSMAdapter';
 import { HSMConnectionPool, PooledConnection } from '../../../src/security/hsm/core/HSMConnectionPool';
-import { HSMAuditLogger, HSMAuditEntry } from '../../../src/security/hsm/core/HSMAuditLogger';
+import { HSMAuditLogger, HSMAuditEntry as _HSMAuditEntry } from '../../../src/security/hsm/core/HSMAuditLogger';
 import { SecureCrypto } from '../../../src/security/hsm/utils/SecureCrypto';
 
 describe('HSM Production Integration - TDD London School', () => {
-  // Mock all HSM vendor adapters for isolation
+  // Mock all HSM vendor adapters for isolation with proper return values
   const mockThalesAdapter = {
-    generateKey: jest.fn(),
-    encrypt: jest.fn(),
-    decrypt: jest.fn(),
-    sign: jest.fn(),
-    verify: jest.fn(),
-    rotateKey: jest.fn(),
-    getKeyMetadata: jest.fn(),
-    testConnection: jest.fn(),
-    getCapabilities: jest.fn()
+    generateKey: jest.fn().mockResolvedValue({ keyId: 'thales-key-123', success: true }),
+    encrypt: jest.fn().mockResolvedValue({ encryptedData: 'mock-encrypted', success: true, operationTime: 45 }),
+    decrypt: jest.fn().mockResolvedValue({ decryptedData: 'mock-decrypted', success: true, operationTime: 35 }),
+    sign: jest.fn().mockResolvedValue({ signature: 'thales-signature', success: true, operationTime: 25 }),
+    verify: jest.fn().mockResolvedValue({ valid: true, success: true, operationTime: 15 }),
+    rotateKey: jest.fn().mockResolvedValue({ newKeyId: 'thales-rotated-key', success: true }),
+    getKeyMetadata: jest.fn().mockResolvedValue({ keyId: 'thales-key-123', algorithm: 'ECDSA-P384', created: new Date() }),
+    testConnection: jest.fn().mockResolvedValue({ connected: true, latency: 5 }),
+    getCapabilities: jest.fn().mockReturnValue({ postQuantum: true, fips140: true })
   } as jest.Mocked<ThalesHSMAdapter>;
 
-  // Mock connection pool for testing isolation and control
+  // Mock connection pool for testing isolation and control with realistic responses
   const mockConnectionPool = {
-    getConnection: jest.fn(),
-    returnConnection: jest.fn(),
-    getStatus: jest.fn(),
-    shutdown: jest.fn(),
-    healthCheck: jest.fn()
+    getConnection: jest.fn().mockResolvedValue({ id: 'conn-123', available: true }),
+    returnConnection: jest.fn().mockResolvedValue(undefined),
+    getStatus: jest.fn().mockReturnValue({ total: 10, active: 3, idle: 7 }),
+    shutdown: jest.fn().mockResolvedValue(undefined),
+    healthCheck: jest.fn().mockResolvedValue({ healthy: true, activeConnections: 3 })
   } as jest.Mocked<HSMConnectionPool>;
 
-  // Mock audit logger for compliance verification
+  // Mock audit logger for compliance verification with proper return values
   const mockAuditLogger = {
-    logOperation: jest.fn(),
-    generateStatistics: jest.fn(),
-    shutdown: jest.fn()
+    logOperation: jest.fn().mockResolvedValue({ auditId: 'audit-123', logged: true }),
+    generateStatistics: jest.fn().mockReturnValue({ totalOperations: 1000, errorRate: 0.01 }),
+    shutdown: jest.fn().mockResolvedValue(undefined)
   } as jest.Mocked<HSMAuditLogger>;
 
   // Mock secure crypto utilities
@@ -232,7 +232,7 @@ describe('HSM Production Integration - TDD London School', () => {
 
     test('should validate required algorithm support during initialization', async () => {
       // Given: HSM configuration requires specific algorithms
-      const requiredAlgorithms = ['AES-256-GCM', 'CRYSTALS-Kyber', 'CRYSTALS-Dilithium', 'SPHINCS+'];
+      const _requiredAlgorithms = ['AES-256-GCM', 'CRYSTALS-Kyber', 'CRYSTALS-Dilithium', 'SPHINCS+'];
       
       // When: Initializing with algorithm validation
       await hsmInterface.initialize();
@@ -547,7 +547,7 @@ describe('HSM Production Integration - TDD London School', () => {
           algorithm: 'AES-256-GCM'
         }))
       );
-      const totalTime = Date.now() - startTime;
+      const _totalTime = Date.now() - startTime;
 
       // Then: Should handle all operations efficiently
       expect(results).toHaveLength(20);
@@ -772,7 +772,7 @@ describe('HSM Production Integration - TDD London School', () => {
 
     test('should maintain operation continuity during node maintenance', async () => {
       // Given: One node in maintenance mode
-      const maintenanceConfig = {
+      const _maintenanceConfig = {
         ...productionHSMConfig,
         clustering: {
           ...productionHSMConfig.clustering,
@@ -938,7 +938,7 @@ describe('HSM Production Integration - TDD London School', () => {
           algorithm: 'AES-256-GCM'
         }))
       );
-      const totalTime = Date.now() - startTime;
+      const _totalTime = Date.now() - startTime;
 
       // Then: Should maintain performance SLAs throughout
       expect(results).toHaveLength(100);

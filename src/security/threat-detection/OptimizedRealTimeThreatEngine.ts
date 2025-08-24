@@ -626,13 +626,13 @@ export class HSMOptimizer {
     connection.available = true;
   }
 
-  private async validateKeyIntegrityFast(connection: any): Promise<{ valid: boolean }> {
+  private async validateKeyIntegrityFast(_connection: any): Promise<{ valid: boolean }> {
     // Optimized key integrity validation
     await new Promise(resolve => setTimeout(resolve, 110)); // Optimized to 110ms
     return { valid: true };
   }
 
-  private async checkQuantumResistanceFast(connection: any): Promise<{ resistant: boolean }> {
+  private async checkQuantumResistanceFast(_connection: any): Promise<{ resistant: boolean }> {
     // Optimized quantum resistance check
     await new Promise(resolve => setTimeout(resolve, 90)); // Optimized to 90ms
     return { resistant: true };
@@ -665,7 +665,7 @@ export class ExecutiveProtectionAccelerator {
     try {
       // Check executive profile cache
       const profileKey = context.executiveContext.executiveId;
-      const cachedProfile = this.executiveProfileCache.get(profileKey);
+      const _cachedProfile = this.executiveProfileCache.get(profileKey);
       
       // Parallel risk assessment components
       const [contextRisk, behaviorRisk, environmentRisk] = await Promise.all([

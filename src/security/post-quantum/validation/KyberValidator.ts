@@ -231,7 +231,8 @@ export class KyberValidator {
       return { isValid, details };
 
     } catch (error) {
-      details.push(`Integrity validation failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      details.push(`Integrity validation failed: ${errorMessage}`);
       return { isValid: false, details };
     }
   }
@@ -413,7 +414,7 @@ export class KyberValidator {
         name: 'Cryptographic Operations',
         passed: false,
         severity: 'critical',
-        details: `Operation failed: ${error.message}`,
+        details: `Operation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         recommendation: 'Review implementation and regenerate keys'
       });
     }
@@ -679,13 +680,13 @@ export class KyberValidator {
     return Math.sqrt(variance);
   }
 
-  private async analyzePowerConsumption(keyPair: KyberKeyPair): Promise<{ correlation: number }> {
+  private async analyzePowerConsumption(_keyPair: KyberKeyPair): Promise<{ correlation: number }> {
     // Simulated power analysis
     // In real implementation, this would measure actual power consumption
     return { correlation: Math.random() * 0.8 };
   }
 
-  private async analyzeCacheAccess(keyPair: KyberKeyPair): Promise<{ dataDependent: boolean }> {
+  private async analyzeCacheAccess(_keyPair: KyberKeyPair): Promise<{ dataDependent: boolean }> {
     // Simulated cache analysis
     // In real implementation, this would analyze cache access patterns
     return { dataDependent: Math.random() > 0.8 };

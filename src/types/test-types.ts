@@ -4,7 +4,7 @@
  */
 
 // Re-export all types needed for testing from main type files
-export {
+export type {
   // Core PEA Agent Types
   PEAAgentInterface,
   PEAAgentBase,
@@ -35,7 +35,7 @@ export {
 } from './pea-agent-types';
 
 // Re-export Financial Types
-export {
+export type {
   FinancialContext,
   PortfolioProfile,
   TaxProfile,

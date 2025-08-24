@@ -178,7 +178,7 @@ describe('Kyber Integration Tests', () => {
     beforeEach(() => {
       // Clear key registry
       const keys = keyManager.listKeys();
-      keys.forEach(key => {
+      keys.forEach(_key => {
         // In a real implementation, we would properly deregister keys
       });
     });
@@ -405,7 +405,7 @@ describe('Kyber Integration Tests', () => {
       keyManager.registerKey(keyResult.data!.metadata);
 
       // Step 3: Perform secure communication simulation
-      const message = new TextEncoder().encode('EXECUTIVE_CONFIDENTIAL: Quarterly strategic review data');
+      const _message = new TextEncoder().encode('EXECUTIVE_CONFIDENTIAL: Quarterly strategic review data');
       
       // Encapsulate for secure channel
       const encapResult = await hsmIntegration.hsmEncapsulate({

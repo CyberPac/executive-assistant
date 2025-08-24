@@ -26,8 +26,8 @@ describe('Comprehensive Security Coverage - Executive Protection', () => {
   let productionVerificationEngine: ProductionContinuousVerificationEngine;
   let threatDetectionEngine: RealTimeThreatDetectionEngine;
   let zeroTrustArchitecture: ZeroTrustArchitecture;
-  let agentManager: AgentManager;
-  let coordinationSystem: PEACoordinationSystem;
+  let _agentManager: AgentManager;
+  let _coordinationSystem: PEACoordinationSystem;
   
   // Mock dependencies
   const mockHSMInterface = {
@@ -374,7 +374,7 @@ describe('Comprehensive Security Coverage - Executive Protection', () => {
       // Given: Security system with domain-specific analysis
       await productionVerificationEngine.activate();
       
-      const domains = [
+      const _domains = [
         'zero-trust-verification',
         'threat-detection',
         'hsm-integration', 

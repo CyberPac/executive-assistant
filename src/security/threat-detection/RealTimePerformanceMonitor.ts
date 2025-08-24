@@ -410,10 +410,10 @@ export class RealTimePerformanceMonitor extends EventEmitter {
    * Update streaming metrics
    */
   updateStreamingMetrics(metrics: StreamingMetrics): void {
-    this.currentMetrics.latency.current = metrics.averageLatency;
-    this.currentMetrics.latency.max = Math.max(this.currentMetrics.latency.max, metrics.maxLatency);
-    this.currentMetrics.throughput.current = metrics.throughput;
-    this.currentMetrics.accuracy.detectionRate = metrics.accuracy * 100;
+    this.currentMetrics = { ...this.currentMetrics, latency: { ...this.currentMetrics.latency, current: metrics.averageLatency } };
+    this.currentMetrics = { ...this.currentMetrics, latency: { ...this.currentMetrics.latency, max: Math.max(this.currentMetrics.latency.max, metrics.maxLatency) } };
+    this.currentMetrics = { ...this.currentMetrics, throughput: { ...this.currentMetrics.throughput, current: metrics.throughput } };
+    this.currentMetrics = { ...this.currentMetrics, accuracy: { ...this.currentMetrics.accuracy, detectionRate: metrics.accuracy * 100 } };
     
     this.updateLatencyDistribution(metrics.averageLatency);
     this.checkPerformanceThresholds();
@@ -423,12 +423,27 @@ export class RealTimePerformanceMonitor extends EventEmitter {
    * Update pipeline metrics  
    */
   updatePipelineMetrics(metrics: PipelineMetrics): void {
-    this.currentMetrics.throughput.current = Math.max(
-      this.currentMetrics.throughput.current,
-      metrics.throughput
-    );
+    this.currentMetrics = {
+      ...this.currentMetrics,
+      throughput: {
+        ...this.currentMetrics.throughput,
+        current: Math.max(
+          this.currentMetrics.throughput.current,
+          metrics.throughput
+        )
+      }
+    };
     
-    this.currentMetrics.resources.memory.cacheHitRate = metrics.cacheHitRate * 100;
+    this.currentMetrics = {
+      ...this.currentMetrics,
+      resources: {
+        ...this.currentMetrics.resources,
+        memory: {
+          ...this.currentMetrics.resources.memory,
+          cacheHitRate: metrics.cacheHitRate * 100
+        }
+      }
+    };
     
     this.checkPerformanceThresholds();
   }
@@ -619,9 +634,11 @@ export class RealTimePerformanceMonitor extends EventEmitter {
 
   private async collectSystemMetrics(): Promise<void> {
     // Collect system resource metrics
-    this.currentMetrics.resources = await this.collectResourceMetrics();
-    this.currentMetrics.system = await this.collectSystemHealth();
-    this.currentMetrics.timestamp = new Date();
+    const resources = await this.collectResourceMetrics();
+    this.currentMetrics = { ...this.currentMetrics, resources };
+    const system = await this.collectSystemHealth();
+    this.currentMetrics = { ...this.currentMetrics, system };
+    this.currentMetrics = { ...this.currentMetrics, timestamp: new Date() };
     
     // Update calculated metrics
     this.updateCalculatedMetrics();
@@ -702,17 +719,38 @@ export class RealTimePerformanceMonitor extends EventEmitter {
     if (this.metricsHistory.length > 0) {
       const history = this.metricsHistory.slice(-60); // Last 60 measurements
       
-      this.currentMetrics.latency.average = this.calculateAverage(
+      const latencyAverage = this.calculateAverage(
         history.map(m => m.latency.current)
       );
+      this.currentMetrics = {
+        ...this.currentMetrics,
+        latency: {
+          ...this.currentMetrics.latency,
+          average: latencyAverage
+        }
+      };
       
-      this.currentMetrics.throughput.average = this.calculateAverage(
+      const throughputAverage = this.calculateAverage(
         history.map(m => m.throughput.current)
       );
+      this.currentMetrics = {
+        ...this.currentMetrics,
+        throughput: {
+          ...this.currentMetrics.throughput,
+          average: throughputAverage
+        }
+      };
       
-      this.currentMetrics.throughput.peak = Math.max(
+      const throughputPeak = Math.max(
         ...history.map(m => m.throughput.current)
       );
+      this.currentMetrics = {
+        ...this.currentMetrics,
+        throughput: {
+          ...this.currentMetrics.throughput,
+          peak: throughputPeak
+        }
+      };
     }
     
     // Calculate percentiles
@@ -722,16 +760,37 @@ export class RealTimePerformanceMonitor extends EventEmitter {
     const precision = this.currentMetrics.accuracy.precision;
     const recall = this.currentMetrics.accuracy.recall;
     if (precision + recall > 0) {
-      this.currentMetrics.accuracy.f1Score = 2 * (precision * recall) / (precision + recall);
+      const f1Score = 2 * (precision * recall) / (precision + recall);
+      this.currentMetrics = {
+        ...this.currentMetrics,
+        accuracy: {
+          ...this.currentMetrics.accuracy,
+          f1Score
+        }
+      };
     }
   }
 
   private updateLatencyDistribution(latency: number): void {
-    this.currentMetrics.latency.distribution.push(latency);
+    const newDistribution = [...this.currentMetrics.latency.distribution, latency];
+    this.currentMetrics = {
+      ...this.currentMetrics,
+      latency: {
+        ...this.currentMetrics.latency,
+        distribution: newDistribution
+      }
+    };
     
     // Keep only last 1000 measurements
     if (this.currentMetrics.latency.distribution.length > 1000) {
-      this.currentMetrics.latency.distribution = this.currentMetrics.latency.distribution.slice(-1000);
+      const trimmedDistribution = this.currentMetrics.latency.distribution.slice(-1000);
+      this.currentMetrics = {
+        ...this.currentMetrics,
+        latency: {
+          ...this.currentMetrics.latency,
+          distribution: trimmedDistribution
+        }
+      };
     }
   }
 
@@ -741,8 +800,16 @@ export class RealTimePerformanceMonitor extends EventEmitter {
     const sorted = [...this.currentMetrics.latency.distribution].sort((a, b) => a - b);
     const len = sorted.length;
     
-    this.currentMetrics.latency.p95 = sorted[Math.floor(len * 0.95)];
-    this.currentMetrics.latency.p99 = sorted[Math.floor(len * 0.99)];
+    const p95 = sorted[Math.floor(len * 0.95)];
+    const p99 = sorted[Math.floor(len * 0.99)];
+    this.currentMetrics = {
+      ...this.currentMetrics,
+      latency: {
+        ...this.currentMetrics.latency,
+        p95,
+        p99
+      }
+    };
   }
 
   private updateMetricsHistory(): void {
@@ -803,7 +870,7 @@ export class RealTimePerformanceMonitor extends EventEmitter {
     console.log(`🚨 Performance Alert [${severity.toUpperCase()}]: ${alert.message}`);
   }
 
-  private getAlertRecommendations(metric: string, severity: string): string[] {
+  private getAlertRecommendations(metric: string, _severity: string): string[] {
     const recommendations: string[] = [];
     
     switch (metric) {

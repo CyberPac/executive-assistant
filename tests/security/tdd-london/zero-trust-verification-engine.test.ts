@@ -11,30 +11,45 @@
  */
 
 import { jest, describe, test, expect, beforeEach, afterEach } from '@jest/globals';
-import { ZeroTrustArchitecture, ZeroTrustConfiguration, ZeroTrustVerificationResult, ThreatAssessment } from '../../../src/security/zero-trust/ZeroTrustArchitecture';
+import { ZeroTrustArchitecture, ZeroTrustConfiguration, ZeroTrustVerificationResult as _ZeroTrustVerificationResult, ThreatAssessment as _ThreatAssessment } from '../../../src/security/zero-trust/ZeroTrustArchitecture';
 import { HSMInterface } from '../../../src/security/hsm/HSMInterface';
 import { CRYSTALSKyber } from '../../../src/security/post-quantum/CRYSTALSKyber';
-import { SecurityTestRunner } from '../core/security-test-framework';
+import { SecurityTestRunner as _SecurityTestRunner } from '../core/security-test-framework';
 
 describe('Zero-Trust Verification Engine - TDD London School', () => {
-  // Mock dependencies - London School approach focuses on interactions
+  // Mock dependencies - London School approach focuses on interactions with proper return values
   const mockHSMInterface = {
-    initialize: jest.fn(),
-    generateKey: jest.fn(),
-    encrypt: jest.fn(),
-    decrypt: jest.fn(),
-    sign: jest.fn(),
-    verify: jest.fn(),
-    getHealthStatus: jest.fn(),
-    rotateKey: jest.fn()
+    initialize: jest.fn().mockResolvedValue({ success: true, latency: 50 }),
+    generateKey: jest.fn().mockResolvedValue({ keyId: 'zt-key-123', success: true, generationTime: 75 }),
+    encrypt: jest.fn().mockResolvedValue({ encryptedData: 'zt-encrypted', success: true, operationTime: 45 }),
+    decrypt: jest.fn().mockResolvedValue({ decryptedData: 'zt-decrypted', success: true, operationTime: 35 }),
+    sign: jest.fn().mockResolvedValue({ signature: 'zt-signature', success: true, operationTime: 25 }),
+    verify: jest.fn().mockResolvedValue({ valid: true, success: true, operationTime: 15 }),
+    getHealthStatus: jest.fn().mockResolvedValue({ status: 'healthy', latency: 10 }),
+    rotateKey: jest.fn().mockResolvedValue({ newKeyId: 'zt-rotated-key', success: true })
   } as jest.Mocked<HSMInterface>;
 
   const mockCRYSTALSKyber = {
-    generateKeyPair: jest.fn(),
-    encapsulate: jest.fn(),
-    decapsulate: jest.fn(),
-    getParameters: jest.fn(),
-    getPerformanceMetrics: jest.fn()
+    generateKeyPair: jest.fn().mockResolvedValue({ 
+      publicKey: 'kyber-pub-key', 
+      privateKey: 'kyber-priv-key', 
+      keyId: 'kyber-123',
+      generationTime: 55
+    }),
+    encapsulate: jest.fn().mockResolvedValue({ 
+      ciphertext: 'kyber-ciphertext', 
+      sharedSecret: 'kyber-secret',
+      operationTime: 35
+    }),
+    decapsulate: jest.fn().mockResolvedValue({ 
+      sharedSecret: 'kyber-secret',
+      operationTime: 25
+    }),
+    getParameters: jest.fn().mockReturnValue({ variant: 'Kyber768', securityLevel: 3 }),
+    getPerformanceMetrics: jest.fn().mockReturnValue({ 
+      averageEncapsulationTime: 35, 
+      averageDecapsulationTime: 25 
+    })
   } as jest.Mocked<CRYSTALSKyber>;
 
   const mockConfiguration: ZeroTrustConfiguration = {

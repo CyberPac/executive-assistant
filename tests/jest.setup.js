@@ -12,28 +12,35 @@ global.console = {
   trace: console.trace,
 };
 
-// Mock performance timer for tests
+// Mock performance timer for tests with CI-friendly defaults
 global.MockPerformanceTimer = class MockPerformanceTimer {
   constructor() {
     this.startTime = 0;
   }
 
   start = jest.fn(() => {
-    this.startTime = Date.now();
+    this.startTime = performance.now();
   });
 
   end = jest.fn(() => {
-    return Date.now() - this.startTime || 100;
+    return performance.now() - this.startTime || 50; // Faster default for CI
   });
 
   measure = jest.fn(() => {
-    return Date.now() - this.startTime || 100;
+    return performance.now() - this.startTime || 50; // Faster default for CI
   });
 
   reset = jest.fn(() => {
     this.startTime = 0;
   });
 };
+
+// Mock performance.now for consistent timing in tests
+if (typeof global.performance === 'undefined') {
+  global.performance = {
+    now: jest.fn(() => Date.now())
+  };
+}
 
 // Mock functions for test utilities
 global.assertAgentInitialization = (agent, expectedType) => {

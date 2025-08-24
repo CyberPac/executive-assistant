@@ -11,7 +11,7 @@
  * @since 2025-01-22
  */
 
-import { ZeroTrustConfiguration, PolicyViolation } from './ZeroTrustArchitecture';
+import { ZeroTrustConfiguration as _ZeroTrustConfiguration, PolicyViolation } from './ZeroTrustArchitecture';
 import { HSMInterface } from '../hsm/HSMInterface';
 import { SIEMIntegrationFramework } from '../audit/SIEMIntegrationFramework';
 
@@ -530,12 +530,22 @@ export class ZeroTrustNetworkSegmentation {
     // Simulate latency check
     const latency = allowed ? Math.random() * 50 + 10 : undefined;
     
-    return {
+    const validationResult: {
+      allowed: boolean;
+      policies: NetworkPolicy[];
+      violations: PolicyViolation[];
+      latency?: number;
+    } = {
       allowed,
       policies: applicablePolicies,
-      violations,
-      latency
+      violations
     };
+    
+    if (latency !== undefined) {
+      validationResult.latency = latency;
+    }
+    
+    return validationResult;
   }
 
   // Private implementation methods
@@ -897,7 +907,7 @@ export class ZeroTrustNetworkSegmentation {
   }
 
   private checkSegmentHealth(): void {
-    for (const [segmentId, segment] of this.segments.entries()) {
+    for (const [_segmentId, segment] of this.segments.entries()) {
       if (segment.monitoring) {
         // Check segment health metrics
         const workloadCount = segment.workloads.length;
@@ -946,7 +956,10 @@ export class ZeroTrustNetworkSegmentation {
       }
     }
     
-    this.metrics.policyViolations = violations;
+    this.metrics = {
+      ...this.metrics,
+      policyViolations: violations
+    };
   }
 
   private monitorNetworkPerformance(): void {
@@ -954,8 +967,11 @@ export class ZeroTrustNetworkSegmentation {
     const latency = Math.random() * 50 + 5;
     const throughput = Math.random() * 1000 + 500;
     
-    this.metrics.networkLatency = latency;
-    this.metrics.throughput = throughput;
+    this.metrics = {
+      ...this.metrics,
+      networkLatency: latency,
+      throughput
+    };
     
     // Check performance targets
     if (latency > this.config.performanceTargets.maxLatencyMs) {

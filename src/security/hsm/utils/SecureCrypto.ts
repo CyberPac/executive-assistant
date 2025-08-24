@@ -343,7 +343,7 @@ export class SecureCrypto {
 
   private pbkdf2KDF(password: Buffer, options: KeyDerivationOptions): Buffer {
     const { pbkdf2 } = require('crypto');
-    const pbkdf2Async = promisify(pbkdf2);
+    const _pbkdf2Async = promisify(pbkdf2);
     
     const iterations = options.iterations || 100000;
     

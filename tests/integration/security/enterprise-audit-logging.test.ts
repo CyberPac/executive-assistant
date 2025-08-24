@@ -7,7 +7,7 @@
  * @since 2025-01-21
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, jest as _jest } from '@jest/globals';
 import { SIEMIntegrationFramework, SIEMConfig } from '../../../src/security/audit/SIEMIntegrationFramework';
 import { ImmutableAuditTrail, AuditChainConfig } from '../../../src/security/audit/ImmutableAuditTrail';
 import { ComplianceReportingEngine, ComplianceConfig } from '../../../src/security/audit/ComplianceReportingEngine';
@@ -239,7 +239,7 @@ describe('Enterprise Audit Logging Integration', () => {
       await auditTrail.shutdown();
       await complianceEngine.shutdown();
       await auditLogger.shutdown();
-    } catch (error) {
+    } catch (_error) {
       // Ignore cleanup errors in tests
     }
   });

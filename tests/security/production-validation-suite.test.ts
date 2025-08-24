@@ -16,7 +16,7 @@
  * @classification EXECUTIVE_PRODUCTION_VALIDATION
  */
 
-import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/testing-library';
+import { describe, test, expect, beforeAll, afterAll, beforeEach as _beforeEach, afterEach as _afterEach } from '@jest/globals';
 import { SecurityCoordinationActivation } from '../../src/security/SecurityCoordinationActivation';
 import { HSMInterface } from '../../src/security/hsm/HSMInterface';
 import { PostQuantumSuite } from '../../src/security/post-quantum/PostQuantumSuite';
@@ -870,7 +870,7 @@ describe('🛡️ Executive Protection Production Validation Suite', () => {
 
       try {
         // Test graceful degradation under stress
-        const stressDuration = PRODUCTION_CONFIG.LOAD_TEST_SCENARIOS.STRESS_TEST_DURATION;
+        const _stressDuration = PRODUCTION_CONFIG.LOAD_TEST_SCENARIOS.STRESS_TEST_DURATION;
         const peakLoad = PRODUCTION_CONFIG.LOAD_TEST_SCENARIOS.CONCURRENT_USERS * 
                         PRODUCTION_CONFIG.LOAD_TEST_SCENARIOS.PEAK_LOAD_MULTIPLIER;
 
@@ -908,7 +908,7 @@ describe('🛡️ Executive Protection Production Validation Suite', () => {
               },
               priority: 'medium'
             });
-          } catch (error) {
+          } catch (_error) {
             return null;
           }
         });

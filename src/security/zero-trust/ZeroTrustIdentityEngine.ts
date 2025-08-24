@@ -11,7 +11,7 @@
  * @since 2025-01-22
  */
 
-import { ZeroTrustConfiguration, PolicyViolation } from './ZeroTrustArchitecture';
+import { ZeroTrustConfiguration as _ZeroTrustConfiguration, PolicyViolation } from './ZeroTrustArchitecture';
 import { HSMInterface } from '../hsm/HSMInterface';
 import { CRYSTALSKyber } from '../post-quantum/CRYSTALSKyber';
 import { SIEMIntegrationFramework } from '../audit/SIEMIntegrationFramework';
@@ -651,16 +651,22 @@ export class ZeroTrustIdentityEngine {
     const newScore = this.calculateRiskScore(riskFactors);
     const oldScore = identity.riskProfile.currentScore;
     
-    identity.riskProfile = {
+    const updatedRiskProfile = {
       ...identity.riskProfile,
       currentScore: newScore,
       riskFactors,
-      trend: newScore > oldScore ? 'increasing' : newScore < oldScore ? 'decreasing' : 'stable',
+      trend: newScore > oldScore ? 'increasing' as const : newScore < oldScore ? 'decreasing' as const : 'stable' as const,
       lastAssessment: new Date(),
       assessmentReason: 'continuous-assessment'
     };
     
-    identity.modified = new Date();
+    const updatedIdentity = {
+      ...identity,
+      riskProfile: updatedRiskProfile,
+      modified: new Date()
+    };
+    
+    this.identities.set(identityId, updatedIdentity);
     
     // Log significant risk changes
     if (Math.abs(newScore - oldScore) > 0.2) {
@@ -998,15 +1004,18 @@ export class ZeroTrustIdentityEngine {
       riskScore: result.riskAssessment.score,
       sourceIp: request.context.sourceIp,
       userAgent: request.context.userAgent,
-      location: request.context.location,
+      location: request.context.location || '',
       anomalies: result.riskAssessment.factors.filter(f => f.score > 0.7).map(f => f.factor)
     };
     
     identity.authentication.attempts.push(attempt);
     
     if (result.success) {
-      identity.authentication.successfulLogins++;
-      identity.authentication.lastSuccess = new Date();
+      const _updatedAuth = {
+        ...identity.authentication,
+        successfulLogins: identity.authentication.successfulLogins + 1,
+        lastSuccess: new Date()
+      };
       
       // Create session if successful
       if (request.context.sessionId) {
@@ -1017,31 +1026,58 @@ export class ZeroTrustIdentityEngine {
           sourceIp: request.context.sourceIp,
           userAgent: request.context.userAgent,
           device: request.context.deviceFingerprint,
-          location: request.context.location,
+          location: request.context.location || '',
           riskScore: result.riskAssessment.score,
           mfaVerified: result.methods.some(m => m.method === 'mfa' && m.success)
         };
         
-        identity.session = session;
+        const updatedIdentity = {
+          ...identity,
+          session,
+          lastActivity: new Date(),
+          modified: new Date()
+        };
+        this.identities.set(identity.id, updatedIdentity);
         this.activeSessions.set(session.sessionId, session);
       }
     } else {
-      identity.authentication.failedAttempts++;
-      identity.authentication.lastFailure = new Date();
+      const updatedAuth = {
+        ...identity.authentication,
+        failedAttempts: identity.authentication.failedAttempts + 1,
+        lastFailure: new Date()
+      };
+      const updatedIdentity = {
+        ...identity,
+        authentication: updatedAuth,
+        lastActivity: new Date(),
+        modified: new Date()
+      };
+      this.identities.set(identity.id, updatedIdentity);
     }
     
-    // Update risk profile
-    identity.riskProfile.currentScore = result.riskAssessment.score;
-    identity.riskProfile.riskFactors = result.riskAssessment.factors.map(f => ({
-      type: f.factor,
-      score: f.score,
-      confidence: f.weight,
-      detected: new Date(),
-      source: 'verification'
-    }));
-    
-    identity.lastActivity = new Date();
-    identity.modified = new Date();
+    // Update risk profile if not already updated
+    if (!identity.session || result.success) {
+      const updatedRiskProfile = {
+        ...identity.riskProfile,
+        currentScore: result.riskAssessment.score,
+        riskFactors: result.riskAssessment.factors.map(f => ({
+          type: f.factor,
+          score: f.score,
+          confidence: f.weight,
+          detected: new Date(),
+          source: 'verification'
+        }))
+      };
+      
+      const finalIdentity = {
+        ...this.identities.get(identity.id)!,
+        riskProfile: updatedRiskProfile,
+        lastActivity: new Date(),
+        modified: new Date()
+      };
+      
+      this.identities.set(identity.id, finalIdentity);
+    }
   }
 
   private startIdentityMonitoring(): void {
@@ -1086,15 +1122,26 @@ export class ZeroTrustIdentityEngine {
   }
 
   private async analyzeBehaviorPatterns(): Promise<void> {
-    for (const [identityId, model] of this.behaviorModels.entries()) {
+    for (const [identityId, _model] of this.behaviorModels.entries()) {
       const identity = this.identities.get(identityId);
       if (!identity) continue;
       
       // Analyze patterns and update confidence
       const confidence = Math.min(identity.behavior.confidence + 0.01, 0.95);
-      identity.behavior.confidence = confidence;
-      identity.behavior.dataPoints++;
-      identity.behavior.lastUpdate = new Date();
+      const updatedBehavior = {
+        ...identity.behavior,
+        confidence,
+        dataPoints: identity.behavior.dataPoints + 1,
+        lastUpdate: new Date()
+      };
+      
+      const updatedIdentity = {
+        ...identity,
+        behavior: updatedBehavior,
+        modified: new Date()
+      };
+      
+      this.identities.set(identityId, updatedIdentity);
     }
   }
 
@@ -1196,7 +1243,7 @@ class RiskEngine {
     return factors;
   }
   
-  private assessLocationRisk(request: VerificationRequest, identity: Identity): number {
+  private assessLocationRisk(request: VerificationRequest, _identity: Identity): number {
     // Simplified location risk assessment
     if (!request.context.location) return 0.5;
     
@@ -1213,7 +1260,7 @@ class RiskEngine {
     return isTrustedDevice ? 0.1 : 0.4;
   }
   
-  private assessTimeRisk(request: VerificationRequest, identity: Identity): number {
+  private assessTimeRisk(request: VerificationRequest, _identity: Identity): number {
     // Check if access is during normal hours
     const hour = request.timestamp.getHours();
     const isBusinessHours = hour >= 9 && hour <= 17;

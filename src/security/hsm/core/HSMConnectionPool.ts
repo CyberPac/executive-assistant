@@ -10,7 +10,7 @@
  * - Connection timeout and retry logic
  */
 
-import { HSMConnection, HSMVendorAdapter } from '../vendors/HSMVendorAdapter';
+import type { HSMConnection } from '../vendors/HSMVendorAdapter';
 import { EventEmitter } from 'events';
 
 export interface PooledConnection extends HSMConnection {

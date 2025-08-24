@@ -214,9 +214,11 @@ export class StreamingEventProcessor extends EventEmitter {
   }
 
   private updateStreamingMetrics(latency: number): void {
-    this.metrics.eventsProcessed++;
-    this.metrics.averageStreamingLatency = 
-      (this.metrics.averageStreamingLatency * 0.9) + (latency * 0.1);
+    this.metrics = {
+      ...this.metrics,
+      eventsProcessed: this.metrics.eventsProcessed + 1,
+      averageStreamingLatency: (this.metrics.averageStreamingLatency * 0.9) + (latency * 0.1)
+    };
   }
 
   getStreamingMetrics() {
@@ -621,32 +623,7 @@ export class AdaptiveBehaviorAnalyzer {
 // === MAIN ULTRA-FAST THREAT DETECTION ENGINE ===
 
 export class UltraFastThreatDetectionEngine extends OptimizedRealTimeThreatEngine {
-  private streamingProcessor: StreamingEventProcessor;
-  private ultraFastMLPredictor: UltraFastMLPredictor;
-  private adaptiveBehaviorAnalyzer: AdaptiveBehaviorAnalyzer;
-  
-  private ultraFastMetrics: UltraFastMetrics;
-  private latencyHistory: number[] = [];
-  private optimizationResults: PerformanceOptimizationResult[] = [];
-
-  constructor(
-    private ultraFastConfig: UltraFastConfig,
-    hsmInterface: HSMInterface
-  ) {
-    super(ultraFastConfig, hsmInterface);
-    
-    // Initialize ultra-fast components
-    this.streamingProcessor = new StreamingEventProcessor(ultraFastConfig);
-    this.ultraFastMLPredictor = new UltraFastMLPredictor(ultraFastConfig);
-    this.adaptiveBehaviorAnalyzer = new AdaptiveBehaviorAnalyzer(ultraFastConfig);
-    
-    this.ultraFastMetrics = this.initializeUltraFastMetrics();
-    
-    console.log('🚀 Ultra-Fast Threat Detection Engine initialized');
-    console.log(`🎯 Target Latency: <${ultraFastConfig.targetLatency}ms (Ultra-Fast: <500ms)`);
-  }
-
-  async initialize(): Promise<void> {
+  public override async initialize(): Promise<void> {
     console.log('🔄 Initializing ultra-fast threat detection engine...');
     
     try {
@@ -673,6 +650,48 @@ export class UltraFastThreatDetectionEngine extends OptimizedRealTimeThreatEngin
     }
   }
 
+  public override async shutdown(): Promise<void> {
+    console.log('🛑 Shutting down ultra-fast threat detection engine...');
+    
+    // Generate final performance report
+    const finalMetrics = this.getUltraFastMetrics();
+    console.log('📊 Final Ultra-Fast Performance Report:', {
+      totalDetections: finalMetrics.totalDetections,
+      averageLatency: `${finalMetrics.averageLatency.toFixed(2)}ms`,
+      p95Latency: `${finalMetrics.p95Latency.toFixed(2)}ms`,
+      slaCompliance: `${(finalMetrics.slaCompliance * 100).toFixed(2)}%`,
+      cacheHitRatio: `${(finalMetrics.cacheHitRatio * 100).toFixed(2)}%`
+    });
+    
+    await super.shutdown();
+    console.log('✅ Ultra-fast threat detection engine shutdown completed');
+  }
+  private streamingProcessor: StreamingEventProcessor;
+  private ultraFastMLPredictor: UltraFastMLPredictor;
+  private adaptiveBehaviorAnalyzer: AdaptiveBehaviorAnalyzer;
+  
+  private ultraFastMetrics: UltraFastMetrics;
+  private latencyHistory: number[] = [];
+  private optimizationResults: PerformanceOptimizationResult[] = [];
+
+  constructor(
+    private ultraFastConfig: UltraFastConfig,
+    hsmInterface: HSMInterface
+  ) {
+    super(ultraFastConfig, hsmInterface);
+    
+    // Initialize ultra-fast components
+    this.streamingProcessor = new StreamingEventProcessor(ultraFastConfig);
+    this.ultraFastMLPredictor = new UltraFastMLPredictor(ultraFastConfig);
+    this.adaptiveBehaviorAnalyzer = new AdaptiveBehaviorAnalyzer(ultraFastConfig);
+    
+    this.ultraFastMetrics = this.initializeUltraFastMetrics();
+    
+    console.log('🚀 Ultra-Fast Threat Detection Engine initialized');
+    console.log(`🎯 Target Latency: <${ultraFastConfig.targetLatency}ms (Ultra-Fast: <500ms)`);
+  }
+
+
   async detectThreatsUltraFast(context: ExecutivePriorityContext): Promise<OptimizedThreatResult & {
     ultraFastMetrics: {
       streamingLatency: number;
@@ -691,7 +710,7 @@ export class UltraFastThreatDetectionEngine extends OptimizedRealTimeThreatEngin
       
       // Phase 1: Ultra-fast streaming event processing
       const streamingStart = Date.now();
-      const streamResult = await this.streamingProcessor.processEventWithPriority(context);
+      const _streamResult = await this.streamingProcessor.processEventWithPriority(context);
       const streamingLatency = Date.now() - streamingStart;
       
       // Phase 2: Parallel ultra-fast analysis components
@@ -711,7 +730,7 @@ export class UltraFastThreatDetectionEngine extends OptimizedRealTimeThreatEngin
       // Phase 3: Optimized parent detection components (HSM, Network, Executive)
       const parentDetectionStart = Date.now();
       const parentResult = await super.detectAdvancedThreats(context);
-      const parentDetectionLatency = Date.now() - parentDetectionStart;
+      const _parentDetectionLatency = Date.now() - parentDetectionStart;
       
       const totalDetectionLatency = Date.now() - detectionStart;
       
@@ -878,8 +897,6 @@ export class UltraFastThreatDetectionEngine extends OptimizedRealTimeThreatEngin
   }
 
   private updateUltraFastMetrics(latency: number, ultraFastMetrics: any): void {
-    this.ultraFastMetrics.totalDetections++;
-    
     // Update latency history for percentile calculations
     this.latencyHistory.push(latency);
     if (this.latencyHistory.length > 1000) {
@@ -888,23 +905,33 @@ export class UltraFastThreatDetectionEngine extends OptimizedRealTimeThreatEngin
     
     // Update running averages
     const alpha = 0.1;
-    this.ultraFastMetrics.averageLatency = 
-      (1 - alpha) * this.ultraFastMetrics.averageLatency + alpha * latency;
+    const newTotalDetections = this.ultraFastMetrics.totalDetections + 1;
+    const newAverageLatency = (1 - alpha) * this.ultraFastMetrics.averageLatency + alpha * latency;
     
     // Update percentiles
     const sortedLatencies = [...this.latencyHistory].sort((a, b) => a - b);
-    this.ultraFastMetrics.p95Latency = sortedLatencies[Math.floor(sortedLatencies.length * 0.95)];
-    this.ultraFastMetrics.p99Latency = sortedLatencies[Math.floor(sortedLatencies.length * 0.99)];
+    const newP95Latency = sortedLatencies[Math.floor(sortedLatencies.length * 0.95)];
+    const newP99Latency = sortedLatencies[Math.floor(sortedLatencies.length * 0.99)];
     
     // Update SLA compliance
     const slaCompliant = latency < this.ultraFastConfig.targetLatency;
-    this.ultraFastMetrics.slaCompliance = 
-      (this.ultraFastMetrics.slaCompliance * (this.ultraFastMetrics.totalDetections - 1) + (slaCompliant ? 1 : 0)) 
-      / this.ultraFastMetrics.totalDetections;
+    const newSlaCompliance = 
+      (this.ultraFastMetrics.slaCompliance * (newTotalDetections - 1) + (slaCompliant ? 1 : 0)) 
+      / newTotalDetections;
     
     // Update cache hit ratio
-    this.ultraFastMetrics.cacheHitRatio = 
+    const newCacheHitRatio = 
       (this.ultraFastMetrics.cacheHitRatio * 0.9) + (ultraFastMetrics.cacheEfficiency * 0.1);
+    
+    this.ultraFastMetrics = {
+      ...this.ultraFastMetrics,
+      totalDetections: newTotalDetections,
+      averageLatency: newAverageLatency,
+      p95Latency: newP95Latency,
+      p99Latency: newP99Latency,
+      slaCompliance: newSlaCompliance,
+      cacheHitRatio: newCacheHitRatio
+    };
   }
 
   private async initializeUltraFastOptimizations(): Promise<void> {
@@ -993,20 +1020,4 @@ export class UltraFastThreatDetectionEngine extends OptimizedRealTimeThreatEngin
     };
   }
 
-  async shutdown(): Promise<void> {
-    console.log('🛑 Shutting down ultra-fast threat detection engine...');
-    
-    // Generate final performance report
-    const finalMetrics = this.getUltraFastMetrics();
-    console.log('📊 Final Ultra-Fast Performance Report:', {
-      totalDetections: finalMetrics.totalDetections,
-      averageLatency: `${finalMetrics.averageLatency.toFixed(2)}ms`,
-      p95Latency: `${finalMetrics.p95Latency.toFixed(2)}ms`,
-      slaCompliance: `${(finalMetrics.slaCompliance * 100).toFixed(2)}%`,
-      cacheHitRatio: `${(finalMetrics.cacheHitRatio * 100).toFixed(2)}%`
-    });
-    
-    await super.shutdown();
-    console.log('✅ Ultra-fast threat detection engine shutdown completed');
-  }
 }
