@@ -1,20 +1,38 @@
 // Mock WebSocket for testing
-class MockWebSocket {
+const { EventEmitter } = require('events');
+
+class MockWebSocket extends EventEmitter {
   constructor(url) {
+    super();
     this.url = url;
-    this.readyState = 1; // OPEN
+    this.readyState = 0; // CONNECTING initially
+    
+    // Simulate connection opening
     setTimeout(() => {
-      this.onopen && this.onopen();
+      this.readyState = 1; // OPEN
+      this.emit('open');
+      if (this.onopen) this.onopen();
     }, 0);
   }
 
   send(data) {
-    // Mock send implementation
+    if (this.readyState === 1) {
+      // Mock successful send
+      return true;
+    }
+    return false;
   }
 
-  close() {
-    this.readyState = 3; // CLOSED
-    this.onclose && this.onclose();
+  close(code = 1000, reason = '') {
+    if (this.readyState === 1 || this.readyState === 0) {
+      this.readyState = 3; // CLOSED
+      this.emit('close', { code, reason });
+      if (this.onclose) this.onclose({ code, reason });
+    }
+  }
+
+  terminate() {
+    this.close(1006, 'Connection terminated');
   }
 }
 
@@ -23,4 +41,8 @@ MockWebSocket.OPEN = 1;
 MockWebSocket.CLOSING = 2;
 MockWebSocket.CLOSED = 3;
 
-module.exports = MockWebSocket;
+// Export as both default and named export to handle different import patterns
+module.exports = { 
+  WebSocket: MockWebSocket,
+  default: MockWebSocket
+};

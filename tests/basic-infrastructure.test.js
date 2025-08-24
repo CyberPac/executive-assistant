@@ -133,6 +133,7 @@ describe('Mock Configuration Tests', () => {
     // Wait for connection to open
     ws.on('open', () => {
       expect(ws.readyState).toBe(1); // OPEN
+      ws.close();
       done();
     });
   });

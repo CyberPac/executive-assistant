@@ -26,6 +26,8 @@
     "rootDir": ".",
     "baseUrl": ".",
     "isolatedModules": true,
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo",
     "paths": {
       "@/*": ["./src/*"],
       "@/agents/*": ["./src/agents/*"]

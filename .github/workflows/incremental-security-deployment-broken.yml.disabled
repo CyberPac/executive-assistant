@@ -209,32 +209,31 @@ jobs:
           echo "❌ System health issues detected"
           fi
 
-          - name: 👔 Executive Notification - Pre-Deployment
-          if: steps.approval-check.outputs.required == 'true'
-          run: |
+      - name: 👔 Executive Notification - Pre-Deployment
+        if: steps.approval-check.outputs.required == 'true'
+        run: |
           phase="${{ steps.phase-detection.outputs.phase }}"
-
           curl -X POST "${{ env.EXECUTIVE_NOTIFICATION_WEBHOOK }}" \
-          -H "Content-Type: application/json" \
-          -d "{
-          \"text\": \"🚨 Executive Assistant Security Deployment - Phase $phase requires approval\",
-          \"phase\": \"$phase\",
-          \"commit\": \"${{ github.sha }}\",
-          \"actor\": \"${{ github.actor }}\",
-          \"approval_required\": true,
-          \"urgency\": \"high\",
-          \"estimated_duration\": \"15-30 minutes\",
-          \"affected_systems\": [\"HSM\", \"Zero-Trust\", \"Executive Protection\"]
-          }" || echo "⚠️ Executive notification failed, continuing..."
+            -H "Content-Type: application/json" \
+            -d "{
+              \"text\": \"🚨 Executive Assistant Security Deployment - Phase $phase requires approval\",
+              \"phase\": \"$phase\",
+              \"commit\": \"${{ github.sha }}\",
+              \"actor\": \"${{ github.actor }}\",
+              \"approval_required\": true,
+              \"urgency\": \"high\",
+              \"estimated_duration\": \"15-30 minutes\",
+              \"affected_systems\": [\"HSM\", \"Zero-Trust\", \"Executive Protection\"]
+            }" || echo "⚠️ Executive notification failed, continuing..."
 
-          force-rollback:
-          name: Emergency Rollback System
-          runs-on: ubuntu-latest
-          timeout-minutes: 15
-          if: github.event.inputs.force_rollback == 'true'
-          steps:
-          - name: 🔐 Secure Checkout
-          uses: actions/checkout@v4
+  force-rollback:
+    name: Emergency Rollback System
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event.inputs.force_rollback == 'true'
+    steps:
+      - name: 🔐 Secure Checkout
+        uses: actions/checkout@v4
 
           - name: 🚨 Execute Emergency Rollback
           run: |
